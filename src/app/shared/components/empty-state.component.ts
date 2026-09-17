@@ -7,14 +7,20 @@ import { fileTrayOutline } from 'ionicons/icons';
   selector: 'app-empty-state',
   standalone: true,
   imports: [IonIcon, IonText],
-  template: `
-    <div class="empty-state">
-      <ion-icon name="file-tray-outline" style="font-size:32px;opacity:.5"></ion-icon>
-      <ion-text color="medium"><p>{{ message() }}</p></ion-text>
-      <ng-content />
-    </div>`,
+  template: ` <div class="empty-state">
+    <ion-icon
+      name="file-tray-outline"
+      style="font-size:32px;opacity:.5"
+    ></ion-icon>
+    <ion-text color="medium"
+      ><p>{{ message() }}</p></ion-text
+    >
+    <ng-content />
+  </div>`,
 })
 export class EmptyStateComponent {
   message = input.required<string>();
-  constructor() { addIcons({ fileTrayOutline }); }
+  constructor() {
+    addIcons({ fileTrayOutline });
+  }
 }

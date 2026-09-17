@@ -1,7 +1,12 @@
 export const fa = {
   app: { title: 'آرایشگاه', copyright: '© آرایشگاه' },
   brand: { title: 'آرایشگاه', subtitle: 'مدیریت نوبت‌ها — ورود سریع و امن' },
-  nav: { home: 'خانه', appointments: 'نوبت‌ها', notifications: 'اعلان‌ها', profile: 'پروفایل' },
+  nav: {
+    home: 'خانه',
+    appointments: 'نوبت‌ها',
+    notifications: 'اعلان‌ها',
+    profile: 'پروفایل',
+  },
   common: {
     loading: 'در حال بارگذاری...',
     error: 'خطا',
@@ -38,7 +43,12 @@ export const fa = {
     warning: 'هشدار',
     info: 'اطلاعات',
   },
-  theme: { light: 'روشن', dark: 'تیره', toggle: 'تغییر تم', label: 'حالت نمایش' },
+  theme: {
+    light: 'روشن',
+    dark: 'تیره',
+    toggle: 'تغییر تم',
+    label: 'حالت نمایش',
+  },
   auth: {
     login: {
       title: 'خوش آمدید',
@@ -84,7 +94,8 @@ export const fa = {
     },
     forgot: {
       title: 'فراموشی رمز عبور',
-      subtitle: 'ایمیل یا نام کاربری خود را وارد کنید تا توکن بازیابی دریافت کنید',
+      subtitle:
+        'ایمیل یا نام کاربری خود را وارد کنید تا توکن بازیابی دریافت کنید',
       label: 'ایمیل یا نام کاربری',
       placeholder: 'example@mail.com یا نام کاربری',
       tokenLabel: 'توکن بازیابی (حالت توسعه):',

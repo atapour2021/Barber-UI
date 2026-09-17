@@ -9,10 +9,21 @@ import { fa } from '../../core/i18n/fa';
   selector: 'app-theme-toggle',
   standalone: true,
   imports: [IonButton, IonIcon],
-  template: `<ion-button fill="clear" size="small" (click)="theme.toggle()" [attr.aria-label]="t.toggle"><ion-icon slot="icon-only" [name]="theme.isDark() ? 'sunny-outline' : 'moon-outline'"></ion-icon></ion-button>`,
+  template: `<ion-button
+    fill="clear"
+    size="small"
+    (click)="theme.toggle()"
+    [attr.aria-label]="t.toggle"
+    ><ion-icon
+      slot="icon-only"
+      [name]="theme.isDark() ? 'sunny-outline' : 'moon-outline'"
+    ></ion-icon
+  ></ion-button>`,
 })
 export class ThemeToggleComponent {
   theme = inject(ThemeService);
   t = fa.theme;
-  constructor() { addIcons({ moonOutline, sunnyOutline }); }
+  constructor() {
+    addIcons({ moonOutline, sunnyOutline });
+  }
 }

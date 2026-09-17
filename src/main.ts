@@ -1,5 +1,11 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withPreloading, PreloadAllModules } from '@angular/router';
+import {
+  RouteReuseStrategy,
+  provideRouter,
+  withComponentInputBinding,
+  withPreloading,
+  PreloadAllModules,
+} from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ErrorHandler } from '@angular/core';
@@ -15,6 +21,10 @@ bootstrapApplication(AppComponent, {
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideIonicAngular(),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
-    provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
+    provideRouter(
+      routes,
+      withPreloading(PreloadAllModules),
+      withComponentInputBinding(),
+    ),
   ],
 });

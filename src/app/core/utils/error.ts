@@ -1,6 +1,9 @@
 import { fa } from '../i18n/fa';
 
-export function extractMessage(err: unknown, fallback: string = fa.errors.generic): string {
+export function extractMessage(
+  err: unknown,
+  fallback: string = fa.errors.generic,
+): string {
   const e = err as Record<string, unknown>;
   const data = (e?.['error'] as Record<string, unknown>) ?? {};
   const msg =
@@ -9,7 +12,8 @@ export function extractMessage(err: unknown, fallback: string = fa.errors.generi
     (e?.['message'] as string) ??
     '';
   if (typeof msg === 'string' && msg.trim()) return msg.trim();
-  if (Array.isArray(data['message'])) return (data['message'] as string[]).join('، ');
+  if (Array.isArray(data['message']))
+    return (data['message'] as string[]).join('، ');
   const status = e?.['status'] as number | undefined;
   if (status === 0) return fa.errors.network;
   if (status === 404) return fa.errors.notFound;

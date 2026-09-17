@@ -1,5 +1,11 @@
 import { Component } from '@angular/core';
-import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular';
+import {
+  IonTabs,
+  IonTabBar,
+  IonTabButton,
+  IonIcon,
+  IonLabel,
+} from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { home, calendar, notifications, person } from 'ionicons/icons';
 import { fa } from '../core/i18n/fa';
@@ -11,5 +17,7 @@ import { fa } from '../core/i18n/fa';
 })
 export class TabsPage {
   t = fa.nav;
-  constructor() { addIcons({ home, calendar, notifications, person }); }
+  constructor() {
+    addIcons({ home, calendar, notifications, person });
+  }
 }

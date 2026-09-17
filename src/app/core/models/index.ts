@@ -1,5 +1,6 @@
 export type Role = 'user' | 'customer' | 'barber' | 'admin' | 'super_admin';
-export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+export type AppointmentStatus =
+  'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
 
 export interface User {
   id: string;
