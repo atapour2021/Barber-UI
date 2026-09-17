@@ -1,57 +1,78 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonSpinner, IonText, IonBadge } from '@ionic/angular';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonLabel, IonButton, IonModal, IonSpinner, IonBadge, IonCard, IonCardContent, IonIcon, IonItem } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { addOutline, timeOutline, calendarOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Appointment, Barber, Service } from '../../core/models';
+import { fa } from '../../core/i18n/fa';
+import { EmptyStateComponent } from '../../shared/components/empty-state.component';
+import { UiInputComponent, UiTextareaComponent, UiSelectComponent, UiDatepickerComponent, UiButtonComponent } from '../../shared/ui/ui';
 
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  imports: [FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonSpinner, IonText, IonBadge],
+  imports: [FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonLabel, IonButton, IonModal, IonSpinner, IonBadge, IonCard, IonCardContent, IonIcon, IonItem, EmptyStateComponent, UiInputComponent, UiTextareaComponent, UiSelectComponent, UiDatepickerComponent, UiButtonComponent],
   template: `
-  <ion-header><ion-toolbar><ion-title>Appointments</ion-title></ion-toolbar></ion-header>
-  <ion-content class="ion-padding">
-    <ion-item><ion-select label="Filter status" [(ngModel)]="filter" (ionChange)="load()"><ion-select-option value="">All</ion-select-option><ion-select-option value="pending">pending</ion-select-option><ion-select-option value="confirmed">confirmed</ion-select-option><ion-select-option value="completed">completed</ion-select-option><ion-select-option value="cancelled">cancelled</ion-select-option></ion-select></ion-item>
-    @if (loading()) { <div style="text-align:center"><ion-spinner /></div> }
-    <ion-list>
-      @for (a of items(); track a.id) {
-        <ion-item>
-          <ion-label><h3>{{a.date}} {{a.startTime}} - {{a.endTime}}</h3><p>{{a.notes ?? ''}}</p></ion-label>
-          <ion-badge>{{a.status}}</ion-badge>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-button fill="clear" size="small" color="danger" (click)="cancel(a.id)">Cancel</ion-button>
-          <ion-button fill="clear" size="small" (click)="setStatus(a.id,'confirmed')">Confirm</ion-button>
-          <ion-button fill="clear" size="small" (click)="setStatus(a.id,'completed')">Done</ion-button>
-        </ion-item>
-      }
-    </ion-list>
-    <ion-button expand="block" (click)="show.set(true)">Book appointment</ion-button>
-    <ion-modal [isOpen]="show()" (didDismiss)="show.set(false)">
-      <ng-template>
-        <ion-header><ion-toolbar><ion-title>Book</ion-title><ion-button slot="end" fill="clear" (click)="show.set(false)">Close</ion-button></ion-toolbar></ion-header>
-        <ion-content class="ion-padding">
-          <ion-item><ion-select label="Barber" [(ngModel)]="form.barberId" (ionChange)="onBarberChange()">@for(b of barbers(); track b.id){<ion-select-option [value]="b.id">{{b.fullName}}</ion-select-option>}</ion-select></ion-item>
-          <ion-item><ion-select label="Service" [(ngModel)]="form.serviceId">@for(s of services(); track s.id){<ion-select-option [value]="s.id">{{s.name}}</ion-select-option>}</ion-select></ion-item>
-          <ion-item><ion-input label="Date" type="date" [(ngModel)]="form.date" /></ion-item>
-          <ion-button size="small" (click)="loadSlots()">Check slots</ion-button>
-          <ion-list>@for (sl of slots(); track $index) { <ion-item button (click)="pickSlot(sl)"><ion-label>{{sl.startTime}} - {{sl.endTime}} · {{sl.status}}</ion-label></ion-item> }</ion-list>
-          <ion-item><ion-input label="Start time" [(ngModel)]="form.startTime" /></ion-item>
-          <ion-item><ion-input label="End time" [(ngModel)]="form.endTime" /></ion-item>
-          <ion-item><ion-textarea label="Notes" [(ngModel)]="form.notes" /></ion-item>
-          @if (err) { <ion-text color="danger"><p>{{err}}</p></ion-text> }
-          <ion-button expand="block" (click)="book()">Create</ion-button>
-        </ion-content>
-      </ng-template>
-    </ion-modal>
+  <ion-header><ion-toolbar><ion-title>{{t.title}}</ion-title></ion-toolbar></ion-header>
+  <ion-content [fullscreen]="true">
+    <div class="page-wrap">
+      <div class="card-modern">
+        <ui-select [label]="t.filterStatus" [(ngModel)]="filter" [options]="filterOpts" (ngModelChange)="load()" />
+      </div>
+      @if (loading()) { <div style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted">{{c.loading}}</p></div> }
+      @if (!loading() && !items().length) { <app-empty-state [message]="t.empty" /> }
+      <ion-list lines="none" style="background:transparent;width:100%">
+        @for (a of items(); track a.id) {
+          <ion-card>
+            <ion-card-content>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <h3 style="margin:0;font-weight:700"><ion-icon name="calendar-outline" style="vertical-align:middle"></ion-icon> {{a.date}} {{a.startTime}} - {{a.endTime}}</h3>
+                <ion-badge [color]="a.status==='cancelled'?'danger':a.status==='confirmed'?'success':a.status==='completed'?'primary':'warning'">{{a.status}}</ion-badge>
+              </div>
+              @if (a.notes) { <p class="muted" style="margin:6px 0 0">{{a.notes}}</p> }
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <ui-button fill="outline" color="danger" size="small" (pressed)="cancel(a.id)">{{t.cancel}}</ui-button>
+                <ui-button fill="outline" size="small" (pressed)="setStatus(a.id,'confirmed')">{{t.confirm}}</ui-button>
+                <ui-button size="small" (pressed)="setStatus(a.id,'completed')">{{t.done}}</ui-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        }
+      </ion-list>
+      <ui-button icon="add-outline" (pressed)="show.set(true)">{{t.book}}</ui-button>
+      <ion-modal [isOpen]="show()" (didDismiss)="show.set(false)">
+        <ng-template>
+          <ion-header><ion-toolbar><ion-title>{{t.bookTitle}}</ion-title><ion-button slot="end" fill="clear" (click)="show.set(false)">{{c.close}}</ion-button></ion-toolbar></ion-header>
+          <ion-content class="ion-padding" [fullscreen]="true">
+            <div class="page-wrap">
+              <ui-select [label]="t.barber" [(ngModel)]="form.barberId" [options]="barberOpts" (ngModelChange)="onBarberChange()" />
+              <ui-select [label]="t.service" [(ngModel)]="form.serviceId" [options]="serviceOpts" />
+              <ui-datepicker [label]="t.date" [(ngModel)]="form.date" />
+              <ui-button fill="outline" size="small" icon="time-outline" (pressed)="loadSlots()">{{t.checkSlots}}</ui-button>
+              <ion-list lines="none">@for (sl of slots(); track $index) { <ion-item button (click)="pickSlot(sl)" style="--background:var(--ion-color-step-50,#fff);margin-bottom:6px;border-radius:12px"><ion-label>{{sl.startTime}} - {{sl.endTime}} · {{sl.status}}</ion-label></ion-item> }</ion-list>
+              <ui-input [label]="t.startTime" [(ngModel)]="form.startTime" />
+              <ui-input [label]="t.endTime" [(ngModel)]="form.endTime" />
+              <ui-textarea [label]="t.notes" [placeholder]="t.notesPlaceholder" [(ngModel)]="form.notes" />
+              <ui-button (pressed)="book()">{{t.create}}</ui-button>
+            </div>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </div>
   </ion-content>`,
 })
 export class AppointmentsPage implements OnInit {
   private api = inject(ApiService); private route = inject(ActivatedRoute);
+  t = fa.appointments; c = fa.common;
+  filterOpts = [{ value:'', label: fa.appointments.all },{ value:'pending', label: fa.appointments.pending },{ value:'confirmed', label: fa.appointments.confirmed },{ value:'completed', label: fa.appointments.completed },{ value:'cancelled', label: fa.appointments.cancelled }];
   items = signal<Appointment[]>([]); barbers = signal<Barber[]>([]); services = signal<Service[]>([]); slots = signal<{ startTime:string; endTime:string; status:string }[]>([]);
-  loading = signal(false); filter = ''; show = signal(false); err = '';
+  loading = signal(false); filter = ''; show = signal(false);
   form: Record<string, string> = { date: new Date().toISOString().slice(0,10), startTime: '', endTime: '' };
+  get barberOpts() { return this.barbers().map(b => ({ value: b.id, label: b.fullName })); }
+  get serviceOpts() { return this.services().map(s => ({ value: s.id, label: s.name })); }
+  constructor() { addIcons({ addOutline, timeOutline, calendarOutline }); }
   ngOnInit() {
     const q = this.route.snapshot.queryParamMap.get('barberId'); if (q) this.form['barberId'] = q;
     this.api.barbers.list().subscribe({ next: v => this.barbers.set(v as Barber[]) });
@@ -67,7 +88,7 @@ export class AppointmentsPage implements OnInit {
     this.api.appointments.slots(p).subscribe({ next: v => { const arr = (v as { slots?: unknown[] })?.slots ?? v; this.slots.set((Array.isArray(arr) ? arr : []) as never); }});
   }
   pickSlot(s: { startTime:string; endTime:string }) { this.form['startTime'] = s.startTime; this.form['endTime'] = s.endTime; }
-  book() { this.api.appointments.create(this.form).subscribe({ next: () => { this.show.set(false); this.load(); }, error: e => this.err = e.error?.message ?? 'Failed' }); }
+  book() { this.api.appointments.create(this.form).subscribe({ next: () => { this.show.set(false); this.load(); } }); }
   cancel(id: string) { this.api.appointments.cancel(id).subscribe({ next: () => this.load() }); }
   setStatus(id: string, status: string) { this.api.appointments.status(id, status).subscribe({ next: () => this.load() }); }
 }

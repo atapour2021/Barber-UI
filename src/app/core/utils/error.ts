@@ -1,6 +1,6 @@
 import { fa } from '../i18n/fa';
 
-export function extractMessage(err: unknown, fallback = fa.errors.generic): string {
+export function extractMessage(err: unknown, fallback: string = fa.errors.generic): string {
   const e = err as Record<string, unknown>;
   const data = (e?.['error'] as Record<string, unknown>) ?? {};
   const msg =

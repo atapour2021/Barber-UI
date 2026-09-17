@@ -1,21 +1,20 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonText, IonItem, IonLabel, IonToggle, IonIcon, IonList } from '@ionic/angular';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonToggle, IonIcon, IonList } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { moonOutline, sunnyOutline, logOutOutline, phonePortraitOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
-import { ToastService } from '../../core/services/toast.service';
 import { fa } from '../../core/i18n/fa';
-import { extractMessage } from '../../core/utils/error';
+import { UiButtonComponent } from '../../shared/ui/ui';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonText, IonItem, IonLabel, IonToggle, IonIcon, IonList],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonToggle, IonIcon, IonList, UiButtonComponent],
   template: `
   <ion-header><ion-toolbar><ion-title>{{t.title}}</ion-title></ion-toolbar></ion-header>
-  <ion-content>
+  <ion-content [fullscreen]="true">
     <div class="page-wrap">
       @if (auth.user(); as u) {
         <div class="hero">
@@ -34,9 +33,8 @@ import { extractMessage } from '../../core/utils/error';
           </ion-card-content>
         </ion-card>
       } @else {
-        <div class="empty-state"><ion-text color="medium"><p>{{t.notLoggedIn}}</p></ion-text></div>
+        <div class="empty-state"><p style="color:var(--ion-color-medium)">{{t.notLoggedIn}}</p></div>
       }
-
       <div class="section">
         <p class="section-title">{{th.label}}</p>
         <div class="card-modern" style="display:flex;align-items:center;justify-content:space-between">
@@ -44,10 +42,9 @@ import { extractMessage } from '../../core/utils/error';
           <ion-toggle [checked]="theme.isDark()" (ionChange)="theme.toggle()" aria-label="theme toggle"></ion-toggle>
         </div>
       </div>
-
       <div class="section" style="display:grid;gap:10px">
-        <ion-button expand="block" color="danger" (click)="logout()"><ion-icon name="log-out-outline" slot="start"></ion-icon> {{t.logout}}</ion-button>
-        <ion-button expand="block" fill="outline" color="danger" (click)="logoutAll()"><ion-icon name="phone-portrait-outline" slot="start"></ion-icon> {{t.logoutAll}}</ion-button>
+        <ui-button color="danger" icon="log-out-outline" (pressed)="logout()">{{t.logout}}</ui-button>
+        <ui-button fill="outline" color="danger" icon="phone-portrait-outline" (pressed)="logoutAll()">{{t.logoutAll}}</ui-button>
       </div>
     </div>
   </ion-content>`,
@@ -56,21 +53,20 @@ export class ProfilePage {
   auth = inject(AuthService);
   theme = inject(ThemeService);
   private router = inject(Router);
-  private toast = inject(ToastService);
   t = fa.profile;
   th = fa.theme;
   c = fa.common;
   constructor() { addIcons({ moonOutline, sunnyOutline, logOutOutline, phonePortraitOutline }); }
   logout() {
     this.auth.logout().subscribe({
-      next: () => { this.toast.success(this.t.logoutSuccess); this.router.navigateByUrl('/login'); },
-      error: (e) => { this.toast.error(extractMessage(e)); this.router.navigateByUrl('/login'); },
+      next: () => this.router.navigateByUrl('/login'),
+      error: () => this.router.navigateByUrl('/login'),
     });
   }
   logoutAll() {
     this.auth.logoutAll().subscribe({
-      next: () => { this.toast.success(this.t.logoutSuccess); this.router.navigateByUrl('/login'); },
-      error: (e) => this.toast.error(extractMessage(e)),
+      next: () => this.router.navigateByUrl('/login'),
+      error: () => this.router.navigateByUrl('/login'),
     });
   }
 }
