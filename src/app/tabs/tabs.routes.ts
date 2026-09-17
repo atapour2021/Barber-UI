@@ -1,36 +1,18 @@
 import { Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
+import { authGuard } from '../core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'tabs',
     component: TabsPage,
     children: [
-      {
-        path: 'tab1',
-        loadComponent: () =>
-          import('../tab1/tab1.page').then((m) => m.Tab1Page),
-      },
-      {
-        path: 'tab2',
-        loadComponent: () =>
-          import('../tab2/tab2.page').then((m) => m.Tab2Page),
-      },
-      {
-        path: 'tab3',
-        loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
-      },
-      {
-        path: '',
-        redirectTo: '/tabs/tab1',
-        pathMatch: 'full',
-      },
+      { path: 'home', loadComponent: () => import('../pages/home/home.page').then(m => m.HomePage) },
+      { path: 'appointments', loadComponent: () => import('../pages/appointments/appointments.page').then(m => m.AppointmentsPage), canActivate: [authGuard] },
+      { path: 'notifications', loadComponent: () => import('../pages/notifications/notifications.page').then(m => m.NotificationsPage), canActivate: [authGuard] },
+      { path: 'profile', loadComponent: () => import('../pages/profile/profile.page').then(m => m.ProfilePage), canActivate: [authGuard] },
+      { path: '', redirectTo: '/tabs/home', pathMatch: 'full' },
     ],
   },
-  {
-    path: '',
-    redirectTo: '/tabs/tab1',
-    pathMatch: 'full',
-  },
+  { path: '', redirectTo: '/tabs/home', pathMatch: 'full' },
 ];
