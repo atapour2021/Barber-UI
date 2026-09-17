@@ -19,7 +19,7 @@ export interface UiOption {
 }
 
 @Component({
-  selector: 'ui-input',
+  selector: 'app-ui-input',
   standalone: true,
   imports: [FormsModule, IonItem, IonInput, IonButton, IonIcon],
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UiInputComponent), multi: true }],
@@ -89,7 +89,7 @@ export class UiInputComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'ui-textarea',
+  selector: 'app-ui-textarea',
   standalone: true,
   imports: [FormsModule, IonItem, IonTextarea],
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UiTextareaComponent), multi: true }],
@@ -136,7 +136,7 @@ export class UiTextareaComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'ui-select',
+  selector: 'app-ui-select',
   standalone: true,
   imports: [FormsModule, IonItem, IonSelect, IonSelectOption],
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UiSelectComponent), multi: true }],
@@ -190,7 +190,7 @@ export class UiSelectComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'ui-datepicker',
+  selector: 'app-ui-datepicker',
   standalone: true,
   imports: [FormsModule, IonItem, IonInput],
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UiDatepickerComponent), multi: true }],
@@ -236,7 +236,7 @@ export class UiDatepickerComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'ui-multi-select',
+  selector: 'app-ui-multi-select',
   standalone: true,
   imports: [FormsModule, IonItem, IonSelect, IonSelectOption],
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UiMultiSelectComponent), multi: true }],
@@ -291,7 +291,7 @@ export class UiMultiSelectComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'ui-number',
+  selector: 'app-ui-number',
   standalone: true,
   imports: [FormsModule, IonItem, IonInput],
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UiNumberComponent), multi: true }],
@@ -340,7 +340,7 @@ export class UiNumberComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'ui-button',
+  selector: 'app-ui-button',
   standalone: true,
   imports: [IonButton, IonSpinner, IonIcon],
   template: `

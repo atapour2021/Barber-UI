@@ -24,7 +24,7 @@ import { UiInputComponent, UiSelectComponent, UiButtonComponent } from '../../sh
         <app-ui-input [label]="t.nameLabel" [placeholder]="t.namePlaceholder" [(ngModel)]="dto.name" />
         <app-ui-input [label]="t.familyLabel" [placeholder]="t.familyPlaceholder" [(ngModel)]="dto.family" />
       </div>
-      <app-ui-input [label]="t.nationalCodeLabel" [placeholder]="t.nationalCodePlaceholder" [(ngModel)]="dto.nationalCode" inputmode="numeric" maxlength="10" />
+      <app-ui-input [label]="t.nationalCodeLabel" [placeholder]="t.nationalCodePlaceholder" [(ngModel)]="dto.nationalCode" inputmode="numeric" [maxlength]="10" />
       <app-ui-input [label]="t.usernameLabel" placeholder="username" [(ngModel)]="dto.username" autocomplete="username" />
       <app-ui-input [label]="t.passwordLabel" [placeholder]="t.passwordPlaceholder" [(ngModel)]="dto.password" autocomplete="new-password" [togglePassword]="true" />
       <app-ui-input [label]="t.phoneLabel" [placeholder]="t.phonePlaceholder" [(ngModel)]="dto.phoneNumber" inputmode="tel" />
