@@ -31,20 +31,20 @@ import { UiInputComponent, UiTextareaComponent, UiNumberComponent, UiButtonCompo
         }
       </ion-list>
       @if (isAdmin) {
-        <ui-button icon="add-outline" (pressed)="showForm.set(true)">{{t.add}}</ui-button>
+        <app-ui-button icon="add-outline" (pressed)="showForm.set(true)">{{t.add}}</app-ui-button>
         <ion-modal [isOpen]="showForm()" (didDismiss)="showForm.set(false)">
           <ng-template>
             <ion-header><ion-toolbar><ion-title>{{t.newShop}}</ion-title><ion-button slot="end" fill="clear" (click)="showForm.set(false)">{{c.close}}</ion-button></ion-toolbar></ion-header>
             <ion-content class="ion-padding" [fullscreen]="true">
               <div class="page-wrap">
-                <ui-input [label]="t.name" [placeholder]="t.namePlaceholder" [(ngModel)]="form.name" />
-                <ui-textarea [label]="t.description" [(ngModel)]="form.description" />
-                <ui-input [label]="t.address" [(ngModel)]="form.address" />
-                <ui-number [label]="t.latitude" [(ngModel)]="form.latitude" />
-                <ui-number [label]="t.longitude" [(ngModel)]="form.longitude" />
-                <ui-input [label]="t.ownerId" [(ngModel)]="form.ownerId" />
-                <ui-input [label]="t.phone" [placeholder]="t.phonePlaceholder" [(ngModel)]="form.phoneNumber" />
-                <ui-button (pressed)="create()">{{t.create}}</ui-button>
+                <app-ui-input [label]="t.name" [placeholder]="t.namePlaceholder" [(ngModel)]="form.name" />
+                <app-ui-textarea [label]="t.description" [(ngModel)]="form.description" />
+                <app-ui-input [label]="t.address" [(ngModel)]="form.address" />
+                <app-ui-number [label]="t.latitude" [(ngModel)]="form.latitude" />
+                <app-ui-number [label]="t.longitude" [(ngModel)]="form.longitude" />
+                <app-ui-input [label]="t.ownerId" [(ngModel)]="form.ownerId" />
+                <app-ui-input [label]="t.phone" [placeholder]="t.phonePlaceholder" [(ngModel)]="form.phoneNumber" />
+                <app-ui-button (pressed)="create()">{{t.create}}</app-ui-button>
               </div>
             </ion-content>
           </ng-template>

@@ -18,31 +18,31 @@ import { UiInputComponent, UiTextareaComponent, UiDatepickerComponent, UiNumberC
     <div class="page-wrap">
       <p class="section-title">{{t.educationTitle}}</p>
       <div class="card-modern" style="display:grid;gap:10px">
-        <ui-input [label]="t.titleLabel" [placeholder]="t.titlePlaceholder" [(ngModel)]="edu.title" />
-        <ui-textarea [label]="t.description" [(ngModel)]="edu.description" />
+        <app-ui-input [label]="t.titleLabel" [placeholder]="t.titlePlaceholder" [(ngModel)]="edu.title" />
+        <app-ui-textarea [label]="t.description" [(ngModel)]="edu.description" />
         <div class="ui-field"><label>{{t.file}}</label><input type="file" (change)="eduFile=$event.target.files?.[0] ?? null" /></div>
-        <ui-button size="small" icon="add-outline" (pressed)="createEdu()">{{t.createEdu}}</ui-button>
+        <app-ui-button size="small" icon="add-outline" (pressed)="createEdu()">{{t.createEdu}}</app-ui-button>
       </div>
       <ion-list lines="none" style="background:transparent;width:100%">
         @for (e of eduList(); track e.id) { <ion-card><ion-card-content style="display:flex;justify-content:space-between;align-items:center"><ion-label>{{e.title}}</ion-label><ion-button fill="clear" color="danger" (click)="delEdu(e.id)"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button></ion-card-content></ion-card> }
       </ion-list>
       <p class="section-title">{{t.certificates}}</p>
       <div class="card-modern" style="display:grid;gap:10px">
-        <ui-input [label]="t.name" [placeholder]="t.namePlaceholder" [(ngModel)]="cert.name" />
-        <ui-input [label]="t.issuer" [(ngModel)]="cert.issuer" />
-        <ui-datepicker [label]="t.issueDate" [(ngModel)]="cert.issueDate" />
-        <ui-datepicker [label]="t.expiryDate" [(ngModel)]="cert.expiryDate" />
-        <ui-button size="small" icon="add-outline" (pressed)="createCert()">{{t.addCert}}</ui-button>
+        <app-ui-input [label]="t.name" [placeholder]="t.namePlaceholder" [(ngModel)]="cert.name" />
+        <app-ui-input [label]="t.issuer" [(ngModel)]="cert.issuer" />
+        <app-ui-datepicker [label]="t.issueDate" [(ngModel)]="cert.issueDate" />
+        <app-ui-datepicker [label]="t.expiryDate" [(ngModel)]="cert.expiryDate" />
+        <app-ui-button size="small" icon="add-outline" (pressed)="createCert()">{{t.addCert}}</app-ui-button>
       </div>
       <ion-list lines="none" style="background:transparent;width:100%">
         @for (c of certList(); track c.id) { <ion-card><ion-card-content style="display:flex;justify-content:space-between;align-items:center"><ion-label>{{c.name}} — {{c.issuer}}</ion-label><ion-button fill="clear" color="danger" (click)="delCert(c.id)"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button></ion-card-content></ion-card> }
       </ion-list>
       <p class="section-title">{{t.location}}</p>
       <div class="card-modern" style="display:grid;gap:10px">
-        <ui-textarea [label]="t.address" [(ngModel)]="loc.address" />
-        <ui-number [label]="t.latitude" [(ngModel)]="loc.latitude" />
-        <ui-number [label]="t.longitude" [(ngModel)]="loc.longitude" />
-        <ui-button size="small" icon="save-outline" (pressed)="upsertLoc()">{{locId ? t.updateLoc : t.createLoc}}</ui-button>
+        <app-ui-textarea [label]="t.address" [(ngModel)]="loc.address" />
+        <app-ui-number [label]="t.latitude" [(ngModel)]="loc.latitude" />
+        <app-ui-number [label]="t.longitude" [(ngModel)]="loc.longitude" />
+        <app-ui-button size="small" icon="save-outline" (pressed)="upsertLoc()">{{locId ? t.updateLoc : t.createLoc}}</app-ui-button>
       </div>
     </div>
   </ion-content>`,

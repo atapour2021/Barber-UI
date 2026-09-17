@@ -30,18 +30,18 @@ import { UiInputComponent, UiTextareaComponent, UiSelectComponent, UiButtonCompo
           </ion-card>
         }
       </ion-list>
-      <ui-button icon="add-outline" (pressed)="open()">{{t.add}}</ui-button>
+      <app-ui-button icon="add-outline" (pressed)="open()">{{t.add}}</app-ui-button>
       <ion-modal [isOpen]="show()" (didDismiss)="show.set(false)">
         <ng-template>
           <ion-header><ion-toolbar><ion-title>{{editId ? t.editTitle : t.newTitle}}</ion-title><ion-button slot="end" fill="clear" (click)="show.set(false)">{{c.close}}</ion-button></ion-toolbar></ion-header>
           <ion-content class="ion-padding" [fullscreen]="true">
             <div class="page-wrap">
-              <ui-input [label]="t.fullName" [placeholder]="t.fullNamePlaceholder" [(ngModel)]="form.fullName" />
-              <ui-textarea [label]="t.bio" [placeholder]="t.bioPlaceholder" [(ngModel)]="form.bio" />
-              <ui-input [label]="t.barbershopId" [(ngModel)]="form.barbershopId" />
-              <ui-select [label]="t.status" [(ngModel)]="form.status" [options]="statusOpts" />
+              <app-ui-input [label]="t.fullName" [placeholder]="t.fullNamePlaceholder" [(ngModel)]="form.fullName" />
+              <app-ui-textarea [label]="t.bio" [placeholder]="t.bioPlaceholder" [(ngModel)]="form.bio" />
+              <app-ui-input [label]="t.barbershopId" [(ngModel)]="form.barbershopId" />
+              <app-ui-select [label]="t.status" [(ngModel)]="form.status" [options]="statusOpts" />
               <ion-item><ion-toggle [(ngModel)]="form.isAvailable">{{t.available}}</ion-toggle></ion-item>
-              <ui-button icon="create-outline" (pressed)="save()">{{editId ? c.update : c.create}}</ui-button>
+              <app-ui-button icon="create-outline" (pressed)="save()">{{editId ? c.update : c.create}}</app-ui-button>
             </div>
           </ion-content>
         </ng-template>

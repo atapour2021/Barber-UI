@@ -5,6 +5,7 @@ import { IonSpinner, IonIcon, IonItem, IonCheckbox } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { eyeOutline, eyeOffOutline, personOutline, lockClosedOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 import { fa } from '../../core/i18n/fa';
 import { extractMessage } from '../../core/utils/error';
 import { environment } from '../../../environments/environment';
@@ -20,16 +21,16 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
         <h2>{{t.title}}</h2>
         <p>{{t.subtitle}}</p>
       </div>
-      <ui-input [label]="t.usernameLabel" icon="person-outline" [placeholder]="t.usernamePlaceholder" [(ngModel)]="username" autocomplete="username" inputmode="text" />
+      <app-ui-input [label]="t.usernameLabel" icon="person-outline" [placeholder]="t.usernamePlaceholder" [(ngModel)]="username" autocomplete="username" inputmode="text" />
       <div class="field">
-        <ui-input [label]="t.passwordLabel" icon="lock-closed-outline" [placeholder]="t.passwordPlaceholder" [(ngModel)]="password" autocomplete="current-password" [togglePassword]="true" />
+        <app-ui-input [label]="t.passwordLabel" icon="lock-closed-outline" [placeholder]="t.passwordPlaceholder" [(ngModel)]="password" autocomplete="current-password" [togglePassword]="true" />
         <div class="row-between">
           <label class="remember"><ion-checkbox [(ngModel)]="remember"></ion-checkbox> {{t.remember}}</label>
           <a routerLink="/forgot" class="link">{{t.forgotLink}}</a>
         </div>
       </div>
       @if (err) { <div class="alert-error">{{err}}</div> }
-      <ui-button [loading]="loading" [disabled]="loading" (pressed)="login()">{{t.submit}}</ui-button>
+      <app-ui-button [loading]="loading" [disabled]="loading" (pressed)="login()">{{t.submit}}</app-ui-button>
       <p class="muted-center">{{t.noAccount}} <a routerLink="/register" class="link-strong">{{t.registerLink}}</a></p>
     </div>`,
   styles: [`
@@ -45,18 +46,18 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
   `],
 })
 export class LoginPage {
-  private auth = inject(AuthService); private router = inject(Router);
+  private auth = inject(AuthService); private router = inject(Router); private toast = inject(ToastService);
   t = fa.auth.login;
   username = environment.production ? '' : 'superadmin';
   password = environment.production ? '' : 'SuperAdmin123!';
   err = ''; loading = false; remember = true;
   constructor(){ addIcons({ eyeOutline, eyeOffOutline, personOutline, lockClosedOutline }); }
   login() {
-    if(!this.username || !this.password){ this.err=this.t.errorEmpty; return; }
+    if(!this.username || !this.password){ this.err=this.t.errorEmpty; this.toast.warning(this.t.errorEmpty); return; }
     this.err=''; this.loading=true;
     this.auth.login({ username: this.username.trim(), password: this.password }).subscribe({
-      next: () => { this.loading=false; this.router.navigateByUrl('/tabs/home'); },
-      error: e => { this.loading=false; this.err=extractMessage(e, this.t.errorFailed); },
+      next: () => { this.loading=false; this.toast.success(fa.common.success); this.router.navigateByUrl('/tabs/home'); },
+      error: e => { this.loading=false; const m=extractMessage(e, this.t.errorFailed); this.err=m; this.toast.error(m); },
     });
   }
 }

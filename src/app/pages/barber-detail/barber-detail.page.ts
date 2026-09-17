@@ -34,7 +34,7 @@ import { UiDatepickerComponent, UiButtonComponent } from '../../shared/ui/ui';
         </ion-list>
         <p class="section-title"><ion-icon name="time-outline"></ion-icon> {{t.availability}}</p>
         <div class="card-modern" style="display:flex;gap:8px;align-items:center">
-          <ui-datepicker [label]="t.date" [(ngModel)]="date" style="flex:1" />
+          <app-ui-datepicker [label]="t.date" [(ngModel)]="date" style="flex:1" />
           <ion-button size="small" fill="outline" (click)="loadSlots()">{{t.checkSlots}}</ion-button>
         </div>
         <ion-list lines="none" style="background:transparent;margin-top:8px;width:100%">

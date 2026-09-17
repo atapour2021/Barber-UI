@@ -18,10 +18,10 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
         <h2>{{t.title}}</h2>
         <p>{{t.subtitle}}</p>
       </div>
-      <ui-input [label]="t.tokenLabel" icon="key-outline" [placeholder]="t.tokenPlaceholder" [(ngModel)]="token" />
-      <ui-input [label]="t.passwordLabel" [placeholder]="t.passwordPlaceholder" [(ngModel)]="pwd" [togglePassword]="true" />
+      <app-ui-input [label]="t.tokenLabel" icon="key-outline" [placeholder]="t.tokenPlaceholder" [(ngModel)]="token" />
+      <app-ui-input [label]="t.passwordLabel" [placeholder]="t.passwordPlaceholder" [(ngModel)]="pwd" [togglePassword]="true" />
       @if (msg) { <div [class]="ok?'alert-ok':'alert-error'">{{msg}}</div> }
-      <ui-button [loading]="loading" [disabled]="loading || !token || !pwd" (pressed)="submit()">{{t.submit}}</ui-button>
+      <app-ui-button [loading]="loading" [disabled]="loading || !token || !pwd" (pressed)="submit()">{{t.submit}}</app-ui-button>
       <p class="hint">{{t.hint}}</p>
     </div>`,
   styles: [`

@@ -50,7 +50,7 @@ import { UiButtonComponent } from '../../shared/ui/ui';
             </ion-card-content>
           </ion-card>
         }
-        <ui-button routerLink="/barbers">{{t.manageBarbers}}</ui-button>
+        <app-ui-button routerLink="/barbers">{{t.manageBarbers}}</app-ui-button>
       }
       @if (tab === 'services') {
         @if (!loading() && !services().length) { <app-empty-state [message]="t.emptyServices" /> }
@@ -59,9 +59,9 @@ import { UiButtonComponent } from '../../shared/ui/ui';
             <ion-card-content><h3 style="margin:0 0 4px;font-weight:700">{{sv.name}}</h3><p class="muted">{{sv.description ?? ''}} — {{sv.price}} · {{sv.duration}}دقیقه</p></ion-card-content>
           </ion-card>
         }
-        <ui-button routerLink="/services">{{t.manageServices}}</ui-button>
+        <app-ui-button routerLink="/services">{{t.manageServices}}</app-ui-button>
       }
-      <ui-button color="secondary" icon="calendar-outline" routerLink="/appointments">{{t.bookAppointment}}</ui-button>
+      <app-ui-button color="secondary" icon="calendar-outline" routerLink="/appointments">{{t.bookAppointment}}</app-ui-button>
     </div>
   </ion-content>`,
 })

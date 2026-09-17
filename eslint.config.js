@@ -24,6 +24,12 @@ module.exports = tseslint.config(
     },
   },
   {
+    files: ["src/app/shared/ui/**/*.ts"],
+    rules: {
+      "@angular-eslint/component-selector": "off",
+    },
+  },
+  {
     files: ["**/*.html"],
     extends: [...angular.configs.templateRecommended],
     rules: {},

@@ -18,7 +18,7 @@ import { UiButtonComponent } from '../../shared/ui/ui';
     <div class="page-wrap">
       <div class="card-modern" style="display:flex;align-items:center;justify-content:space-between">
         <span><ion-badge>{{unread()}}</ion-badge> {{t.unread}}</span>
-        <ui-button size="small" fill="outline" icon="checkmark-done-outline" (pressed)="readAll()">{{t.markAllRead}}</ui-button>
+        <app-ui-button size="small" fill="outline" icon="checkmark-done-outline" (pressed)="readAll()">{{t.markAllRead}}</app-ui-button>
       </div>
       @if (loading()) { <div style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted">{{c.loading}}</p></div> }
       @if (!loading() && !items().length) { <app-empty-state [message]="t.noNotifications" /> }

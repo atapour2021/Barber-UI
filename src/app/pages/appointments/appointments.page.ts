@@ -19,7 +19,7 @@ import { UiInputComponent, UiTextareaComponent, UiSelectComponent, UiDatepickerC
   <ion-content [fullscreen]="true">
     <div class="page-wrap">
       <div class="card-modern">
-        <ui-select [label]="t.filterStatus" [(ngModel)]="filter" [options]="filterOpts" (ngModelChange)="load()" />
+        <app-ui-select [label]="t.filterStatus" [(ngModel)]="filter" [options]="filterOpts" (ngModelChange)="load()" />
       </div>
       @if (loading()) { <div style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted">{{c.loading}}</p></div> }
       @if (!loading() && !items().length) { <app-empty-state [message]="t.empty" /> }
@@ -33,29 +33,29 @@ import { UiInputComponent, UiTextareaComponent, UiSelectComponent, UiDatepickerC
               </div>
               @if (a.notes) { <p class="muted" style="margin:6px 0 0">{{a.notes}}</p> }
               <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-                <ui-button fill="outline" color="danger" size="small" (pressed)="cancel(a.id)">{{t.cancel}}</ui-button>
-                <ui-button fill="outline" size="small" (pressed)="setStatus(a.id,'confirmed')">{{t.confirm}}</ui-button>
-                <ui-button size="small" (pressed)="setStatus(a.id,'completed')">{{t.done}}</ui-button>
+                <app-ui-button fill="outline" color="danger" size="small" (pressed)="cancel(a.id)">{{t.cancel}}</app-ui-button>
+                <app-ui-button fill="outline" size="small" (pressed)="setStatus(a.id,'confirmed')">{{t.confirm}}</app-ui-button>
+                <app-ui-button size="small" (pressed)="setStatus(a.id,'completed')">{{t.done}}</app-ui-button>
               </div>
             </ion-card-content>
           </ion-card>
         }
       </ion-list>
-      <ui-button icon="add-outline" (pressed)="show.set(true)">{{t.book}}</ui-button>
+      <app-ui-button icon="add-outline" (pressed)="show.set(true)">{{t.book}}</app-ui-button>
       <ion-modal [isOpen]="show()" (didDismiss)="show.set(false)">
         <ng-template>
           <ion-header><ion-toolbar><ion-title>{{t.bookTitle}}</ion-title><ion-button slot="end" fill="clear" (click)="show.set(false)">{{c.close}}</ion-button></ion-toolbar></ion-header>
           <ion-content class="ion-padding" [fullscreen]="true">
             <div class="page-wrap">
-              <ui-select [label]="t.barber" [(ngModel)]="form.barberId" [options]="barberOpts" (ngModelChange)="onBarberChange()" />
-              <ui-select [label]="t.service" [(ngModel)]="form.serviceId" [options]="serviceOpts" />
-              <ui-datepicker [label]="t.date" [(ngModel)]="form.date" />
-              <ui-button fill="outline" size="small" icon="time-outline" (pressed)="loadSlots()">{{t.checkSlots}}</ui-button>
+              <app-ui-select [label]="t.barber" [(ngModel)]="form.barberId" [options]="barberOpts" (ngModelChange)="onBarberChange()" />
+              <app-ui-select [label]="t.service" [(ngModel)]="form.serviceId" [options]="serviceOpts" />
+              <app-ui-datepicker [label]="t.date" [(ngModel)]="form.date" />
+              <app-ui-button fill="outline" size="small" icon="time-outline" (pressed)="loadSlots()">{{t.checkSlots}}</app-ui-button>
               <ion-list lines="none">@for (sl of slots(); track $index) { <ion-item button (click)="pickSlot(sl)" style="--background:var(--ion-color-step-50,#fff);margin-bottom:6px;border-radius:12px"><ion-label>{{sl.startTime}} - {{sl.endTime}} · {{sl.status}}</ion-label></ion-item> }</ion-list>
-              <ui-input [label]="t.startTime" [(ngModel)]="form.startTime" />
-              <ui-input [label]="t.endTime" [(ngModel)]="form.endTime" />
-              <ui-textarea [label]="t.notes" [placeholder]="t.notesPlaceholder" [(ngModel)]="form.notes" />
-              <ui-button (pressed)="book()">{{t.create}}</ui-button>
+              <app-ui-input [label]="t.startTime" [(ngModel)]="form.startTime" />
+              <app-ui-input [label]="t.endTime" [(ngModel)]="form.endTime" />
+              <app-ui-textarea [label]="t.notes" [placeholder]="t.notesPlaceholder" [(ngModel)]="form.notes" />
+              <app-ui-button (pressed)="book()">{{t.create}}</app-ui-button>
             </div>
           </ion-content>
         </ng-template>

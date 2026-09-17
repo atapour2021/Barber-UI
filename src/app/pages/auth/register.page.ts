@@ -5,6 +5,7 @@ import { IonSpinner, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 import { fa } from '../../core/i18n/fa';
 import { extractMessage } from '../../core/utils/error';
 import { UiInputComponent, UiSelectComponent, UiButtonComponent } from '../../shared/ui/ui';
@@ -20,16 +21,16 @@ import { UiInputComponent, UiSelectComponent, UiButtonComponent } from '../../sh
         <p>{{t.subtitle}}</p>
       </div>
       <div class="grid2">
-        <ui-input [label]="t.nameLabel" [placeholder]="t.namePlaceholder" [(ngModel)]="dto.name" />
-        <ui-input [label]="t.familyLabel" [placeholder]="t.familyPlaceholder" [(ngModel)]="dto.family" />
+        <app-ui-input [label]="t.nameLabel" [placeholder]="t.namePlaceholder" [(ngModel)]="dto.name" />
+        <app-ui-input [label]="t.familyLabel" [placeholder]="t.familyPlaceholder" [(ngModel)]="dto.family" />
       </div>
-      <ui-input [label]="t.nationalCodeLabel" [placeholder]="t.nationalCodePlaceholder" [(ngModel)]="dto.nationalCode" inputmode="numeric" maxlength="10" />
-      <ui-input [label]="t.usernameLabel" placeholder="username" [(ngModel)]="dto.username" autocomplete="username" />
-      <ui-input [label]="t.passwordLabel" [placeholder]="t.passwordPlaceholder" [(ngModel)]="dto.password" autocomplete="new-password" [togglePassword]="true" />
-      <ui-input [label]="t.phoneLabel" [placeholder]="t.phonePlaceholder" [(ngModel)]="dto.phoneNumber" inputmode="tel" />
-      <ui-select [label]="t.roleLabel" [placeholder]="t.rolePlaceholder" [(ngModel)]="dto.role" [options]="roleOpts" />
+      <app-ui-input [label]="t.nationalCodeLabel" [placeholder]="t.nationalCodePlaceholder" [(ngModel)]="dto.nationalCode" inputmode="numeric" maxlength="10" />
+      <app-ui-input [label]="t.usernameLabel" placeholder="username" [(ngModel)]="dto.username" autocomplete="username" />
+      <app-ui-input [label]="t.passwordLabel" [placeholder]="t.passwordPlaceholder" [(ngModel)]="dto.password" autocomplete="new-password" [togglePassword]="true" />
+      <app-ui-input [label]="t.phoneLabel" [placeholder]="t.phonePlaceholder" [(ngModel)]="dto.phoneNumber" inputmode="tel" />
+      <app-ui-select [label]="t.roleLabel" [placeholder]="t.rolePlaceholder" [(ngModel)]="dto.role" [options]="roleOpts" />
       @if (err) { <div class="alert-error">{{err}}</div> }
-      <ui-button [loading]="loading" [disabled]="loading" (pressed)="submit()">{{t.submit}}</ui-button>
+      <app-ui-button [loading]="loading" [disabled]="loading" (pressed)="submit()">{{t.submit}}</app-ui-button>
       <p class="muted-center">{{t.hasAccount}} <a routerLink="/login" class="link-strong">{{t.loginLink}}</a></p>
     </div>`,
   styles: [`
@@ -41,7 +42,7 @@ import { UiInputComponent, UiSelectComponent, UiButtonComponent } from '../../sh
   `],
 })
 export class RegisterPage {
-  private auth = inject(AuthService); private router = inject(Router);
+  private auth = inject(AuthService); private router = inject(Router); private toast = inject(ToastService);
   t = fa.auth.register;
   dto: Record<string, unknown> = { role: 'customer', name:'', family:'', nationalCode:'', username:'', password:'', phoneNumber:'' };
   roleOpts = [{ value:'customer', label: fa.auth.register.roleCustomer },{ value:'barber', label: fa.auth.register.roleBarber },{ value:'user', label: fa.auth.register.roleUser }];
@@ -50,13 +51,14 @@ export class RegisterPage {
   submit(){
     this.err='';
     const d=this.dto as Record<string,string>;
-    if(!d['nationalCode'] || String(d['nationalCode']).length!==10){ this.err=this.t.errorNationalCode; return; }
-    if(!d['name'] || !d['family'] || !d['username'] || !d['password']){ this.err=this.t.errorRequired; return; }
-    if(String(d['password']).length<6){ this.err=this.t.errorPasswordLength; return; }
+    const warn=(m:string)=>{ this.err=m; this.toast.warning(m); };
+    if(!d['nationalCode'] || String(d['nationalCode']).length!==10){ warn(this.t.errorNationalCode); return; }
+    if(!d['name'] || !d['family'] || !d['username'] || !d['password']){ warn(this.t.errorRequired); return; }
+    if(String(d['password']).length<6){ warn(this.t.errorPasswordLength); return; }
     this.loading=true;
     this.auth.register(this.dto).subscribe({
-      next:()=>{ this.loading=false; this.router.navigateByUrl('/tabs/home'); },
-      error:e=>{ this.loading=false; this.err=extractMessage(e, this.t.errorFailed); },
+      next:()=>{ this.loading=false; this.toast.success(fa.common.success); this.router.navigateByUrl('/tabs/home'); },
+      error:e=>{ this.loading=false; const m=extractMessage(e, this.t.errorFailed); this.err=m; this.toast.error(m); },
     });
   }
 }

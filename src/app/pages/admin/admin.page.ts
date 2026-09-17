@@ -32,11 +32,11 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
             <ion-card class="stat-card"><ion-card-content><b>{{dash()!.totalBarbershops}}</b><p class="muted">{{t.totalShops}}</p></ion-card-content></ion-card>
           </div>
         }
-        <ui-button size="small" fill="outline" icon="refresh-outline" (pressed)="loadDash()">{{t.refresh}}</ui-button>
+        <app-ui-button size="small" fill="outline" icon="refresh-outline" (pressed)="loadDash()">{{t.refresh}}</app-ui-button>
       }
       @if (tab === 'users') {
         <div class="card-modern" style="margin-top:12px;display:flex;gap:8px;align-items:center">
-          <ui-input [label]="t.search" [(ngModel)]="uq.search" style="flex:1" />
+          <app-ui-input [label]="t.search" [(ngModel)]="uq.search" style="flex:1" />
           <ion-button (click)="loadUsers()"><ion-icon name="search-outline" slot="icon-only"></ion-icon></ion-button>
         </div>
         @if (!users().length) { <app-empty-state [message]="c.empty" /> }
@@ -58,12 +58,12 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
             <ion-card><ion-card-content style="display:flex;justify-content:space-between;align-items:center"><ion-label><h3 style="font-weight:700">{{a.date}} {{a.startTime}}</h3><p class="muted">{{a.status}}</p></ion-label><ion-badge>{{a.status}}</ion-badge></ion-card-content></ion-card>
           }
         </ion-list>
-        <ui-button size="small" fill="outline" (pressed)="loadAppts()">{{t.refresh}}</ui-button>
+        <app-ui-button size="small" fill="outline" (pressed)="loadAppts()">{{t.refresh}}</app-ui-button>
       }
       @if (tab === 'settings') {
         <div class="card-modern" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-          <ui-input [label]="t.key" [(ngModel)]="newKey" style="flex:1;min-width:120px" />
-          <ui-input [label]="t.value" [(ngModel)]="newVal" style="flex:1;min-width:120px" />
+          <app-ui-input [label]="t.key" [(ngModel)]="newKey" style="flex:1;min-width:120px" />
+          <app-ui-input [label]="t.value" [(ngModel)]="newVal" style="flex:1;min-width:120px" />
           <ion-button (click)="createSetting()"><ion-icon name="add-outline" slot="icon-only"></ion-icon></ion-button>
         </div>
         <ion-list lines="none" style="background:transparent;margin-top:8px;width:100%">

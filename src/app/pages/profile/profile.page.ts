@@ -43,8 +43,8 @@ import { UiButtonComponent } from '../../shared/ui/ui';
         </div>
       </div>
       <div class="section" style="display:grid;gap:10px">
-        <ui-button color="danger" icon="log-out-outline" (pressed)="logout()">{{t.logout}}</ui-button>
-        <ui-button fill="outline" color="danger" icon="phone-portrait-outline" (pressed)="logoutAll()">{{t.logoutAll}}</ui-button>
+        <app-ui-button color="danger" icon="log-out-outline" (pressed)="logout()">{{t.logout}}</app-ui-button>
+        <app-ui-button fill="outline" color="danger" icon="phone-portrait-outline" (pressed)="logoutAll()">{{t.logoutAll}}</app-ui-button>
       </div>
     </div>
   </ion-content>`,

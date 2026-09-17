@@ -32,18 +32,18 @@ import { UiInputComponent, UiTextareaComponent, UiNumberComponent, UiButtonCompo
           </ion-card>
         }
       </ion-list>
-      <ui-button icon="add-outline" (pressed)="open()">{{t.add}}</ui-button>
+      <app-ui-button icon="add-outline" (pressed)="open()">{{t.add}}</app-ui-button>
       <ion-modal [isOpen]="show()" (didDismiss)="show.set(false)">
         <ng-template>
           <ion-header><ion-toolbar><ion-title>{{editId ? t.editTitle : t.newTitle}}</ion-title><ion-button slot="end" fill="clear" (click)="show.set(false)">{{c.close}}</ion-button></ion-toolbar></ion-header>
           <ion-content class="ion-padding" [fullscreen]="true">
             <div class="page-wrap">
-              <ui-input [label]="t.name" [placeholder]="t.namePlaceholder" [(ngModel)]="form.name" />
-              <ui-textarea [label]="t.description" [(ngModel)]="form.description" />
-              <ui-number [label]="t.price" [(ngModel)]="form.price" />
-              <ui-number [label]="t.duration" [(ngModel)]="form.duration" />
-              <ui-input [label]="t.icon" [(ngModel)]="form.icon" />
-              <ui-button (pressed)="save()">{{editId ? c.update : c.create}}</ui-button>
+              <app-ui-input [label]="t.name" [placeholder]="t.namePlaceholder" [(ngModel)]="form.name" />
+              <app-ui-textarea [label]="t.description" [(ngModel)]="form.description" />
+              <app-ui-number [label]="t.price" [(ngModel)]="form.price" />
+              <app-ui-number [label]="t.duration" [(ngModel)]="form.duration" />
+              <app-ui-input [label]="t.icon" [(ngModel)]="form.icon" />
+              <app-ui-button (pressed)="save()">{{editId ? c.update : c.create}}</app-ui-button>
             </div>
           </ion-content>
         </ng-template>

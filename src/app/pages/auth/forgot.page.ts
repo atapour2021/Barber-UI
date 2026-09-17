@@ -18,7 +18,7 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
         <h2>{{t.title}}</h2>
         <p>{{t.subtitle}}</p>
       </div>
-      <ui-input [label]="t.label" [placeholder]="t.placeholder" [(ngModel)]="val" [icon]="val.includes('@') ? 'mail-outline' : 'person-outline'" />
+      <app-ui-input [label]="t.label" [placeholder]="t.placeholder" [(ngModel)]="val" [icon]="val.includes('@') ? 'mail-outline' : 'person-outline'" />
       @if (msg) { <div [class]="ok ? 'alert-ok' : 'alert-error'">{{msg}}</div> }
       @if (token) {
         <div class="token-box">
@@ -26,7 +26,7 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
           <p class="token-val">{{token}}</p>
         </div>
       }
-      <ui-button [loading]="loading" [disabled]="loading || !val" (pressed)="submit()">{{t.submit}}</ui-button>
+      <app-ui-button [loading]="loading" [disabled]="loading || !val" (pressed)="submit()">{{t.submit}}</app-ui-button>
       <div class="row-links">
         <a routerLink="/reset" class="link">{{t.hasTokenLink}}</a>
         <a routerLink="/login" class="link">{{t.backToLogin}}</a>
