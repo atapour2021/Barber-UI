@@ -5,6 +5,7 @@ import { IonInput, IonButton, IonSpinner, IonItem, IonIcon } from '@ionic/angula
 import { addIcons } from 'ionicons';
 import { mailOutline, personOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { fa } from '../../core/i18n/fa';
 
 @Component({
   selector: 'app-forgot',
@@ -13,33 +14,33 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <div class="auth-card">
       <div class="auth-head">
-        <h2>فراموشی رمز عبور</h2>
-        <p>ایمیل یا نام کاربری خود را وارد کنید تا توکن بازیابی دریافت کنید</p>
+        <h2>{{t.title}}</h2>
+        <p>{{t.subtitle}}</p>
       </div>
 
       <div class="field">
-        <label>ایمیل یا نام کاربری</label>
-        <ion-item lines="none" class="input-wrap">
+        <label>{{t.label}}</label>
+        <ion-item lines="none">
           <ion-icon [name]="val.includes('@') ? 'mail-outline' : 'person-outline'" slot="start"></ion-icon>
-          <ion-input placeholder="example@mail.com یا نام کاربری" [(ngModel)]="val"></ion-input>
+          <ion-input [placeholder]="t.placeholder" [(ngModel)]="val"></ion-input>
         </ion-item>
       </div>
 
       @if (msg) { <div [class]="ok ? 'alert-ok' : 'alert-error'">{{msg}}</div> }
       @if (token) {
         <div class="token-box">
-          <p class="token-label">توکن بازیابی (حالت توسعه):</p>
+          <p class="token-label">{{t.tokenLabel}}</p>
           <p class="token-val">{{token}}</p>
         </div>
       }
 
       <ion-button expand="block" class="primary-btn" (click)="submit()" [disabled]="loading || !val">
-        @if (loading) { <ion-spinner name="crescent"></ion-spinner> } @else { ارسال لینک بازیابی }
+        @if (loading) { <ion-spinner name="crescent"></ion-spinner> } @else { {{t.submit}} }
       </ion-button>
 
       <div class="row-links">
-        <a routerLink="/reset" class="link">توکن دارید؟ بازیابی کنید</a>
-        <a routerLink="/login" class="link">بازگشت به ورود</a>
+        <a routerLink="/reset" class="link">{{t.hasTokenLink}}</a>
+        <a routerLink="/login" class="link">{{t.backToLogin}}</a>
       </div>
     </div>`,
   styles: [`
@@ -48,10 +49,9 @@ import { AuthService } from '../../core/services/auth.service';
   .auth-head p{margin:6px 0 14px;color:var(--ion-color-medium);font-size:12px;line-height:1.6}
   .field{margin-bottom:12px}
   .field label{font-size:12px;color:var(--ion-color-medium);display:block;margin-bottom:6px}
-  .input-wrap{--background:#fff;--border-radius:14px;--padding-start:10px;border:1px solid #e5e7eb;border-radius:14px}
   .alert-error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:12px;padding:10px;font-size:12px;margin-bottom:10px}
   .alert-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:12px;padding:10px;font-size:12px;margin-bottom:10px}
-  .token-box{background:#fff;border:1px dashed #d1d5db;border-radius:12px;padding:10px;margin-bottom:10px}
+  .token-box{border:1px dashed var(--ion-color-medium);border-radius:12px;padding:10px;margin-bottom:10px}
   .token-label{margin:0 0 6px;color:var(--ion-color-medium);font-size:11px}
   .token-val{margin:0;word-break:break-all;font-family:monospace;font-size:11px;direction:ltr;text-align:left}
   .primary-btn{--border-radius:14px;height:48px;font-weight:700;margin-top:4px}
@@ -61,6 +61,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class ForgotPage {
   private auth = inject(AuthService);
+  t = fa.auth.forgot;
   val=''; msg=''; token=''; ok=false; loading=false;
   constructor(){ addIcons({ mailOutline, personOutline }); }
   submit(){
@@ -71,9 +72,9 @@ export class ForgotPage {
         this.loading=false; this.ok=true;
         const x=r as Record<string,unknown>;
         this.token=(x['reset_token'] as string) ?? '';
-        this.msg=this.token ? 'توکن بازیابی ایجاد شد (حالت توسعه)' : 'در صورت وجود حساب، توکن ارسال شد';
+        this.msg=this.token ? this.t.successWithToken : this.t.successWithoutToken;
       },
-      error:e=>{ this.loading=false; this.ok=false; this.msg=e.error?.message ?? 'ارسال ناموفق بود'; },
+      error:e=>{ this.loading=false; this.ok=false; this.msg=e.error?.message ?? this.t.errorFailed; },
     });
   }
 }

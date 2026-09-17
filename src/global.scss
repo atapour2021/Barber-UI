@@ -8,7 +8,7 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-@import '@ionic/angular/css/palettes/dark.system.css';
+@import "@ionic/angular/css/palettes/dark.class.css";
 
 html { direction: rtl; }
 html[dir="rtl"] { direction: rtl; }
@@ -16,9 +16,4 @@ html[dir="rtl"] { direction: rtl; }
 :root { --ion-font-family: 'Vazirmatn', sans-serif; }
 body { font-family: 'Vazirmatn', sans-serif; -webkit-font-smoothing: antialiased; }
 
-ion-input, ion-select, ion-textarea { --padding-start: 12px; --padding-end: 12px; text-align: right; }
 ion-label, ion-title, p, h1, h2, h3 { text-align: right; }
-
-.auth-layout {
-  --background: #f6f7f9;
-}
