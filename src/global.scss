@@ -253,3 +253,204 @@ ion-tab-bar {
   width: 100%;
   box-sizing: border-box;
 }
+app-auth-layout {
+  --bg-color: #0b0e14;
+  --input-bg: #151b26;
+  --primary-color: #ffa500;
+  --text-color: #ffffff;
+  --text-muted: #8c96a5;
+  display: block;
+  height: 100%;
+}
+app-auth-layout ion-content.login-content {
+  --background: var(--bg-color);
+  --color: var(--text-color);
+}
+app-auth-layout .login-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  padding: 24px;
+  max-width: 500px;
+  margin: 0 auto;
+  position: relative;
+}
+app-auth-layout .header-nav {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  transform: scaleX(-1);
+}
+app-auth-layout .header-nav a {
+  color: inherit;
+}
+app-auth-layout .logo-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+app-auth-layout .logo-box {
+  width: 60px;
+  height: 60px;
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
+}
+app-auth-layout .logo-box ion-icon {
+  font-size: 32px;
+  color: #000;
+  transform: rotate(-90deg);
+}
+app-auth-layout .title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--text-color);
+}
+app-auth-layout .subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+app-auth-layout .auth-form {
+  width: 100%;
+}
+app-auth-layout .input-group {
+  margin-bottom: 20px;
+}
+app-auth-layout .input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color);
+  padding-right: 4px;
+}
+app-auth-layout .custom-input {
+  --background: var(--input-bg);
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: 55px;
+  --color: var(--text-color);
+  border: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+app-auth-layout .custom-input.item-has-focus {
+  border: 1px solid var(--primary-color);
+  --background: #1a2230;
+}
+app-auth-layout .custom-input ion-input,
+app-auth-layout .custom-input ion-select {
+  --color: var(--text-color);
+  --placeholder-color: #5a6270;
+  --placeholder-opacity: 1;
+  font-size: 15px;
+}
+app-auth-layout .custom-input ion-input {
+  direction: ltr;
+  text-align: left;
+}
+app-auth-layout .submit-btn {
+  --background: var(--primary-color);
+  --background-activated: #e69500;
+  --background-hover: #ffb733;
+  --color: #000000;
+  --border-radius: 8px;
+  --box-shadow: none;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 30px;
+  height: 54px;
+  width: 100%;
+}
+app-auth-layout .forgot-password {
+  text-align: center;
+  margin-top: 20px;
+}
+app-auth-layout .forgot-password a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+app-auth-layout .footer,
+app-auth-layout .row-links {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+app-auth-layout .footer a,
+app-auth-layout .row-links a,
+app-auth-layout .link,
+app-auth-layout .link-strong {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 700;
+  margin-right: 4px;
+}
+app-auth-layout .row-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+app-auth-layout .grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+@media (max-width: 480px) {
+  app-auth-layout .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+app-auth-layout .alert-error {
+  background: #2a1215;
+  color: #ff8a8a;
+  border-color: #4a1a1f;
+}
+app-auth-layout .alert-ok {
+  background: #0f2a1a;
+  color: #7ddf9a;
+  border-color: #1a4a2a;
+}
+app-auth-layout .token-box {
+  border: 1px dashed #3a4455;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+app-auth-layout .token-label {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+app-auth-layout .token-val {
+  margin: 0;
+  word-break: break-all;
+  font-family: monospace;
+  font-size: 11px;
+  direction: ltr;
+  text-align: left;
+  color: var(--text-color);
+}
+app-auth-layout .hint {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 10px;
+}

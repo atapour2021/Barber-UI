@@ -1,13 +1,48 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { IonContent } from '@ionic/angular';
+import { Component, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { IonContent, IonIcon } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { arrowForwardOutline, cutOutline } from 'ionicons/icons';
+import { filter } from 'rxjs';
+import { fa } from '../../core/i18n/fa';
 
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
-  imports: [IonContent, RouterOutlet],
-  template: ` <ion-content fullscreen>
-    <router-outlet />
-  </ion-content>`,
+  imports: [IonContent, RouterOutlet, RouterLink, IonIcon],
+  template: `
+    <ion-content [fullscreen]="true" class="login-content">
+      <div class="login-wrapper" dir="rtl">
+        <div class="header-nav">
+          <a [routerLink]="backLink"><ion-icon name="arrow-forward-outline" class="back-icon"></ion-icon></a>
+        </div>
+        <div class="logo-section">
+          <div class="logo-box"><ion-icon name="cut-outline"></ion-icon></div>
+          <h1 class="title">{{ meta.title }}</h1>
+          <p class="subtitle">{{ meta.subtitle }}</p>
+        </div>
+        <router-outlet />
+      </div>
+    </ion-content>
+  `,
 })
-export class AuthLayoutComponent {}
+export class AuthLayoutComponent {
+  private router = inject(Router);
+  url = this.router.url;
+  constructor() {
+    addIcons({ cutOutline, arrowForwardOutline });
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((e) => {
+      this.url = (e as NavigationEnd).urlAfterRedirects;
+    });
+  }
+  get meta(): { title: string; subtitle: string } {
+    if (this.url.includes('register')) return { title: fa.auth.register.title, subtitle: fa.auth.register.subtitle };
+    if (this.url.includes('forgot')) return { title: fa.auth.forgot.title, subtitle: fa.auth.forgot.subtitle };
+    if (this.url.includes('reset')) return { title: fa.auth.reset.title, subtitle: fa.auth.reset.subtitle };
+    return { title: fa.auth.login.title, subtitle: fa.auth.login.subtitle };
+  }
+  get backLink(): string {
+    if (this.url.includes('register') || this.url.includes('forgot') || this.url.includes('reset')) return '/login';
+    return '/landing';
+  }
+}
