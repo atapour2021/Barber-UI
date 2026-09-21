@@ -13,11 +13,15 @@ export const routes: Routes = [
           import('../pages/home/home.page').then((m) => m.HomePage),
       },
       {
+        path: 'turns',
+        loadComponent: () =>
+          import('../pages/turns/turns.page').then((m) => m.TurnsPage),
+        canActivate: [authGuard],
+      },
+      {
         path: 'appointments',
         loadComponent: () =>
-          import('../pages/appointments/appointments.page').then(
-            (m) => m.AppointmentsPage,
-          ),
+          import('../pages/turns/turns.page').then((m) => m.TurnsPage),
         canActivate: [authGuard],
       },
       {

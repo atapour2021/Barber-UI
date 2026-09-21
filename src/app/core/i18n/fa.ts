@@ -222,6 +222,16 @@ export const fa = {
     updateSuccess: 'خدمت به‌روزرسانی شد',
     deleteSuccess: 'خدمت حذف شد',
   },
+  turns: {
+    title: 'نوبت‌های من',
+    subtitle: 'پیگیری نوبت‌های آینده و گذشته',
+    upcoming: 'آینده',
+    past: 'گذشته',
+    cancelled: 'لغو شده',
+    empty: 'نوبتی یافت نشد',
+    today: 'امروز',
+    tomorrow: 'فردا',
+  },
   appointments: {
     title: 'نوبت‌ها',
     filterStatus: 'فیلتر وضعیت',
