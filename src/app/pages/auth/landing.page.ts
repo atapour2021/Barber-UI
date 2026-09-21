@@ -32,7 +32,8 @@ import { fa } from '../../core/i18n/fa';
   styles: [
     `
       .landing-container {
-        --background: #0a0a0c;
+        --background: var(--ion-background-color);
+        --color: var(--ion-text-color);
       }
       .main-wrapper {
         display: flex;
@@ -56,25 +57,25 @@ import { fa } from '../../core/i18n/fa';
         margin-bottom: 20px;
       }
       .subtitle {
-        color: #ffb703;
+        color: var(--ion-color-primary);
         margin: 0;
         font-size: 14px;
       }
       h1 {
-        color: #ffffff;
+        color: var(--ion-text-color);
         font-size: 32px;
         line-height: 1.2;
         margin: 10px 0;
       }
       .description {
-        color: #a0a0a0;
+        color: var(--ion-color-medium);
         font-size: 16px;
         line-height: 1.5;
         margin-bottom: 0;
       }
       .cta-button {
-        --background: #ffb703;
-        --color: #000;
+        --background: var(--ion-color-primary);
+        --color: var(--ion-color-primary-contrast);
         --border-radius: 12px;
         font-weight: bold;
         height: 50px;

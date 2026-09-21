@@ -9,6 +9,7 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 @import "@ionic/angular/css/palettes/dark.class.css";
+@import "@ionic/angular/css/palettes/dark.system.css";
 
 html {
   direction: rtl;
@@ -107,8 +108,8 @@ ion-item {
   display: inline-block;
 }
 .card-modern {
-  background: var(--ion-color-step-50, #fff);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--ion-card-background, var(--ion-color-step-50));
+  border: 1px solid var(--ion-color-step-150);
   border-radius: var(--radius-lg);
   padding: 14px;
   box-shadow: var(--shadow-card);
@@ -179,8 +180,8 @@ ion-item {
   margin-bottom: 6px;
 }
 .auth-card ion-item {
-  --background: var(--ion-color-step-50, #fff);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  --background: var(--ion-color-step-50);
+  border: 1px solid var(--ion-color-step-150);
   border-radius: var(--radius-md);
   margin-bottom: 10px;
 }
@@ -192,7 +193,7 @@ ion-item {
 }
 ion-tab-bar {
   --background: var(--ion-background-color);
-  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  border-top: 1px solid var(--ion-color-step-150);
 }
 .empty-state {
   text-align: center;
@@ -218,8 +219,8 @@ ion-tab-bar {
   color: var(--ion-color-medium);
 }
 .ui-field ion-item {
-  --background: var(--ion-color-step-50, #fff);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  --background: var(--ion-color-step-50);
+  border: 1px solid var(--ion-color-step-150);
   border-radius: var(--radius-md);
 }
 .grid2 {
@@ -234,9 +235,9 @@ ion-tab-bar {
   }
 }
 .alert-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  background: rgba(var(--ion-color-danger-rgb), 0.08);
+  border: 1px solid rgba(var(--ion-color-danger-rgb), 0.2);
+  color: var(--ion-color-danger);
   border-radius: 12px;
   padding: 10px;
   font-size: 12px;
@@ -244,9 +245,9 @@ ion-tab-bar {
   box-sizing: border-box;
 }
 .alert-ok {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #15803d;
+  background: rgba(var(--ion-color-success-rgb), 0.08);
+  border: 1px solid rgba(var(--ion-color-success-rgb), 0.2);
+  color: var(--ion-color-success);
   border-radius: 12px;
   padding: 10px;
   font-size: 12px;
@@ -254,17 +255,12 @@ ion-tab-bar {
   box-sizing: border-box;
 }
 app-auth-layout {
-  --bg-color: #0b0e14;
-  --input-bg: #151b26;
-  --primary-color: #ffa500;
-  --text-color: #ffffff;
-  --text-muted: #8c96a5;
   display: block;
   height: 100%;
 }
 app-auth-layout ion-content.login-content {
-  --background: var(--bg-color);
-  --color: var(--text-color);
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
 }
 app-auth-layout .login-wrapper {
   display: flex;
@@ -291,7 +287,7 @@ app-auth-layout .auth-header .back-btn {
   top: 50%;
   transform: translateY(-50%) scaleX(-1);
   font-size: 24px;
-  color: #fff;
+  color: var(--ion-text-color);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -313,28 +309,28 @@ app-auth-layout .auth-titles {
 app-auth-layout .logo-box {
   width: 60px;
   height: 60px;
-  background-color: var(--primary-color);
+  background: var(--ion-color-primary);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px auto;
-  box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(var(--ion-color-primary-rgb), 0.3);
 }
 app-auth-layout .logo-box ion-icon {
   font-size: 32px;
-  color: #000;
+  color: var(--ion-color-primary-contrast);
   transform: rotate(-90deg);
 }
 app-auth-layout .title {
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 8px 0;
-  color: var(--text-color);
+  color: var(--ion-text-color);
 }
 app-auth-layout .subtitle {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--ion-color-medium);
   margin: 0;
   line-height: 1.6;
 }
@@ -349,27 +345,27 @@ app-auth-layout .input-group label {
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-color);
+  color: var(--ion-text-color);
   padding-right: 4px;
 }
 app-auth-layout .custom-input {
-  --background: var(--input-bg);
+  --background: var(--ion-color-step-50);
   --border-radius: 8px;
   --padding-start: 16px;
   --padding-end: 16px;
   --min-height: 55px;
-  --color: var(--text-color);
-  border: 1px solid transparent;
-  transition: border-color 0.3s ease;
+  --color: var(--ion-text-color);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
 }
 app-auth-layout .custom-input.item-has-focus {
-  border: 1px solid var(--primary-color);
-  --background: #1a2230;
+  border-color: var(--ion-color-primary);
 }
 app-auth-layout .custom-input ion-input,
 app-auth-layout .custom-input ion-select {
-  --color: var(--text-color);
-  --placeholder-color: #5a6270;
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
   --placeholder-opacity: 1;
   font-size: 15px;
 }
@@ -378,10 +374,10 @@ app-auth-layout .custom-input ion-input {
   text-align: left;
 }
 app-auth-layout .submit-btn {
-  --background: var(--primary-color);
-  --background-activated: #e69500;
-  --background-hover: #ffb733;
-  --color: #000000;
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --background-hover: var(--ion-color-primary-tint);
+  --color: var(--ion-color-primary-contrast);
   --border-radius: 8px;
   --box-shadow: none;
   --padding-top: 14px;
@@ -397,7 +393,7 @@ app-auth-layout .forgot-password {
   margin-top: 20px;
 }
 app-auth-layout .forgot-password a {
-  color: var(--primary-color);
+  color: var(--ion-color-primary);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
@@ -407,13 +403,13 @@ app-auth-layout .row-links {
   margin-top: 24px;
   text-align: center;
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--ion-color-medium);
 }
 app-auth-layout .footer a,
 app-auth-layout .row-links a,
 app-auth-layout .link,
 app-auth-layout .link-strong {
-  color: var(--primary-color);
+  color: var(--ion-color-primary);
   text-decoration: none;
   font-weight: 700;
   margin-right: 4px;
@@ -434,18 +430,8 @@ app-auth-layout .grid2 {
     grid-template-columns: 1fr;
   }
 }
-app-auth-layout .alert-error {
-  background: #2a1215;
-  color: #ff8a8a;
-  border-color: #4a1a1f;
-}
-app-auth-layout .alert-ok {
-  background: #0f2a1a;
-  color: #7ddf9a;
-  border-color: #1a4a2a;
-}
 app-auth-layout .token-box {
-  border: 1px dashed #3a4455;
+  border: 1px dashed var(--ion-color-step-200);
   border-radius: 12px;
   padding: 10px;
   margin-bottom: 10px;
@@ -454,7 +440,7 @@ app-auth-layout .token-box {
 }
 app-auth-layout .token-label {
   margin: 0 0 6px;
-  color: var(--text-muted);
+  color: var(--ion-color-medium);
   font-size: 11px;
 }
 app-auth-layout .token-val {
@@ -464,11 +450,11 @@ app-auth-layout .token-val {
   font-size: 11px;
   direction: ltr;
   text-align: left;
-  color: var(--text-color);
+  color: var(--ion-text-color);
 }
 app-auth-layout .hint {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--ion-color-medium);
   font-size: 11px;
   margin-top: 10px;
 }
