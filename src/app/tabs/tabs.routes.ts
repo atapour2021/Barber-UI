@@ -36,9 +36,7 @@ export const routes: Routes = [
       {
         path: 'booking',
         loadComponent: () =>
-          import('../pages/appointments/appointments.page').then(
-            (m) => m.AppointmentsPage,
-          ),
+          import('../pages/booking/booking.page').then((m) => m.BookingPage),
         canActivate: [authGuard],
       },
       {
