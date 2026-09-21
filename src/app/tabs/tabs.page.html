@@ -1,6 +1,6 @@
 <div class="app-topbar" dir="rtl">
   <div class="app-topbar-inner">
-    <button class="topbar-icon" type="button" aria-label="menu">
+    <button class="topbar-icon" type="button" aria-label="menu" (click)="toggleSidebar()">
       <ion-icon name="menu-outline"></ion-icon>
     </button>
     <div class="topbar-brand">
@@ -21,6 +21,8 @@
     </div>
   </div>
 </div>
+
+<app-sidebar [open]="sidebarOpen()" [activeView]="activeView()" (closed)="closeSidebar()" (viewChange)="setView($event)" (logoutClicked)="logout()" />
 
 <ion-tabs>
   <ion-tab-bar slot="bottom" class="neo-tabbar">

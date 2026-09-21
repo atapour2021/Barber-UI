@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, HostListener, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { IonFooter, IonIcon, IonLabel, IonTabBar, IonTabButton } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -16,6 +16,8 @@ import {
 import { fa } from '../../core/i18n/fa';
 import { ThemeService } from '../../core/services/theme.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sidebar';
 
 @Component({
   selector: 'app-app-layout',
@@ -29,12 +31,13 @@ import { ApiService } from '../../core/services/api.service';
     IonTabButton,
     IonIcon,
     IonLabel,
+    AppSidebarComponent,
   ],
   template: `
     <div class="app-shell">
       <div class="app-topbar" dir="rtl">
         <div class="app-topbar-inner">
-          <button class="topbar-icon" type="button" aria-label="menu">
+          <button class="topbar-icon" type="button" aria-label="menu"  (click)="toggleSidebar()">
             <ion-icon name="menu-outline"></ion-icon>
           </button>
           <div class="topbar-brand">
@@ -52,6 +55,7 @@ import { ApiService } from '../../core/services/api.service';
           </div>
         </div>
       </div>
+      <app-sidebar [open]="sidebarOpen()" [activeView]="activeView()" (closed)="closeSidebar()" (viewChange)="setView($event)" (logoutClicked)="logout()" />
       <div class="app-outlet"><router-outlet /></div>
       <ion-footer class="app-footer">
         <ion-tab-bar class="neo-tabbar">
@@ -90,7 +94,14 @@ export class AppLayoutComponent {
   t = fa.nav;
   theme = inject(ThemeService);
   private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
   unread = 0;
+  sidebarOpen = signal(false);
+  activeView = signal<'admin' | 'barber' | 'customer'>(
+    this.auth.isAdmin() ? 'admin' : this.auth.isBarber() ? 'barber' : 'customer'
+  );
+
   constructor() {
     addIcons({ homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, notificationsOutline, sunnyOutline, moonOutline, menuOutline });
     this.api.notifications.unread().subscribe({
@@ -99,6 +110,24 @@ export class AppLayoutComponent {
         this.unread = n;
       },
       error: () => {},
+    });
+  }
+
+  toggleSidebar() { this.sidebarOpen.update(v => !v); }
+  closeSidebar() { this.sidebarOpen.set(false); }
+  setView(v: 'admin' | 'barber' | 'customer') { this.activeView.set(v); }
+
+  @HostListener('document:keydown.escape')
+  onEsc() { this.closeSidebar(); }
+
+  logout() {
+    this.closeSidebar();
+    this.auth.logout().subscribe({
+      next: () => this.router.navigateByUrl('/login'),
+      error: () => {
+        this.auth.clear();
+        this.router.navigateByUrl('/login');
+      },
     });
   }
 }
