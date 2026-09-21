@@ -45,7 +45,7 @@ import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sid
             <span class="brand-text"><b>نیوباربر</b><small>پنل مشتری</small></span>
           </div>
           <div class="topbar-actions">
-            <button class="topbar-icon" type="button" (click)="theme.toggle()">
+            <button class="topbar-icon" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.isDark() ? 'light' : 'dark'">
               <ion-icon [name]="theme.isDark() ? 'sunny-outline' : 'moon-outline'"></ion-icon>
             </button>
             <a class="topbar-icon topbar-bell" routerLink="/tabs/notifications">
@@ -84,9 +84,11 @@ import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sid
     </div>
   `,
   styles: [`
-    .app-shell { display:flex; flex-direction:column; height:100%; background:var(--app-bg); }
-    .app-outlet { flex:1; min-height:0; display:flex; flex-direction:column; background:var(--app-bg); }
-    .app-outlet router-outlet + * { flex:1; display:flex; flex-direction:column; }
+    .app-shell { display:flex; flex-direction:column; height:100%; min-height:100dvh; background:var(--app-bg); }
+    .app-outlet { flex:1; min-height:0; display:flex; flex-direction:column; background:var(--app-bg); overflow-y:auto; overflow-x:hidden; padding-bottom: calc(64px + env(safe-area-inset-bottom) + 12px); box-sizing:border-box; }
+    .app-outlet router-outlet + * { flex:1; display:flex; flex-direction:column; min-height:0; }
+    .app-outlet :where(ion-content) { --padding-bottom: calc(64px + env(safe-area-inset-bottom) + 16px); }
+    .app-footer { position:sticky; bottom:0; z-index:10; }
     .app-footer ion-tab-bar { height:64px; padding-bottom:env(safe-area-inset-bottom); }
   `],
 })

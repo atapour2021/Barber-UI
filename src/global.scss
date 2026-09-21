@@ -54,6 +54,42 @@ html[dir="rtl"] {
   --ion-color-step-150: #1e2a44;
   --ion-color-step-200: #243150;
 }
+html:not(.ion-palette-dark) {
+  --app-bg: #f8fafc;
+  --app-bg-2: #f1f5f9;
+  --card-bg: #ffffff;
+  --card-bg-2: #f8fafc;
+  --card-border: #e2e8f0;
+  --card-border-2: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent-contrast: #ffffff;
+  --ion-background-color: #f8fafc;
+  --ion-text-color: #0f172a;
+  --ion-card-background: #ffffff;
+  --ion-color-step-50: #f1f5f9;
+  --ion-color-step-150: #e2e8f0;
+  --ion-color-step-200: #cbd5e1;
+}
+html:not(.ion-palette-dark) body {
+  background: var(--app-bg);
+}
+html:not(.ion-palette-dark) .app-topbar {
+  background: #ffffff;
+  border-bottom-color: #e2e8f0;
+}
+html:not(.ion-palette-dark) .topbar-icon {
+  color: #475569;
+}
+html:not(.ion-palette-dark) .bell-dot {
+  border-color: #ffffff;
+}
+html:not(.ion-palette-dark) .neo-tabbar,
+html:not(.ion-palette-dark) ion-tab-bar {
+  --background: #ffffff;
+  border-top-color: #e2e8f0;
+}
 html,
 body,
 ion-app {
@@ -272,8 +308,8 @@ ion-spinner {
   text-align: center;
 }
 .app-topbar {
-  position: sticky;
-  top: 0;
+  position: relative;
+  flex-shrink: 0;
   z-index: 20;
   background: #090f1e;
   border-bottom: 1px solid #1c2a44;
