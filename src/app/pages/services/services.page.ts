@@ -1,74 +1,140 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonList, IonLabel, IonButton, IonModal, IonSpinner, IonCard, IonCardContent, IonIcon } from '@ionic/angular';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, trashOutline, createOutline } from 'ionicons/icons';
+import { chevronBackOutline, cutOutline, personOutline, ribbonOutline, sparklesOutline, timeOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Service } from '../../core/models';
-import { fa } from '../../core/i18n/fa';
-import { EmptyStateComponent } from '../../shared/components/empty-state.component';
-import { UiInputComponent, UiTextareaComponent, UiNumberComponent, UiButtonComponent } from '../../shared/ui/ui';
+
+const DEMO: Service[] = [
+  { id: '1', name: 'کوتاهی و استایل', description: null, price: 350000, duration: 45, icon: 'cut', barberId: '' },
+  { id: '2', name: 'اصلاح و فرم ریش', description: null, price: 280000, duration: 20, icon: 'sparkles', barberId: '' },
+  { id: '3', name: 'پکیج کامل داماد', description: null, price: 1850000, duration: 120, icon: 'ribbon', barberId: '' },
+  { id: '4', name: 'پاکسازی پوست', description: null, price: 480000, duration: 40, icon: 'person', barberId: '' },
+];
 
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [FormsModule, IonContent, IonList, IonLabel, IonButton, IonModal, IonSpinner, IonCard, IonCardContent, IonIcon, EmptyStateComponent, UiInputComponent, UiTextareaComponent, UiNumberComponent, UiButtonComponent],
+  imports: [RouterLink, IonContent, IonIcon, IonSpinner],
   template: `
     <ion-content [fullscreen]="true">
-      <div class="page-wrap" dir="rtl">
-        <div class="section-head"><h3>{{ t.title }}</h3><span class="muted">{{ items().length }} مورد</span></div>
+      <div class="page-wrap svc-wrap" dir="rtl">
+        <div class="svc-header">
+          <h1>خدمات</h1>
+          <p>خدمت مورد نظر را انتخاب کنید</p>
+        </div>
+
         @if (loading()) {
-          <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted">{{ c.loading }}</p></div>
-        }
-        @if (!loading() && !items().length) {
-          <app-empty-state [message]="t.empty" />
-        }
-        <ion-list lines="none" style="background:transparent;width:100%">
-          @for (s of items(); track s.id) {
-            <ion-card style="margin-bottom:10px">
-              <ion-card-content style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-                <ion-label style="min-width:0"><h3 style="font-weight:800;color:var(--text-primary);font-size:13px">{{ s.name }}</h3><p class="muted" style="margin:2px 0 0">{{ s.description ?? '' }} — {{ s.price }} · {{ s.duration }}دقیقه</p></ion-label>
-                <span style="display:flex;gap:4px;flex-shrink:0">
-                  <ion-button fill="clear" size="small" (click)="edit(s)"><ion-icon name="create-outline" slot="icon-only"></ion-icon></ion-button>
-                  <ion-button fill="clear" size="small" color="danger" (click)="remove(s.id)"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button>
-                </span>
-              </ion-card-content>
-            </ion-card>
+          <div class="dark-card" style="text-align:center;padding:24px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">در حال بارگذاری...</p></div>
+        } @else if (error()) {
+          <div class="alert-error" style="text-align:center">{{ error() }}</div>
+        } @else {
+          @if (!displayItems().length) {
+            <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">خدمتی یافت نشد</p></div>
+          } @else {
+            <div class="svc-grid">
+              @for (s of displayItems(); track s.id) {
+                <a class="svc-card" [routerLink]="['/tabs/booking']" [queryParams]="{ serviceId: s.id }">
+                  <span class="svc-go" aria-hidden="true"><ion-icon name="chevron-back-outline"></ion-icon></span>
+                  <span class="svc-price"><b>{{ formatPrice(s.price) }}</b><small>تومان</small></span>
+                  <span class="svc-body">
+                    <span class="svc-text">
+                      <b>{{ s.name }}</b>
+                      <small><ion-icon name="time-outline"></ion-icon> {{ s.duration }} دقیقه</small>
+                    </span>
+                    <span class="svc-icon"><ion-icon [name]="iconFor(s)"></ion-icon></span>
+                  </span>
+                </a>
+              }
+            </div>
           }
-        </ion-list>
-        <app-ui-button icon="add-outline" (pressed)="open()">{{ t.add }}</app-ui-button>
-        <ion-modal [isOpen]="show()" (didDismiss)="show.set(false)">
-          <ng-template>
-            <ion-content class="ion-padding" [fullscreen]="true">
-              <div class="page-wrap" dir="rtl">
-                <div class="section-head"><h3>{{ editId ? t.editTitle : t.newTitle }}</h3><ion-button fill="clear" size="small" (click)="show.set(false)">{{ c.close }}</ion-button></div>
-                <app-ui-input [label]="t.name" [placeholder]="t.namePlaceholder" [(ngModel)]="form.name" />
-                <app-ui-textarea [label]="t.description" [(ngModel)]="form.description" />
-                <app-ui-number [label]="t.price" [(ngModel)]="form.price" />
-                <app-ui-number [label]="t.duration" [(ngModel)]="form.duration" />
-                <app-ui-input [label]="t.icon" [(ngModel)]="form.icon" />
-                <app-ui-button (pressed)="save()">{{ editId ? c.update : c.create }}</app-ui-button>
-              </div>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
+        }
       </div>
-    </ion-content>`,
+    </ion-content>
+  `,
+  styles: [`
+    .svc-wrap { gap: 16px; padding-top: 12px; }
+    .svc-header { text-align:right; }
+    .svc-header h1 { margin:0; font-size:24px; font-weight:800; color:var(--text-primary); letter-spacing:0; }
+    .svc-header p { margin:6px 0 0; font-size:12px; color:var(--text-secondary); }
+    .svc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; }
+    @media (max-width: 640px) { .svc-grid { grid-template-columns:1fr; } }
+    .svc-card {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background: var(--card-bg);
+      border:1px solid var(--card-border);
+      border-radius:12px;
+      padding:14px 12px;
+      text-decoration:none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .svc-card:hover { border-color:var(--card-border-2); background: var(--card-bg-2); }
+    .svc-card:active { transform: scale(0.99); }
+    .svc-body { display:flex; align-items:center; gap:10px; flex:1; min-width:0; justify-content:flex-end; }
+    .svc-icon {
+      width:44px; height:44px; border-radius:10px;
+      display:inline-flex; align-items:center; justify-content:center;
+      background: rgba(245,158,11,0.14);
+      border:1px solid rgba(245,158,11,0.18);
+      color: var(--accent);
+      font-size:19px;
+      flex-shrink:0;
+    }
+    .svc-text { display:flex; flex-direction:column; gap:4px; text-align:right; min-width:0; align-items:flex-end; }
+    .svc-text b { font-size:13px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+    .svc-text small { font-size:11px; color:var(--text-secondary); display:inline-flex; align-items:center; gap:4px; }
+    .svc-text small ion-icon { font-size:12px; color:var(--text-muted); }
+    .svc-price { display:flex; flex-direction:column; align-items:center; gap:1px; min-width:64px; flex-shrink:0; text-align:center; }
+    .svc-price b { font-size:12px; font-weight:800; color:var(--text-primary); direction:ltr; white-space:nowrap; }
+    .svc-price small { font-size:10px; color:var(--text-muted); }
+    .svc-go {
+      width:32px; height:32px; border-radius:8px;
+      background: var(--accent);
+      color: var(--accent-contrast);
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:15px; flex-shrink:0;
+    }
+  `],
 })
 export class ServicesPage implements OnInit {
   private api = inject(ApiService);
-  t = fa.services;
-  c = fa.common;
   items = signal<Service[]>([]);
   loading = signal(false);
-  show = signal(false);
-  editId = '';
-  form: Record<string, unknown> = {};
-  constructor() { addIcons({ addOutline, trashOutline, createOutline }); }
+  error = signal('');
+  displayItems = computed(() => (this.items().length ? this.items() : DEMO));
+
+  constructor() {
+    addIcons({ chevronBackOutline, cutOutline, sparklesOutline, personOutline, ribbonOutline, timeOutline });
+  }
+
   ngOnInit() { this.load(); }
-  load() { this.loading.set(true); this.api.services.list().subscribe({ next: (v) => { this.items.set(v as Service[]); this.loading.set(false); }, error: () => this.loading.set(false) }); }
-  open() { this.editId = ''; this.form = {}; this.show.set(true); }
-  edit(s: Service) { this.editId = s.id; this.form = { name: s.name, description: s.description, price: s.price, duration: s.duration, icon: s.icon }; this.show.set(true); }
-  save() { const obs = this.editId ? this.api.services.update(this.editId, this.form) : this.api.services.create(this.form); obs.subscribe({ next: () => { this.show.set(false); this.load(); } }); }
-  remove(id: string) { this.api.services.remove(id).subscribe({ next: () => this.load() }); }
+
+  load() {
+    this.loading.set(true);
+    this.error.set('');
+    this.api.services.list().subscribe({
+      next: (v) => {
+        const arr = Array.isArray(v) ? v : ((v as { data: Service[] }).data ?? []);
+        this.items.set((arr as Service[]) ?? []);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.items.set([]);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  formatPrice(n: number) {
+    try { return new Intl.NumberFormat('fa-IR').format(n); } catch { return String(n); }
+  }
+
+  iconFor(s: Service) {
+    const k = (s.icon ?? s.name ?? '').toLowerCase();
+    if (k.includes('spark')) return 'sparkles-outline';
+    if (k.includes('ribbon') || k.includes('award') || k.includes('داماد')) return 'ribbon-outline';
+    if (k.includes('person') || k.includes('پاکساز') || k.includes('پوست')) return 'person-outline';
+    return 'cut-outline';
+  }
 }

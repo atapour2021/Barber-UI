@@ -23,9 +23,9 @@ import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sid
   selector: 'app-app-layout',
   standalone: true,
   imports: [
-    RouterOutlet,
     RouterLink,
     RouterLinkActive,
+    RouterOutlet,
     IonFooter,
     IonTabBar,
     IonTabButton,
@@ -63,11 +63,11 @@ import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sid
             <ion-icon name="home-outline"></ion-icon>
             <ion-label>{{ t.home }}</ion-label>
           </ion-tab-button>
-          <ion-tab-button routerLink="/services" routerLinkActive="tab-selected">
+          <ion-tab-button routerLink="/tabs/services" routerLinkActive="tab-selected">
             <ion-icon name="cut-outline"></ion-icon>
             <ion-label>{{ t.services }}</ion-label>
           </ion-tab-button>
-          <ion-tab-button routerLink="/appointments" routerLinkActive="tab-selected">
+          <ion-tab-button routerLink="/tabs/booking" routerLinkActive="tab-selected">
             <ion-icon name="calendar-outline"></ion-icon>
             <ion-label>{{ t.booking }}</ion-label>
           </ion-tab-button>
