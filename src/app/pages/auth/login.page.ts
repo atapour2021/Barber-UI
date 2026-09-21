@@ -38,6 +38,20 @@ import { extractMessage } from '../../core/utils/error';
       <span>{{ t.noAccount }} </span><a routerLink="/register">{{ t.registerLink }}</a>
     </div>
   `,
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+      }
+      .footer {
+        margin-top: auto;
+        padding-top: 24px;
+      }
+    `,
+  ],
 })
 export class LoginPage {
   loginForm: FormGroup;

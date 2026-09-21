@@ -13,11 +13,11 @@ import { fa } from '../../core/i18n/fa';
   template: `
     <ion-content [fullscreen]="true" class="login-content">
       <div class="login-wrapper" dir="rtl">
-        <div class="header-nav">
-          <a [routerLink]="backLink"><ion-icon name="arrow-forward-outline" class="back-icon"></ion-icon></a>
-        </div>
-        <div class="logo-section">
+        <div class="auth-header">
+          <a [routerLink]="backLink" class="back-btn"><ion-icon name="arrow-forward-outline" class="back-icon"></ion-icon></a>
           <div class="logo-box"><ion-icon name="cut-outline"></ion-icon></div>
+        </div>
+        <div class="auth-titles">
           <h1 class="title">{{ meta.title }}</h1>
           <p class="subtitle">{{ meta.subtitle }}</p>
         </div>

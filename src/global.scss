@@ -269,28 +269,46 @@ app-auth-layout ion-content.login-content {
 app-auth-layout .login-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   min-height: 100%;
+  min-height: 100dvh;
   padding: 24px;
   max-width: 500px;
   margin: 0 auto;
   position: relative;
 }
-app-auth-layout .header-nav {
+app-auth-layout .auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 20px;
+}
+app-auth-layout .auth-header .back-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleX(-1);
   font-size: 24px;
-  color: white;
-  cursor: pointer;
-  transform: scaleX(-1);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
 }
-app-auth-layout .header-nav a {
+app-auth-layout .auth-header .back-btn a,
+app-auth-layout .auth-header a {
   color: inherit;
+  display: inline-flex;
 }
-app-auth-layout .logo-section {
+app-auth-layout .auth-header .logo-box {
+  margin: 0;
+}
+app-auth-layout .auth-titles {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 app-auth-layout .logo-box {
   width: 60px;
