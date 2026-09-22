@@ -108,6 +108,11 @@ export const routes: Routes = [
           import('./pages/admin/admin.page').then((m) => m.AdminPage),
         canActivate: [adminGuard],
       },
+      {
+        path: 'training',
+        loadComponent: () =>
+          import('./pages/training/training.page').then((m) => m.TrainingPage),
+      },
     ],
   },
   {

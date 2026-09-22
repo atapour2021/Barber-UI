@@ -63,6 +63,11 @@ export const routes: Routes = [
           ),
         canActivate: [authGuard],
       },
+      {
+        path: 'training',
+        loadComponent: () =>
+          import('../pages/training/training.page').then((m) => m.TrainingPage),
+      },
       { path: '', redirectTo: '/tabs/home', pathMatch: 'full' },
     ],
   },

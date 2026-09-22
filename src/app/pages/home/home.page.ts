@@ -195,8 +195,7 @@ export class HomePage implements OnInit {
     addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline });
   }
   eduLink() {
-    const b = this.barbers()[0];
-    return b ? `/barbers/${b.id}` : '/barbers';
+    return '/training';
   }
   avatar(b: Barber) {
     return b.profileImage ?? `https://i.pravatar.cc/100?u=${b.id}`;
