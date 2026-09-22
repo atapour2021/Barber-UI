@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap, map } from 'rxjs';
+import { tap, map, catchError, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, User } from '../models';
 
@@ -54,12 +54,23 @@ export class AuthService {
   }
   logout() {
     const rt = localStorage.getItem(RT);
-    const req = rt
-      ? this.http.post(`${this.base}/logout`, { refresh_token: rt })
-      : this.http.post(`${this.base}/logout`, { refresh_token: 'x' });
-    return req.pipe(
+    if (!rt) {
+      this.clear();
+      return this.http
+        .post(`${this.base}/logout`, { refresh_token: '' })
+        .pipe(
+          catchError(() => of(void 0)),
+          tap(() => this.clear()),
+          map(() => void 0),
+        );
+    }
+    return this.http.post(`${this.base}/logout`, { refresh_token: rt }).pipe(
       tap(() => this.clear()),
       map(() => void 0),
+      catchError((e) => {
+        this.clear();
+        return throwError(() => e);
+      }),
     );
   }
   logoutAll() {

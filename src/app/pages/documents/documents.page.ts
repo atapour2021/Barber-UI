@@ -1,8 +1,11 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
-import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
+import { IonContent, IonIcon, IonSpinner, IonInput, IonItem, IonButton } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { trophyOutline, schoolOutline, shieldCheckmarkOutline } from 'ionicons/icons';
+import { trophyOutline, schoolOutline, shieldCheckmarkOutline, closeOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
+import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Certificate } from '../../core/models';
 
 type DocItem = { id: string; title: string; issuer: string; verified?: boolean; kind: 'trophy' | 'school' };
@@ -15,7 +18,7 @@ const DEMO: DocItem[] = [
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [IonContent, IonIcon, IonSpinner],
+  imports: [FormsModule, IonContent, IonIcon, IonSpinner, IonInput, IonItem, IonButton],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap docs-wrap" dir="rtl">
@@ -44,7 +47,21 @@ const DEMO: DocItem[] = [
             }
           </div>
 
-          <button type="button" class="add-doc-btn" (click)="onAdd()">افزودن مدرک جدید</button>
+          @if (showForm()) {
+            <div class="dark-card" style="display:grid;gap:10px;padding:14px">
+              <ion-item lines="none" class="custom-input"><ion-input placeholder="عنوان مدرک" [(ngModel)]="form.name"></ion-input></ion-item>
+              <ion-item lines="none" class="custom-input"><ion-input placeholder="صادرکننده" [(ngModel)]="form.issuer"></ion-input></ion-item>
+              <ion-item lines="none" class="custom-input"><ion-input type="date" [(ngModel)]="form.issueDate"></ion-input></ion-item>
+              <ion-item lines="none" class="custom-input"><ion-input type="date" placeholder="تاریخ انقضا (اختیاری)" [(ngModel)]="form.expiryDate"></ion-input></ion-item>
+              @if (formError()) { <div class="alert-error" style="text-align:center">{{ formError() }}</div> }
+              <div style="display:flex;gap:8px">
+                <ion-button style="flex:1;--background:var(--accent);--color:var(--accent-contrast)" (click)="submit()" [disabled]="submitting()">{{ submitting() ? 'در حال ثبت...' : 'ثبت مدرک' }}</ion-button>
+                <ion-button fill="outline" (click)="showForm.set(false)"><ion-icon name="close-outline" slot="icon-only"></ion-icon></ion-button>
+              </div>
+            </div>
+          } @else {
+            <button type="button" class="add-doc-btn" (click)="showForm.set(true)">افزودن مدرک جدید</button>
+          }
         }
       </div>
     </ion-content>
@@ -97,11 +114,18 @@ const DEMO: DocItem[] = [
 })
 export class DocumentsPage implements OnInit {
   private api = inject(ApiService);
+  private toast = inject(ToastService);
+  private auth = inject(AuthService);
   loading = signal(false);
+  submitting = signal(false);
+  showForm = signal(false);
+  formError = signal('');
+  form: Record<string, string> = { name: '', issuer: '', issueDate: new Date().toISOString().slice(0, 10), expiryDate: '' };
   private remote = signal<DocItem[] | null>(null);
   items = computed(() => this.remote() ?? DEMO);
-  constructor() { addIcons({ trophyOutline, schoolOutline, shieldCheckmarkOutline }); }
-  ngOnInit() {
+  constructor() { addIcons({ trophyOutline, schoolOutline, shieldCheckmarkOutline, closeOutline }); }
+  ngOnInit() { this.load(); }
+  load() {
     this.loading.set(true);
     this.api.certificates.list().subscribe({
       next: (v) => {
@@ -120,5 +144,53 @@ export class DocumentsPage implements OnInit {
       error: () => this.loading.set(false),
     });
   }
-  onAdd() {}
+  submit() {
+    if (this.submitting()) return;
+    this.formError.set('');
+    if (!this.form['name']?.trim() || !this.form['issuer']?.trim() || !this.form['issueDate']) {
+      this.formError.set('عنوان، صادرکننده و تاریخ صدور الزامی است');
+      return;
+    }
+    this.submitting.set(true);
+    const resolveBarber = (barberId: string) => {
+      const payload: Record<string, unknown> = {
+        name: this.form['name'].trim(),
+        issuer: this.form['issuer'].trim(),
+        issueDate: this.form['issueDate'],
+        barberId,
+      };
+      if (this.form['expiryDate']) payload['expiryDate'] = this.form['expiryDate'];
+      this.api.certificates.create(payload).subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.showForm.set(false);
+          this.form = { name: '', issuer: '', issueDate: new Date().toISOString().slice(0, 10), expiryDate: '' };
+          this.toast.success('مدرک ثبت شد');
+          this.load();
+        },
+        error: (e) => {
+          this.submitting.set(false);
+          const msg = (e?.error as { message?: string })?.message ?? 'ثبت ناموفق بود';
+          this.formError.set(msg);
+          this.toast.error(msg);
+        },
+      });
+    };
+    this.api.barbers.me().subscribe({
+      next: (b) => resolveBarber((b as unknown as Record<string, unknown>)['id'] as string),
+      error: () => {
+        const uid = this.auth.user()?.id;
+        if (!uid) { this.submitting.set(false); this.formError.set('پروفایل آرایشگر یافت نشد'); return; }
+        this.api.barbers.list().subscribe({
+          next: (v) => {
+            const arr = Array.isArray(v) ? v as unknown as Record<string, unknown>[] : [];
+            const found = arr.find((x) => x['userId'] === uid) ?? arr[0];
+            if (found?.['id']) resolveBarber(found['id'] as string);
+            else { this.submitting.set(false); this.formError.set('پروفایل آرایشگر یافت نشد'); }
+          },
+          error: () => { this.submitting.set(false); this.formError.set('خطا در یافتن آرایشگر'); },
+        });
+      },
+    });
+  }
 }

@@ -1,7 +1,26 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { Router } from '@angular/router';
+import {
+  BehaviorSubject,
+  catchError,
+  filter,
+  switchMap,
+  take,
+  throwError,
+} from 'rxjs';
 import { AuthService } from '../services/auth.service';
+
+let isRefreshing = false;
+const refreshSubject = new BehaviorSubject<string | null>(null);
+
+function isAuthUrl(url: string): boolean {
+  return (
+    url.includes('/auth/refresh') ||
+    url.includes('/auth/login') ||
+    url.includes('/auth/register')
+  );
+}
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
@@ -11,31 +30,44 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     : req;
   return next(clone).pipe(
     catchError((err) => {
-      if (
-        err.status === 401 &&
-        !req.url.includes('/auth/refresh') &&
-        !req.url.includes('/auth/login') &&
-        !req.url.includes('/auth/register')
-      ) {
+      if (err.status !== 401 || isAuthUrl(req.url)) {
+        return throwError(() => err);
+      }
+      if (!isRefreshing) {
+        isRefreshing = true;
+        refreshSubject.next(null);
         const rt = localStorage.getItem('refresh_token');
         if (!rt) {
+          isRefreshing = false;
           auth.clear();
           return throwError(() => err);
         }
         return auth.refresh().pipe(
           switchMap((r) => {
-            const nt = r.access_token;
+            isRefreshing = false;
+            refreshSubject.next(r.access_token);
             return next(
-              req.clone({ setHeaders: { Authorization: `Bearer ${nt}` } }),
+              req.clone({ setHeaders: { Authorization: `Bearer ${r.access_token}` } }),
             );
           }),
           catchError((e) => {
+            isRefreshing = false;
+            refreshSubject.next(null);
             auth.clear();
+            try {
+              inject(Router).navigateByUrl('/login');
+            } catch {}
             return throwError(() => e);
           }),
         );
       }
-      return throwError(() => err);
+      return refreshSubject.pipe(
+        filter((v) => v !== null),
+        take(1),
+        switchMap((nt) =>
+          next(req.clone({ setHeaders: { Authorization: `Bearer ${nt}` } })),
+        ),
+      );
     }),
   );
 };

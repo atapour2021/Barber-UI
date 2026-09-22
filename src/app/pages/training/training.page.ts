@@ -1,21 +1,24 @@
-import { Component } from '@angular/core';
-import { IonContent, IonIcon } from '@ionic/angular';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { play } from 'ionicons/icons';
+import { ApiService } from '../../core/services/api.service';
+import { Educational } from '../../core/models';
+import { environment } from '../../../environments/environment';
 
-type TrainingItem = { id: string; title: string; meta: string; duration: string; img: string };
+type TrainingItem = { id: string; title: string; meta: string; duration: string; img: string; videoUrl: string | null };
 
-const ITEMS: TrainingItem[] = [
-  { id: '1', title: 'فید سایه‌ای از صفر', meta: 'آکادمی نیوباربر · سطح پیشرفته', duration: '۱۲:۴۰', img: 'https://i.pravatar.cc/400?img=15' },
-  { id: '2', title: 'اصلاح حرفه‌ای ریش', meta: 'آکادمی نیوباربر · سطح پیشرفته', duration: '۱۹:۲۰', img: 'https://i.pravatar.cc/400?img=12' },
-  { id: '3', title: 'مشاوره استایل با مشتری', meta: 'آکادمی نیوباربر · سطح مقدماتی', duration: '۲۶:۴۰', img: 'https://i.pravatar.cc/400?img=68' },
-  { id: '4', title: 'بهداشت ابزار و محیط', meta: 'آکادمی نیوباربر · سطح مقدماتی', duration: '۳۳:۴۰', img: 'https://i.pravatar.cc/400?img=33' },
+const FALLBACK: TrainingItem[] = [
+  { id: '1', title: 'فید سایه‌ای از صفر', meta: 'آکادمی نیوباربر · سطح پیشرفته', duration: '۱۲:۴۰', img: 'https://i.pravatar.cc/400?img=15', videoUrl: null },
+  { id: '2', title: 'اصلاح حرفه‌ای ریش', meta: 'آکادمی نیوباربر · سطح پیشرفته', duration: '۱۹:۲۰', img: 'https://i.pravatar.cc/400?img=12', videoUrl: null },
+  { id: '3', title: 'مشاوره استایل با مشتری', meta: 'آکادمی نیوباربر · سطح مقدماتی', duration: '۲۶:۴۰', img: 'https://i.pravatar.cc/400?img=68', videoUrl: null },
+  { id: '4', title: 'بهداشت ابزار و محیط', meta: 'آکادمی نیوباربر · سطح مقدماتی', duration: '۳۳:۴۰', img: 'https://i.pravatar.cc/400?img=33', videoUrl: null },
 ];
 
 @Component({
   selector: 'app-training',
   standalone: true,
-  imports: [IonContent, IonIcon],
+  imports: [IonContent, IonIcon, IonSpinner],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap training-wrap" dir="rtl">
@@ -23,8 +26,11 @@ const ITEMS: TrainingItem[] = [
           <h1>آموزش حرفه‌ای</h1>
           <p>مهارت‌های خود را به‌روز نگه دارید</p>
         </div>
+        @if (loading()) {
+          <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner></div>
+        }
         <div class="training-grid">
-          @for (t of items; track t.id) {
+          @for (t of display(); track t.id) {
             <button type="button" class="training-card" (click)="playItem(t)">
               <span class="tc-media">
                 <img [src]="t.img" [alt]="t.title" loading="lazy" (error)="onImgError($event)" />
@@ -86,9 +92,34 @@ const ITEMS: TrainingItem[] = [
     .tc-body small { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
   `],
 })
-export class TrainingPage {
-  items = ITEMS;
+export class TrainingPage implements OnInit {
+  private api = inject(ApiService);
+  loading = signal(false);
+  private remote = signal<TrainingItem[] | null>(null);
+  display = computed(() => this.remote() ?? FALLBACK);
   constructor() { addIcons({ play }); }
-  playItem(_t: TrainingItem) {}
+  ngOnInit() {
+    this.loading.set(true);
+    this.api.educational.list().subscribe({
+      next: (v) => {
+        const arr = Array.isArray(v) ? v as Educational[] : [];
+        if (arr.length) {
+          this.remote.set(arr.map((e, i) => ({
+            id: e.id,
+            title: e.title,
+            meta: e.description ? (e.description as string).slice(0, 60) : `آکادمی نیوباربر · ${e.barberId ? 'ویدیو' : ''}`,
+            duration: e.videoFilename ? '۱۲:۴۰' : FALLBACK[i % FALLBACK.length].duration,
+            img: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : FALLBACK[i % FALLBACK.length].img,
+            videoUrl: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : null,
+          })));
+        }
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+  playItem(t: TrainingItem) {
+    if (t.videoUrl) window.open(t.videoUrl, '_blank', 'noopener');
+  }
   onImgError(e: Event) { (e.target as HTMLImageElement).src = 'https://i.pravatar.cc/400?u=fallback'; }
 }

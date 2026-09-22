@@ -1,9 +1,11 @@
-import { Component, AfterViewInit, OnDestroy, ViewChild, ElementRef, signal, inject } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, ViewChild, ElementRef, signal, inject, OnInit } from '@angular/core';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { locateOutline, closeOutline } from 'ionicons/icons';
 import * as L from 'leaflet';
 import { ToastService } from '../../core/services/toast.service';
+import { ApiService } from '../../core/services/api.service';
+import { Barbershop } from '../../core/models';
 
 @Component({
   selector: 'app-barbershops',
@@ -14,7 +16,7 @@ import { ToastService } from '../../core/services/toast.service';
       <div class="page-wrap loc-wrap" dir="rtl">
         <div class="loc-head">
           <h1>موقعیت آرایشگاه</h1>
-          <p>شعبه سعادت‌آباد</p>
+          <p>{{ shopName() }}</p>
         </div>
         <div class="loc-map-wrap">
           <div #mapEl class="loc-map"></div>
@@ -31,9 +33,9 @@ import { ToastService } from '../../core/services/toast.service';
           }
         </div>
         <div class="loc-card">
-          <b class="loc-card-title">نیوباربر · شعبه سعادت‌آباد</b>
-          <p class="loc-card-addr">تهران، سعادت‌آباد، بلوار دریا، مجتمع رویال، طبقه دوم</p>
-          <p class="loc-card-phone">۰۲۱-۲۲۳۵-۴۸۹۰</p>
+          <b class="loc-card-title">{{ shopName() }}</b>
+          <p class="loc-card-addr">{{ shopAddr() }}</p>
+          <p class="loc-card-phone">{{ shopPhone() }}</p>
           <button class="loc-cta" type="button" (click)="toggleRoute()" [disabled]="routingLoading()">
             @if (routingLoading()) {
               <ion-spinner name="crescent" style="width:18px;height:18px"></ion-spinner>
@@ -127,9 +129,10 @@ import { ToastService } from '../../core/services/toast.service';
     :host ::ng-deep .leaflet-control-attribution { font-size: 10px; opacity: 0.8; }
   `],
 })
-export class BarbershopsPage implements AfterViewInit, OnDestroy {
+export class BarbershopsPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapEl', { static: false }) mapEl!: ElementRef<HTMLDivElement>;
   private toast = inject(ToastService);
+  private api = inject(ApiService);
   private map?: L.Map;
   private salonLatLng: L.LatLngExpression = [35.7826, 51.3675];
   private salonMarker?: L.Marker;
@@ -139,8 +142,53 @@ export class BarbershopsPage implements AfterViewInit, OnDestroy {
   routingLoading = signal(false);
   routeInfo = signal<{ dist: string; time: string } | null>(null);
   routeError = signal('');
+  shop = signal<Barbershop | null>(null);
+  shopName = signal('نیوباربر · شعبه سعادت‌آباد');
+  shopAddr = signal('تهران، سعادت‌آباد، بلوار دریا، مجتمع رویال، طبقه دوم');
+  shopPhone = signal('۰۲۱-۲۲۳۵-۴۸۹۰');
 
   constructor() { addIcons({ locateOutline, closeOutline }); }
+
+  ngOnInit() {
+    this.api.barbershops.list().subscribe({
+      next: (v) => {
+        const arr = Array.isArray(v) ? v as Barbershop[] : [];
+        const s = arr[0];
+        if (s) {
+          this.shop.set(s);
+          this.shopName.set(s.name ?? 'نیوباربر · شعبه سعادت‌آباد');
+          this.shopAddr.set(s.address ?? 'تهران، سعادت‌آباد، بلوار دریا، مجتمع رویال، طبقه دوم');
+          if (s.phoneNumber) this.shopPhone.set(s.phoneNumber as string);
+          if (s.latitude && s.longitude) {
+            this.salonLatLng = [Number(s.latitude), Number(s.longitude)];
+            if (this.map) {
+              this.map.setView(this.salonLatLng, 15);
+              this.salonMarker?.setLatLng(this.salonLatLng);
+            }
+          }
+          const sid = s.id;
+          if (sid) {
+            this.api.locations.byBarber(sid).subscribe({
+              next: (loc) => {
+                const l = loc as unknown as Record<string, unknown>;
+                const lat = Number(l['latitude'] ?? l['lat']);
+                const lng = Number(l['longitude'] ?? l['lng']);
+                if (lat && lng) {
+                  this.salonLatLng = [lat, lng];
+                  if (this.map) {
+                    this.map.setView(this.salonLatLng, 15);
+                    this.salonMarker?.setLatLng(this.salonLatLng);
+                  }
+                }
+              },
+              error: () => {},
+            });
+          }
+        }
+      },
+      error: () => {},
+    });
+  }
 
   ngAfterViewInit() {
     setTimeout(() => this.initMap(), 80);

@@ -1,7 +1,5 @@
 export type Role = 'user' | 'customer' | 'barber' | 'admin' | 'super_admin';
-export type AppointmentStatus =
-  'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
-
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
 export interface User {
   id: string;
   nationalCode: string;
@@ -16,13 +14,11 @@ export interface User {
   createdAt?: string;
   updatedAt?: string;
 }
-
 export interface AuthResponse {
   user: User;
   access_token: string;
   refresh_token: string;
 }
-
 export interface Barbershop {
   id: string;
   name: string;
@@ -34,15 +30,17 @@ export interface Barbershop {
   logo?: string | null;
   ownerId: string;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
-
 export interface BarberServiceLink {
   id: string;
   price: number;
   duration: number;
   service: Service;
+  serviceId?: string;
+  barberId?: string;
 }
-
 export interface Barber {
   id: string;
   fullName: string;
@@ -61,8 +59,9 @@ export interface Barber {
   barbershop?: Barbershop;
   user?: User;
   barberServices?: BarberServiceLink[];
+  createdAt?: string;
+  updatedAt?: string;
 }
-
 export interface Service {
   id: string;
   name: string;
@@ -74,8 +73,9 @@ export interface Service {
   barbershopId?: string | null;
   barber?: Barber;
   barbershop?: Barbershop;
+  createdAt?: string;
+  updatedAt?: string;
 }
-
 export interface Appointment {
   id: string;
   date: string;
@@ -90,31 +90,43 @@ export interface Appointment {
   barber?: Barber;
   service?: Service;
   createdAt?: string;
+  updatedAt?: string;
 }
-
 export interface Slot {
+  time: string;
   startTime: string;
   endTime: string;
   status: string;
 }
-
 export interface AvailabilitySlot {
   startTime: string;
   endTime: string;
   status: string;
 }
-
+export interface AvailabilityResponse {
+  date: string;
+  barberId: string;
+  serviceId: string | null;
+  duration?: number;
+  workingHours: { start: string; end: string } | null;
+  breakTime: { start: string; end: string } | null;
+  slots: Slot[];
+  reason?: string | null;
+}
 export interface Educational {
   id: string;
   title: string;
   description?: string | null;
   videoUrl?: string | null;
   videoFilename?: string | null;
+  originalFilename?: string | null;
+  mimeType?: string | null;
+  fileSize?: number | null;
   barberId: string;
   startDate?: string | null;
   barber?: Barber;
+  createdAt?: string;
 }
-
 export interface Certificate {
   id: string;
   name: string;
@@ -123,8 +135,8 @@ export interface Certificate {
   expiryDate?: string | null;
   barberId: string;
   barber?: Barber;
+  createdAt?: string;
 }
-
 export interface Location {
   id: string;
   address: string;
@@ -133,8 +145,8 @@ export interface Location {
   mapMetadata?: Record<string, unknown> | null;
   barberId: string;
   barber?: Barber;
+  createdAt?: string;
 }
-
 export interface NotificationItem {
   id: string;
   type: string;
@@ -145,24 +157,45 @@ export interface NotificationItem {
   isRead: boolean;
   readAt?: string | null;
   createdAt: string;
+  userId?: string;
 }
-
 export interface Paginated<T> {
   data: T[];
   total: number;
   page: number;
   limit: number;
+  pages?: number;
 }
-
+export interface NotificationPaginated {
+  items: NotificationItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
 export interface DashboardData {
   totalUsers: number;
+  totalCustomers?: number;
   totalBarbers: number;
+  activeBarbers?: number;
   totalAppointments: number;
   totalBarbershops: number;
+  totalServices?: number;
   appointmentsByStatus: Record<string, number>;
+  pending?: number;
+  confirmed?: number;
+  completed?: number;
+  cancelled?: number;
+  todayAppointments?: number;
+  revenue?: number;
   recentAppointments?: Appointment[];
 }
-
+export interface ReportsSummary {
+  total: number;
+  byStatus: Record<string, number>;
+  revenue: number;
+  byDay: Record<string, number>;
+  topBarbers: { barberId: string; count: number }[];
+}
 export interface Setting {
   id: string;
   key: string;

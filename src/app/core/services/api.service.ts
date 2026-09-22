@@ -1,180 +1,122 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import {
-  Appointment,
-  Barbershop,
-  Barber,
-  Service,
-  Educational,
-  Certificate,
-  Location,
-  NotificationItem,
-  Paginated,
-  DashboardData,
-  Setting,
-} from '../models';
+import { BarbershopsApi } from '../api/barbershops.api';
+import { BarbersApi } from '../api/barbers.api';
+import { ServicesApi } from '../api/services.api';
+import { AppointmentsApi } from '../api/appointments.api';
+import { AvailabilityApi } from '../api/availability.api';
+import { EducationalApi } from '../api/educational.api';
+import { CertificatesApi } from '../api/certificates.api';
+import { LocationsApi } from '../api/locations.api';
+import { NotificationsApi } from '../api/notifications.api';
+import { UploadsApi } from '../api/uploads.api';
+import { AdminApi } from '../api/admin.api';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private http = inject(HttpClient);
-  private b = environment.apiUrl;
-  private q(p?: Record<string, unknown>) {
-    let hp = new HttpParams();
-    if (p)
-      Object.entries(p).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== '')
-          hp = hp.set(k, String(v));
-      });
-    return hp;
-  }
+  private barbershopsApi = inject(BarbershopsApi);
+  private barbersApi = inject(BarbersApi);
+  private servicesApi = inject(ServicesApi);
+  private appointmentsApi = inject(AppointmentsApi);
+  private availabilityApi = inject(AvailabilityApi);
+  private educationalApi = inject(EducationalApi);
+  private certificatesApi = inject(CertificatesApi);
+  private locationsApi = inject(LocationsApi);
+  private notificationsApi = inject(NotificationsApi);
+  private uploadsApi = inject(UploadsApi);
+  private adminApi = inject(AdminApi);
 
   barbershops = {
-    list: () => this.http.get<Barbershop[]>(`${this.b}/barbershops`),
-    get: (id: string) =>
-      this.http.get<Barbershop>(`${this.b}/barbershops/${id}`),
-    create: (d: unknown) =>
-      this.http.post<Barbershop>(`${this.b}/barbershops`, d),
-    update: (id: string, d: unknown) =>
-      this.http.patch<Barbershop>(`${this.b}/barbershops/${id}`, d),
-    remove: (id: string) => this.http.delete(`${this.b}/barbershops/${id}`),
+    list: () => this.barbershopsApi.list(),
+    get: (id: string) => this.barbershopsApi.get(id),
+    create: (d: Record<string, unknown>) => this.barbershopsApi.create(d),
+    update: (id: string, d: Record<string, unknown>) => this.barbershopsApi.update(id, d),
+    remove: (id: string) => this.barbershopsApi.remove(id),
   };
   barbers = {
-    list: (p?: Record<string, unknown>) =>
-      this.http.get<Barber[]>(`${this.b}/barbers`, { params: this.q(p) }),
-    me: () => this.http.get<Barber>(`${this.b}/barbers/me`),
-    get: (id: string) => this.http.get<Barber>(`${this.b}/barbers/${id}`),
-    create: (d: unknown) => this.http.post<Barber>(`${this.b}/barbers`, d),
-    update: (id: string, d: unknown) =>
-      this.http.patch<Barber>(`${this.b}/barbers/${id}`, d),
-    remove: (id: string) => this.http.delete(`${this.b}/barbers/${id}`),
+    list: (p?: Record<string, unknown>) => this.barbersApi.list(p),
+    me: () => this.barbersApi.me(),
+    get: (id: string) => this.barbersApi.get(id),
+    create: (d: Record<string, unknown>) => this.barbersApi.create(d),
+    update: (id: string, d: Record<string, unknown>) => this.barbersApi.update(id, d),
+    remove: (id: string) => this.barbersApi.remove(id),
   };
   services = {
-    list: (p?: Record<string, unknown>) =>
-      this.http.get<Service[]>(`${this.b}/services`, { params: this.q(p) }),
-    get: (id: string) => this.http.get<Service>(`${this.b}/services/${id}`),
-    create: (d: unknown) => this.http.post<Service>(`${this.b}/services`, d),
-    update: (id: string, d: unknown) =>
-      this.http.patch<Service>(`${this.b}/services/${id}`, d),
-    remove: (id: string) => this.http.delete(`${this.b}/services/${id}`),
+    list: (p?: Record<string, unknown>) => this.servicesApi.list(p),
+    get: (id: string) => this.servicesApi.get(id),
+    create: (d: Record<string, unknown>) => this.servicesApi.create(d),
+    update: (id: string, d: Record<string, unknown>) => this.servicesApi.update(id, d),
+    remove: (id: string) => this.servicesApi.remove(id),
   };
   appointments = {
-    slots: (p: Record<string, string>) =>
-      this.http.get<unknown>(`${this.b}/appointments/available-slots`, {
-        params: this.q(p),
-      }),
-    list: (p?: Record<string, unknown>) =>
-      this.http.get<Appointment[]>(`${this.b}/appointments`, {
-        params: this.q(p),
-      }),
-    get: (id: string) =>
-      this.http.get<Appointment>(`${this.b}/appointments/${id}`),
-    create: (d: unknown) =>
-      this.http.post<Appointment>(`${this.b}/appointments`, d),
-    update: (id: string, d: unknown) =>
-      this.http.patch<Appointment>(`${this.b}/appointments/${id}`, d),
-    cancel: (id: string) =>
-      this.http.post(`${this.b}/appointments/${id}/cancel`, {}),
-    status: (id: string, status: string) =>
-      this.http.patch(`${this.b}/appointments/${id}/status`, { status }),
-    remove: (id: string) => this.http.delete(`${this.b}/appointments/${id}`),
+    slots: (p: Record<string, string>) => this.appointmentsApi.availableSlots(p),
+    list: (p?: Record<string, unknown>) => this.appointmentsApi.list(p),
+    get: (id: string) => this.appointmentsApi.get(id),
+    create: (d: Record<string, unknown>) => this.appointmentsApi.create(d),
+    update: (id: string, d: Record<string, unknown>) => this.appointmentsApi.update(id, d),
+    cancel: (id: string) => this.appointmentsApi.cancel(id),
+    status: (id: string, status: string) => this.appointmentsApi.updateStatus(id, status),
+    remove: (id: string) => this.appointmentsApi.remove(id),
   };
   availability = {
-    get: (p: Record<string, string>) =>
-      this.http.get<unknown>(`${this.b}/availability`, { params: this.q(p) }),
+    get: (p: Record<string, string>) => this.availabilityApi.get(p),
   };
   educational = {
-    list: (p?: Record<string, unknown>) =>
-      this.http.get<Educational[]>(`${this.b}/educational`, {
-        params: this.q(p),
-      }),
-    get: (id: string) =>
-      this.http.get<Educational>(`${this.b}/educational/${id}`),
-    create: (fd: FormData) =>
-      this.http.post<Educational>(`${this.b}/educational`, fd),
-    update: (id: string, fd: FormData) =>
-      this.http.patch<Educational>(`${this.b}/educational/${id}`, fd),
-    video: (id: string, fd: FormData) =>
-      this.http.post<Educational>(`${this.b}/educational/${id}/video`, fd),
-    remove: (id: string) => this.http.delete(`${this.b}/educational/${id}`),
+    list: (p?: Record<string, unknown>) => this.educationalApi.list(p),
+    get: (id: string) => this.educationalApi.get(id),
+    create: (fd: FormData) => this.educationalApi.create(fd),
+    update: (id: string, fd: FormData) => this.educationalApi.update(id, fd),
+    video: (id: string, fd: FormData) => this.educationalApi.video(id, fd),
+    remove: (id: string) => this.educationalApi.remove(id),
   };
   certificates = {
-    list: (p?: Record<string, unknown>) =>
-      this.http.get<Certificate[]>(`${this.b}/certificates`, {
-        params: this.q(p),
-      }),
-    get: (id: string) =>
-      this.http.get<Certificate>(`${this.b}/certificates/${id}`),
-    create: (d: unknown) =>
-      this.http.post<Certificate>(`${this.b}/certificates`, d),
-    update: (id: string, d: unknown) =>
-      this.http.patch<Certificate>(`${this.b}/certificates/${id}`, d),
-    remove: (id: string) => this.http.delete(`${this.b}/certificates/${id}`),
+    list: (p?: Record<string, unknown>) => this.certificatesApi.list(p),
+    get: (id: string) => this.certificatesApi.get(id),
+    create: (d: Record<string, unknown>) => this.certificatesApi.create(d),
+    update: (id: string, d: Record<string, unknown>) => this.certificatesApi.update(id, d),
+    remove: (id: string) => this.certificatesApi.remove(id),
   };
   locations = {
-    list: (p?: Record<string, unknown>) =>
-      this.http.get<Location[]>(`${this.b}/locations`, { params: this.q(p) }),
-    byBarber: (barberId: string) =>
-      this.http.get<Location>(`${this.b}/locations/barber/${barberId}`),
-    get: (id: string) => this.http.get<Location>(`${this.b}/locations/${id}`),
-    create: (d: unknown) => this.http.post<Location>(`${this.b}/locations`, d),
-    update: (id: string, d: unknown) =>
-      this.http.patch<Location>(`${this.b}/locations/${id}`, d),
-    remove: (id: string) => this.http.delete(`${this.b}/locations/${id}`),
+    list: (p?: Record<string, unknown>) => this.locationsApi.list(p),
+    byBarber: (barberId: string) => this.locationsApi.byBarber(barberId),
+    get: (id: string) => this.locationsApi.get(id),
+    create: (d: Record<string, unknown>) => this.locationsApi.create(d),
+    update: (id: string, d: Record<string, unknown>) => this.locationsApi.update(id, d),
+    remove: (id: string) => this.locationsApi.remove(id),
   };
   notifications = {
-    list: (p?: Record<string, unknown>) =>
-      this.http.get<NotificationItem[] | Paginated<NotificationItem>>(
-        `${this.b}/notifications`,
-        { params: this.q(p) },
-      ),
-    unread: () =>
-      this.http.get<{ count: number } | number>(
-        `${this.b}/notifications/unread-count`,
-      ),
-    readAll: () => this.http.patch(`${this.b}/notifications/read-all`, {}),
-    readOne: (id: string) =>
-      this.http.patch(`${this.b}/notifications/${id}/read`, {}),
+    list: (p?: Record<string, unknown>) => this.notificationsApi.list(p),
+    unread: () => this.notificationsApi.unread(),
+    readAll: () => this.notificationsApi.readAll(),
+    readOne: (id: string) => this.notificationsApi.readOne(id),
   };
   uploads = {
-    upload: (fd: FormData) =>
-      this.http.post<{ url: string; filename: string } | { file: string }>(
-        `${this.b}/uploads`,
-        fd,
-      ),
+    upload: (fd: FormData) => this.uploadsApi.upload(fd),
   };
   admin = {
-    dashboard: () => this.http.get<DashboardData>(`${this.b}/admin/dashboard`),
-    users: (p?: Record<string, unknown>) =>
-      this.http.get<Paginated<unknown> | unknown[]>(`${this.b}/admin/users`, {
-        params: this.q(p),
-      }),
-    user: (id: string) => this.http.get<unknown>(`${this.b}/admin/users/${id}`),
-    updateUser: (id: string, d: unknown) =>
-      this.http.patch(`${this.b}/admin/users/${id}`, d),
-    deleteUser: (id: string) => this.http.delete(`${this.b}/admin/users/${id}`),
-    customers: (p?: Record<string, unknown>) =>
-      this.http.get<unknown>(`${this.b}/admin/customers`, {
-        params: this.q(p),
-      }),
-    barbers: (p?: Record<string, unknown>) =>
-      this.http.get<unknown>(`${this.b}/admin/barbers`, { params: this.q(p) }),
-    adminServices: (p?: Record<string, unknown>) =>
-      this.http.get<unknown>(`${this.b}/admin/services`, { params: this.q(p) }),
-    adminAppointments: (p?: Record<string, unknown>) =>
-      this.http.get<unknown>(`${this.b}/admin/appointments`, {
-        params: this.q(p),
-      }),
-    reports: (p?: Record<string, unknown>) =>
-      this.http.get<unknown>(`${this.b}/admin/reports/summary`, {
-        params: this.q(p),
-      }),
-    settings: () => this.http.get<Setting[]>(`${this.b}/admin/settings`),
-    createSetting: (d: unknown) =>
-      this.http.post<Setting>(`${this.b}/admin/settings`, d),
-    updateSetting: (key: string, d: unknown) =>
-      this.http.patch<Setting>(`${this.b}/admin/settings/${key}`, d),
-    deleteSetting: (key: string) =>
-      this.http.delete(`${this.b}/admin/settings/${key}`),
+    dashboard: () => this.adminApi.dashboard(),
+    users: (p?: Record<string, unknown>) => this.adminApi.users(p),
+    user: (id: string) => this.adminApi.user(id),
+    updateUser: (id: string, d: Record<string, unknown>) => this.adminApi.updateUser(id, d),
+    deleteUser: (id: string) => this.adminApi.deleteUser(id),
+    customers: (p?: Record<string, unknown>) => this.adminApi.customers(p),
+    customer: (id: string) => this.adminApi.customer(id),
+    barbers: (p?: Record<string, unknown>) => this.adminApi.barbers(p),
+    barber: (id: string) => this.adminApi.barber(id),
+    adminServices: (p?: Record<string, unknown>) => this.adminApi.adminServices(p),
+    adminService: (id: string) => this.adminApi.adminService(id),
+    createService: (d: Record<string, unknown>) => this.adminApi.createService(d),
+    updateService: (id: string, d: Record<string, unknown>) => this.adminApi.updateService(id, d),
+    deleteService: (id: string) => this.adminApi.deleteService(id),
+    adminAppointments: (p?: Record<string, unknown>) => this.adminApi.adminAppointments(p),
+    adminAppointment: (id: string) => this.adminApi.adminAppointment(id),
+    updateAppointmentStatus: (id: string, status: string) => this.adminApi.updateAppointmentStatus(id, status),
+    cancelAppointment: (id: string) => this.adminApi.cancelAppointment(id),
+    deleteAppointment: (id: string) => this.adminApi.deleteAppointment(id),
+    reports: (p?: Record<string, unknown>) => this.adminApi.reports(p),
+    settings: () => this.adminApi.settings(),
+    setting: (key: string) => this.adminApi.setting(key),
+    createSetting: (d: Record<string, unknown>) => this.adminApi.createSetting(d),
+    updateSetting: (key: string, d: Record<string, unknown>) => this.adminApi.updateSetting(key, d),
+    deleteSetting: (key: string) => this.adminApi.deleteSetting(key),
   };
 }
