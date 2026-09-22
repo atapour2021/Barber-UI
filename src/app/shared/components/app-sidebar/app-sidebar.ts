@@ -1,8 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline } from 'ionicons/icons';
+import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, sunnyOutline, moonOutline } from 'ionicons/icons';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -45,6 +46,10 @@ import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, p
           <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
         </a>
       </nav>
+      <button class="sidebar-theme" type="button" (click)="theme.toggle()">
+        <span class="sidebar-item-label"><ion-icon [name]="theme.isDark() ? 'sunny-outline' : 'moon-outline'"></ion-icon> {{ theme.isDark() ? 'حالت روشن' : 'حالت تیره' }}</span>
+        <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
+      </button>
       <button class="sidebar-logout" type="button" (click)="logoutClicked.emit()">
         <ion-icon name="log-out-outline"></ion-icon><span>خروج از حساب</span>
       </button>
@@ -53,7 +58,7 @@ import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, p
   styles: [`
     :host { display: contents; }
     .sidebar-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:29; animation: fadeIn 0.2s ease; }
-    .sidebar { position:fixed; top:0; right:0; bottom:0; width:min(360px, 88vw); background:#0b101e; z-index:30; display:flex; flex-direction:column; padding:16px 14px calc(16px + env(safe-area-inset-bottom)); padding-top:calc(12px + env(safe-area-inset-top)); transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.32,0.72,0,1); overflow-y:auto; border-left:1px solid #1c2a44; box-sizing:border-box; }
+    .sidebar { position:fixed; top:0; right:0; bottom:0; width:min(360px, 88vw); background:var(--card-bg); z-index:30; display:flex; flex-direction:column; padding:16px 14px calc(16px + env(safe-area-inset-bottom)); padding-top:calc(12px + env(safe-area-inset-top)); transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.32,0.72,0,1); overflow-y:auto; border-left:1px solid var(--card-border); box-sizing:border-box; }
     .sidebar.open { transform:translateX(0); }
     .sidebar-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
     .sidebar-title { font-size:16px; font-weight:800; color:var(--text-primary); }
@@ -68,18 +73,20 @@ import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, p
     .sidebar-item-label { display:inline-flex; align-items:center; gap:8px; }
     .sidebar-item-label ion-icon { font-size:16px; color:var(--text-secondary); }
     .sidebar-chevron { font-size:14px; color:var(--text-muted); flex-shrink:0; }
-    .sidebar-logout { margin-top:16px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px; border-radius:10px; background:transparent; border:1px solid var(--card-border); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; }
+    .sidebar-theme { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; padding:13px 4px; background:transparent; border:none; border-top:1px solid var(--card-border); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; text-align:right; margin-top:8px; }
+    .sidebar-logout { margin-top:8px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px; border-radius:10px; background:transparent; border:1px solid var(--card-border); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; }
     .sidebar-logout ion-icon { font-size:16px; transform:scaleX(-1); }
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
   `],
 })
 export class AppSidebarComponent {
+  theme = inject(ThemeService);
   open = input.required<boolean>();
   activeView = input.required<'admin' | 'barber' | 'customer'>();
   closed = output<void>();
   viewChange = output<'admin' | 'barber' | 'customer'>();
   logoutClicked = output<void>();
   constructor() {
-    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline });
+    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, sunnyOutline, moonOutline });
   }
 }
