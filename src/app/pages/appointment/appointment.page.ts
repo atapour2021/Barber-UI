@@ -1,10 +1,11 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { IonContent, IonSpinner } from '@ionic/angular';
 import { ApiService } from '../../core/services/api.service';
 import { Appointment, Barber } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
 
-type TurnFilter = 'upcoming' | 'past' | 'cancelled';
+type Filter = 'upcoming' | 'past' | 'cancelled';
 
 const DEMO: Appointment[] = [
   { id: '1', date: new Date().toISOString().slice(0, 10), startTime: '14:30', endTime: '15:15', status: 'confirmed', notes: null, userId: '', barberId: 'b1', serviceId: 's1', barber: { id: 'b1', fullName: 'رضا کاظمی', profileImage: 'https://i.pravatar.cc/150?u=reza', status: 'active', isAvailable: true, isActive: true, barbershopId: '', userId: '' } as Barber, service: { id: 's1', name: 'کوتاهی و استایل', price: 350000, duration: 45, barberId: '' } as never },
@@ -13,9 +14,9 @@ const DEMO: Appointment[] = [
 ];
 
 @Component({
-  selector: 'app-turns',
+  selector: 'app-appointment',
   standalone: true,
-  imports: [IonContent, IonSpinner],
+  imports: [RouterLink, IonContent, IonSpinner],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap turns-wrap" dir="rtl">
@@ -23,13 +24,11 @@ const DEMO: Appointment[] = [
           <h1>{{ t.title }}</h1>
           <p>{{ t.subtitle }}</p>
         </div>
-
         <div class="filter-row" role="tablist">
           <button type="button" class="filter-pill" [class.active]="filter() === 'upcoming'" (click)="filter.set('upcoming')" role="tab" [attr.aria-selected]="filter() === 'upcoming'">{{ t.upcoming }}</button>
           <button type="button" class="filter-pill" [class.active]="filter() === 'past'" (click)="filter.set('past')" role="tab" [attr.aria-selected]="filter() === 'past'">{{ t.past }}</button>
           <button type="button" class="filter-pill" [class.active]="filter() === 'cancelled'" (click)="filter.set('cancelled')" role="tab" [attr.aria-selected]="filter() === 'cancelled'">{{ t.cancelled }}</button>
         </div>
-
         @if (loading()) {
           <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ c.loading }}</p></div>
         } @else if (!filtered().length) {
@@ -37,7 +36,7 @@ const DEMO: Appointment[] = [
         } @else {
           <div class="turn-grid">
             @for (a of filtered(); track a.id) {
-              <div class="turn-card">
+              <a class="turn-card" [routerLink]="['/tabs/appointment', a.id]">
                 <div class="turn-time">
                   <b dir="ltr">{{ a.startTime }}</b>
                   <small>{{ dateLabel(a.date) }}</small>
@@ -49,7 +48,7 @@ const DEMO: Appointment[] = [
                   </div>
                   <img [src]="avatar(a)" (error)="onImgError($event)" alt="" />
                 </div>
-              </div>
+              </a>
             }
           </div>
         }
@@ -62,35 +61,11 @@ const DEMO: Appointment[] = [
     .turns-header h1 { margin:0; font-size:22px; font-weight:800; color:var(--text-primary); }
     .turns-header p { margin:6px 0 0; font-size:11px; color:var(--text-secondary); }
     .filter-row { display:flex; gap:8px; align-items:center; justify-content:flex-start; flex-wrap:wrap; margin-top:2px; }
-    .filter-pill {
-      border:1px solid var(--card-border);
-      background:var(--card-bg);
-      color:var(--text-secondary);
-      border-radius:8px;
-      padding:7px 14px;
-      font-size:11px;
-      font-weight:700;
-      font-family:inherit;
-      cursor:pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
-      line-height:1;
-    }
-    .filter-pill.active {
-      background:var(--accent);
-      border-color:var(--accent);
-      color:var(--accent-contrast);
-    }
+    .filter-pill { border:1px solid var(--card-border); background:var(--card-bg); color:var(--text-secondary); border-radius:8px; padding:7px 14px; font-size:11px; font-weight:700; font-family:inherit; cursor:pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; line-height:1; }
+    .filter-pill.active { background:var(--accent); border-color:var(--accent); color:var(--accent-contrast); }
     .turn-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; }
     @media (max-width: 640px) { .turn-grid { grid-template-columns:1fr; } }
-    .turn-card {
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      background:var(--card-bg);
-      border:1px solid var(--card-border);
-      border-radius:12px;
-      padding:14px 14px;
-      min-height:72px;
-      transition: border-color 0.15s;
-    }
+    .turn-card { display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:14px 14px; min-height:72px; transition: border-color 0.15s; text-decoration:none; }
     .turn-card:hover { border-color:var(--card-border-2); }
     .turn-barber { display:flex; align-items:center; gap:10px; flex:1; min-width:0; justify-content:flex-end; }
     .turn-barber img { width:44px; height:44px; border-radius:10px; object-fit:cover; background:#1e2a44; flex-shrink:0; }
@@ -102,14 +77,13 @@ const DEMO: Appointment[] = [
     .turn-time small { font-size:11px; color:var(--text-secondary); line-height:1; }
   `],
 })
-export class TurnsPage implements OnInit {
+export class AppointmentPage implements OnInit {
   private api = inject(ApiService);
   t = fa.turns;
   c = fa.common;
   loading = signal(false);
-  filter = signal<TurnFilter>('upcoming');
+  filter = signal<Filter>('upcoming');
   items = signal<Appointment[]>([]);
-
   filtered = computed(() => {
     const f = this.filter();
     const arr = this.items();
@@ -118,11 +92,7 @@ export class TurnsPage implements OnInit {
     if (f === 'upcoming') return arr.filter(a => a.status !== 'cancelled' && a.date >= today);
     return arr.filter(a => a.status === 'cancelled' || a.date < today || a.status === 'completed');
   });
-
-  constructor() {}
-
   ngOnInit() { this.load(); }
-
   load() {
     this.loading.set(true);
     this.api.appointments.list().subscribe({
@@ -134,7 +104,6 @@ export class TurnsPage implements OnInit {
       error: () => { this.items.set(DEMO as Appointment[]); this.loading.set(false); },
     });
   }
-
   barberName(a: Appointment) { return a.barber?.fullName ?? '—'; }
   serviceName(a: Appointment) { return a.service?.name ?? ''; }
   avatar(a: Appointment) { return (a.barber as Barber | undefined)?.profileImage ?? `https://i.pravatar.cc/100?u=${a.barberId}`; }

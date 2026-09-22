@@ -59,13 +59,13 @@ import { fa } from '../../core/i18n/fa';
         <div class="section">
           <div class="section-head">
             <h3>{{ t.nextAppointment }}</h3>
-            <a routerLink="/tabs/appointments" class="link-teal">{{ t.allAppointments }}</a>
+            <a routerLink="/tabs/appointment" class="link-teal">{{ t.allAppointments }}</a>
           </div>
 
           @if (loadingAppt()) {
             <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
           } @else if (nextAppt(); as appt) {
-            <div class="next-card">
+            <a class="next-card" [routerLink]="['/tabs/appointment', appt.id]">
               <div class="next-main">
                 <div class="next-time">
                   <small>{{ t.today }}</small>
@@ -80,7 +80,7 @@ import { fa } from '../../core/i18n/fa';
                 </div>
               </div>
               <div class="next-progress"><span></span></div>
-            </div>
+            </a>
           } @else {
             <div class="dark-card" style="text-align:center;padding:16px">
               <p class="muted" style="margin:0">{{ fa.appointments.empty }}</p>
@@ -132,7 +132,7 @@ import { fa } from '../../core/i18n/fa';
     .quick-card ion-icon { font-size:22px; color:var(--accent); }
     .quick-card span { font-size:11px; font-weight:700; }
     .section-head h3 { font-size:13px; }
-    .next-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; overflow:hidden; }
+    .next-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; overflow:hidden; display:block; text-decoration:none; }
     .next-main { display:flex; align-items:center; justify-content:space-between; padding:14px 14px 12px; gap:12px; }
     .next-time { text-align:left; display:flex; flex-direction:column; gap:2px; min-width:60px; }
     .next-time small { font-size:11px; color:var(--text-secondary); }

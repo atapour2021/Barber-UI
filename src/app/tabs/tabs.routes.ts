@@ -13,16 +13,26 @@ export const routes: Routes = [
           import('../pages/home/home.page').then((m) => m.HomePage),
       },
       {
-        path: 'turns',
+        path: 'appointment',
         loadComponent: () =>
-          import('../pages/turns/turns.page').then((m) => m.TurnsPage),
+          import('../pages/appointment/appointment.page').then((m) => m.AppointmentPage),
         canActivate: [authGuard],
       },
       {
-        path: 'appointments',
+        path: 'appointment/:id',
         loadComponent: () =>
-          import('../pages/turns/turns.page').then((m) => m.TurnsPage),
+          import('../pages/appointment/appointment-detail.page').then((m) => m.AppointmentDetailPage),
         canActivate: [authGuard],
+      },
+      {
+        path: 'turns',
+        redirectTo: 'appointment',
+        pathMatch: 'full',
+      },
+      {
+        path: 'appointments',
+        redirectTo: 'appointment',
+        pathMatch: 'full',
       },
       {
         path: 'notifications',
