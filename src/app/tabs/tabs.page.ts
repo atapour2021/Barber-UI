@@ -14,11 +14,14 @@ import {
   sunnyOutline,
   moonOutline,
   menuOutline,
+  appsOutline,
+  schoolOutline,
 } from 'ionicons/icons';
 import { fa } from '../core/i18n/fa';
 import { AuthService } from '../core/services/auth.service';
 import { ThemeService } from '../core/services/theme.service';
 import { ApiService } from '../core/services/api.service';
+import { ViewRoleService } from '../core/services/view-role.service';
 import { AppSidebarComponent } from '../shared/components/app-sidebar/app-sidebar';
 
 @Component({
@@ -35,9 +38,8 @@ export class TabsPage {
   private router = inject(Router);
   unread = 0;
   sidebarOpen = signal(false);
-  activeView = signal<'admin' | 'barber' | 'customer'>(
-    this.auth.isAdmin() ? 'admin' : this.auth.isBarber() ? 'barber' : 'customer'
-  );
+  private viewRole = inject(ViewRoleService);
+  activeView = this.viewRole.activeView;
   constructor() {
     addIcons({
       home,
@@ -51,6 +53,8 @@ export class TabsPage {
       sunnyOutline,
       moonOutline,
       menuOutline,
+      appsOutline,
+      schoolOutline,
     });
     this.api.notifications.unread().subscribe({
       next: (v) => {
@@ -62,7 +66,7 @@ export class TabsPage {
   }
   toggleSidebar() { this.sidebarOpen.update(v => !v); }
   closeSidebar() { this.sidebarOpen.set(false); }
-  setView(v: 'admin' | 'barber' | 'customer') { this.activeView.set(v); }
+  setView(v: 'admin' | 'barber' | 'customer') { this.viewRole.setView(v); }
   @HostListener('document:keydown.escape')
   onEsc() { this.closeSidebar(); }
   logout() {

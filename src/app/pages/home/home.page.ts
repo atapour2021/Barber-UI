@@ -1,119 +1,161 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import {
-  IonContent,
-  IonSpinner,
-  IonIcon,
-} from '@ionic/angular';
+import { IonContent, IonSpinner, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import {
-  peopleOutline,
-  timeOutline,
-  schoolOutline,
-  calendarOutline,
-  locationOutline,
-  star,
-  arrowBackOutline,
-} from 'ionicons/icons';
+import { peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ViewRoleService } from '../../core/services/view-role.service';
 import { Appointment, Barber } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
-
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [RouterLink, IonContent, IonSpinner, IonIcon],
   template: `
     <ion-content [fullscreen]="true">
-      <div class="page-wrap home-wrap" dir="rtl">
-        <div class="home-top-row">
-          <span class="loc-pin"><ion-icon name="location-outline"></ion-icon></span>
-          <div class="greeting">
-            <h1>سلام، {{ displayName() }} <span class="wave">👋</span></h1>
-            <p>{{ t.greetingReady }}</p>
+      @if (isBarber()) {
+        <div class="page-wrap barber-wrap" dir="rtl">
+          <div class="barber-greeting">
+            <h1>روز بخیر، {{ displayName() }}</h1>
+            <p>امروز {{ todayCount() }} نوبت در برنامه دارید</p>
+          </div>
+          <div class="grid-3 barber-stats">
+            <div class="dark-card barber-stat">
+              <b>{{ todayCountFa() }}</b>
+              <small>نوبت امروز</small>
+            </div>
+            <div class="dark-card barber-stat">
+              <b>{{ completedCountFa() }}</b>
+              <small>تکمیل شده</small>
+            </div>
+            <div class="dark-card barber-stat">
+              <b>{{ revenueFa() }}</b>
+              <small>درآمد امروز</small>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-head queue-head">
+              <h3>صف امروز</h3>
+              <a routerLink="/tabs/appointment" class="link-teal">همه</a>
+            </div>
+            @if (loadingAppt()) {
+              <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
+            } @else {
+              <div class="queue-list">
+                @for (q of queue(); track q.id) {
+                  <a class="queue-card" [routerLink]="['/tabs/appointment', q.id]">
+                    <span class="queue-time">{{ q.time }}</span>
+                    <span class="queue-divider"></span>
+                    <span class="queue-info">
+                      <b>{{ q.name }}</b>
+                      <small>{{ q.service }}</small>
+                    </span>
+                    <ion-icon name="chevron-back-outline" class="queue-chevron"></ion-icon>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+          <div class="grid-3 action-grid">
+            <a class="dark-card action-card" routerLink="/tabs/booking">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>برنامه کاری</span>
+            </a>
+            <a class="dark-card action-card" routerLink="/tabs/training">
+              <ion-icon name="book-outline"></ion-icon>
+              <span>آموزش‌ها</span>
+            </a>
+            <a class="dark-card action-card" routerLink="/tabs/services">
+              <ion-icon name="ribbon-outline"></ion-icon>
+              <span>مدارک</span>
+            </a>
           </div>
         </div>
-
-        <a class="cta-orange" routerLink="/appointments">
-          <ion-icon name="calendar-outline"></ion-icon>
-          {{ t.newBooking }}
-          <ion-icon name="arrow-back-outline" class="cta-arrow"></ion-icon>
-        </a>
-
-        <div class="grid-3 quick-row">
-          <a class="quick-card" routerLink="/barbers">
-            <ion-icon name="people-outline"></ion-icon>
-            <span>{{ t.cards.barbers }}</span>
-          </a>
-          <a class="quick-card" routerLink="/appointments">
-            <ion-icon name="time-outline"></ion-icon>
-            <span>{{ t.cards.slots }}</span>
-          </a>
-          <a class="quick-card" [routerLink]="eduLink()">
-            <ion-icon name="school-outline"></ion-icon>
-            <span>{{ t.cards.education }}</span>
-          </a>
-        </div>
-
-        <div class="section">
-          <div class="section-head">
-            <h3>{{ t.nextAppointment }}</h3>
-            <a routerLink="/tabs/appointment" class="link-teal">{{ t.allAppointments }}</a>
+      } @else {
+        <div class="page-wrap home-wrap" dir="rtl">
+          <div class="home-top-row">
+            <span class="loc-pin"><ion-icon name="location-outline"></ion-icon></span>
+            <div class="greeting">
+              <h1>سلام، {{ displayName() }} <span class="wave">👋</span></h1>
+              <p>{{ t.greetingReady }}</p>
+            </div>
           </div>
-
-          @if (loadingAppt()) {
-            <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
-          } @else if (nextAppt(); as appt) {
-            <a class="next-card" [routerLink]="['/tabs/appointment', appt.id]">
-              <div class="next-main">
-                <div class="next-time">
-                  <small>{{ t.today }}</small>
-                  <b>{{ appt.startTime }}</b>
-                </div>
-                <div class="next-info">
-                  <img [src]="nextApptAvatar()" (error)="onImgError($event)" alt="" />
-                  <div class="next-text">
-                    <b>{{ nextApptBarberName() }}</b>
-                    <small>{{ nextApptService() }}</small>
+          <a class="cta-orange" routerLink="/appointments">
+            <ion-icon name="calendar-outline"></ion-icon>
+            {{ t.newBooking }}
+            <ion-icon name="arrow-back-outline" class="cta-arrow"></ion-icon>
+          </a>
+          <div class="grid-3 quick-row">
+            <a class="quick-card" routerLink="/barbers">
+              <ion-icon name="people-outline"></ion-icon>
+              <span>{{ t.cards.barbers }}</span>
+            </a>
+            <a class="quick-card" routerLink="/appointments">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ t.cards.slots }}</span>
+            </a>
+            <a class="quick-card" [routerLink]="eduLink()">
+              <ion-icon name="school-outline"></ion-icon>
+              <span>{{ t.cards.education }}</span>
+            </a>
+          </div>
+          <div class="section">
+            <div class="section-head">
+              <h3>{{ t.nextAppointment }}</h3>
+              <a routerLink="/tabs/appointment" class="link-teal">{{ t.allAppointments }}</a>
+            </div>
+            @if (loadingAppt()) {
+              <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
+            } @else if (nextAppt(); as appt) {
+              <a class="next-card" [routerLink]="['/tabs/appointment', appt.id]">
+                <div class="next-main">
+                  <div class="next-time">
+                    <small>{{ t.today }}</small>
+                    <b>{{ appt.startTime }}</b>
+                  </div>
+                  <div class="next-info">
+                    <img [src]="nextApptAvatar()" (error)="onImgError($event)" alt="" />
+                    <div class="next-text">
+                      <b>{{ nextApptBarberName() }}</b>
+                      <small>{{ nextApptService() }}</small>
+                    </div>
                   </div>
                 </div>
+                <div class="next-progress"><span></span></div>
+              </a>
+            } @else {
+              <div class="dark-card" style="text-align:center;padding:16px">
+                <p class="muted" style="margin:0">{{ fa.appointments.empty }}</p>
+                <a routerLink="/appointments" class="link-teal" style="font-size:12px;display:inline-block;margin-top:6px">{{ t.newBooking }}</a>
               </div>
-              <div class="next-progress"><span></span></div>
-            </a>
-          } @else {
-            <div class="dark-card" style="text-align:center;padding:16px">
-              <p class="muted" style="margin:0">{{ fa.appointments.empty }}</p>
-              <a routerLink="/appointments" class="link-teal" style="font-size:12px;display:inline-block;margin-top:6px">{{ t.newBooking }}</a>
-            </div>
-          }
-        </div>
-
-        <div class="section">
-          <div class="section-head">
-            <h3>{{ t.topBarbers }}</h3>
-            <a routerLink="/barbers" class="link-teal">{{ t.viewAll }}</a>
+            }
           </div>
-
-          @if (loading()) {
-            <div class="dark-card" style="text-align:center;padding:16px"><ion-spinner></ion-spinner></div>
-          } @else {
-            <div class="barber-grid">
-              @for (b of topBarbers(); track b.id) {
-                <a class="barber-card" [routerLink]="['/barbers', b.id]">
-                  <span class="avail-dot" [class.online]="b.isAvailable"></span>
-                  <img [src]="avatar(b)" (error)="onImgError($event)" alt="" />
-                  <b>{{ b.fullName }}</b>
-                  <small><ion-icon name="star"></ion-icon> {{ t.rating }} · {{ barberCount(b) }} {{ t.appointmentsCount }}</small>
-                </a>
-              }
-              @if (!topBarbers().length) {
-                <div class="dark-card" style="grid-column:1/-1;text-align:center"><p class="muted" style="margin:0">{{ t.emptyBarbers }}</p></div>
-              }
+          <div class="section">
+            <div class="section-head">
+              <h3>{{ t.topBarbers }}</h3>
+              <a routerLink="/barbers" class="link-teal">{{ t.viewAll }}</a>
             </div>
-          }
+            @if (loading()) {
+              <div class="dark-card" style="text-align:center;padding:16px"><ion-spinner></ion-spinner></div>
+            } @else {
+              <div class="barber-grid">
+                @for (b of topBarbers(); track b.id) {
+                  <a class="barber-card" [routerLink]="['/barbers', b.id]">
+                    <span class="avail-dot" [class.online]="b.isAvailable"></span>
+                    <img [src]="avatar(b)" (error)="onImgError($event)" alt="" />
+                    <b>{{ b.fullName }}</b>
+                    <small><ion-icon name="star"></ion-icon> {{ t.rating }} · {{ barberCount(b) }} {{ t.appointmentsCount }}</small>
+                  </a>
+                }
+                @if (!topBarbers().length) {
+                  <div class="dark-card" style="grid-column:1/-1;text-align:center"><p class="muted" style="margin:0">{{ t.emptyBarbers }}</p></div>
+                }
+              </div>
+            }
+          </div>
         </div>
-      </div>
+      }
     </ion-content>
   `,
   styles: [`
@@ -153,14 +195,39 @@ import { fa } from '../../core/i18n/fa';
     .barber-card small ion-icon { color:var(--accent); font-size:11px; }
     .avail-dot { position:absolute; top:10px; left:10px; width:7px; height:7px; border-radius:999px; background:#64748b; border:2px solid var(--card-bg); }
     .avail-dot.online { background:var(--ok-green); }
+    .barber-wrap { gap: 14px; padding-top: 14px; }
+    .barber-greeting { text-align:right; }
+    .barber-greeting h1 { margin:0; font-size:20px; font-weight:800; color:var(--text-primary); }
+    .barber-greeting p { margin:6px 0 0; font-size:11px; color:var(--text-secondary); }
+    .barber-stats { margin-top: 2px; }
+    .barber-stat { text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .barber-stat b { font-size:17px; font-weight:800; color:var(--accent); line-height:1; display:block; }
+    .barber-stat small { font-size:10px; color:var(--text-secondary); font-weight:500; }
+    .queue-head { margin:10px 0 10px; }
+    .queue-head h3 { font-size:13px; }
+    .queue-head a { font-size:11px; }
+    .queue-list { display:flex; flex-direction:column; gap:10px; }
+    .queue-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:14px 12px; display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text-primary); }
+    .queue-time { color:var(--accent); font-size:13px; font-weight:800; direction:ltr; min-width:44px; text-align:center; }
+    .queue-divider { width:1px; height:28px; background:var(--card-border); flex-shrink:0; }
+    .queue-info { flex:1; display:flex; flex-direction:column; gap:2px; text-align:right; min-width:0; }
+    .queue-info b { font-size:12px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .queue-info small { font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .queue-chevron { font-size:14px; color:var(--text-secondary); flex-shrink:0; }
+    .action-grid { margin-top: 6px; }
+    .action-card { padding:18px 8px; display:flex; flex-direction:column; align-items:center; gap:8px; text-decoration:none; color:var(--text-primary); text-align:center; }
+    .action-card ion-icon { font-size:20px; color:var(--text-primary); }
+    .action-card span { font-size:11px; font-weight:700; }
   `],
 })
 export class HomePage implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
+  private viewRole = inject(ViewRoleService);
   fa = fa;
   t = fa.home;
   c = fa.common;
+  isBarber = computed(() => this.viewRole.activeView() === 'barber');
   loading = signal(false);
   loadingAppt = signal(false);
   barbers = signal<Barber[]>([]);
@@ -175,7 +242,48 @@ export class HomePage implements OnInit {
     const u = this.auth.user();
     if (u?.name) return u.name;
     if (u?.username) return u.username;
-    return 'امیر';
+    return this.isBarber() ? 'رضا' : 'امیر';
+  });
+  private todayStr = new Date().toISOString().slice(0, 10);
+  todayCount = computed(() => {
+    const arr = this.appointments();
+    if (!arr.length) return 6;
+    const t = this.todayStr;
+    const c = arr.filter(a => (a.date ?? '').slice(0, 10) === t).length;
+    return c || arr.length;
+  });
+  completedCount = computed(() => {
+    const arr = this.appointments();
+    if (!arr.length) return 4;
+    return arr.filter(a => a.status === 'completed').length || 4;
+  });
+  todayCountFa = computed(() => this.toFa(this.todayCount()));
+  completedCountFa = computed(() => this.toFa(this.completedCount()));
+  revenueFa = computed(() => {
+    const arr = this.appointments();
+    if (!arr.length) return '۱/۲ م';
+    let sum = 0;
+    for (const a of arr) sum += (a.service?.price as number) ?? 0;
+    if (!sum) return '۱/۲ م';
+    if (sum >= 1000000) return this.toFa((sum / 1000000).toFixed(1)) + ' م';
+    if (sum >= 1000) return this.toFa(Math.round(sum / 1000).toString()) + ' هـ';
+    return this.toFa(sum.toString());
+  });
+  queue = computed(() => {
+    const arr = this.appointments();
+    if (!arr.length) {
+      return [
+        { id: 'mock-1', name: 'امیر محمدی', service: 'کوتاهی و استایل', time: '۱۴:۳۰' },
+        { id: 'mock-2', name: 'پویا احمدی', service: 'اصلاح و فرم ریش', time: '۱۶:۰۰' },
+        { id: 'mock-3', name: 'سام نادری', service: 'پکیج کامل داماد', time: '۱۷:۴۵' },
+      ];
+    }
+    return [...arr].sort((a,b)=> `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`)).slice(0,3).map(a => ({
+      id: a.id,
+      name: a.user?.name ? `${a.user.name} ${a.user.family ?? ''}`.trim() : (a.barber?.fullName ?? a.barberId ?? 'مشتری'),
+      service: a.service?.name ?? 'خدمت',
+      time: this.toFa(a.startTime ?? '--:--'),
+    }));
   });
   nextApptBarberName = computed(() => {
     const a = this.nextAppt();
@@ -192,23 +300,18 @@ export class HomePage implements OnInit {
     return 'https://i.pravatar.cc/100?u=' + (a?.barberId ?? 'reza');
   });
   constructor() {
-    addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline });
+    addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline });
   }
-  eduLink() {
-    return '/training';
+  private toFa(s: string | number) {
+    const en = String(s);
+    const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return en.replace(/[0-9]/g, d => faDigits[+d]).replace('.', '/');
   }
-  avatar(b: Barber) {
-    return b.profileImage ?? `https://i.pravatar.cc/100?u=${b.id}`;
-  }
-  barberCount(b: Barber) {
-    return (b as unknown as { _count?: number })._count ?? 248;
-  }
-  onImgError(e: Event) {
-    (e.target as HTMLImageElement).src = 'https://i.pravatar.cc/100?u=fallback';
-  }
-  ngOnInit() {
-    this.load();
-  }
+  eduLink() { return '/training'; }
+  avatar(b: Barber) { return b.profileImage ?? `https://i.pravatar.cc/100?u=${b.id}`; }
+  barberCount(b: Barber) { return (b as unknown as { _count?: number })._count ?? 248; }
+  onImgError(e: Event) { (e.target as HTMLImageElement).src = 'https://i.pravatar.cc/100?u=fallback'; }
+  ngOnInit() { this.load(); }
   load() {
     this.loading.set(true);
     this.loadingAppt.set(true);

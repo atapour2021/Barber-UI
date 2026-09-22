@@ -7,7 +7,7 @@
       <span class="brand-icon"><ion-icon name="cut-outline"></ion-icon></span>
       <span class="brand-text">
         <b>نیوباربر</b>
-        <small>پنل مشتری</small>
+        <small>{{ activeView() === 'barber' ? 'پنل آرایشگر' : activeView() === 'admin' ? 'پنل مدیریت' : 'پنل مشتری' }}</small>
       </span>
     </div>
     <div class="topbar-actions">
@@ -25,26 +25,51 @@
 <app-sidebar [open]="sidebarOpen()" [activeView]="activeView()" (closed)="closeSidebar()" (viewChange)="setView($event)" (logoutClicked)="logout()" />
 
 <ion-tabs>
-  <ion-tab-bar slot="bottom" class="neo-tabbar">
-    <ion-tab-button tab="home" href="/tabs/home">
-      <ion-icon name="home-outline"></ion-icon>
-      <ion-label>{{ t.home }}</ion-label>
-    </ion-tab-button>
-    <ion-tab-button tab="services" href="/tabs/services">
-      <ion-icon name="cut-outline"></ion-icon>
-      <ion-label>{{ t.services }}</ion-label>
-    </ion-tab-button>
-    <ion-tab-button tab="booking" href="/tabs/booking">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <ion-label>{{ t.booking }}</ion-label>
-    </ion-tab-button>
-    <ion-tab-button tab="appointment" href="/tabs/appointment">
-      <ion-icon name="time-outline"></ion-icon>
-      <ion-label>{{ t.appointments }}</ion-label>
-    </ion-tab-button>
-    <ion-tab-button tab="profile" href="/tabs/profile">
-      <ion-icon name="person-outline"></ion-icon>
-      <ion-label>{{ t.account }}</ion-label>
-    </ion-tab-button>
-  </ion-tab-bar>
+  @if (activeView() === 'barber') {
+    <ion-tab-bar slot="bottom" class="neo-tabbar" dir="rtl">
+      <ion-tab-button tab="home" href="/tabs/home">
+        <ion-icon name="apps-outline"></ion-icon>
+        <ion-label>داشبورد</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="appointment" href="/tabs/appointment">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-label>نوبت‌ها</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="booking" href="/tabs/booking">
+        <ion-icon name="time-outline"></ion-icon>
+        <ion-label>برنامه</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="training" href="/tabs/training">
+        <ion-icon name="school-outline"></ion-icon>
+        <ion-label>آموزش</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="profile" href="/tabs/profile">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>پروفایل</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  } @else {
+    <ion-tab-bar slot="bottom" class="neo-tabbar">
+      <ion-tab-button tab="home" href="/tabs/home">
+        <ion-icon name="home-outline"></ion-icon>
+        <ion-label>{{ t.home }}</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="services" href="/tabs/services">
+        <ion-icon name="cut-outline"></ion-icon>
+        <ion-label>{{ t.services }}</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="booking" href="/tabs/booking">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-label>{{ t.booking }}</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="appointment" href="/tabs/appointment">
+        <ion-icon name="time-outline"></ion-icon>
+        <ion-label>{{ t.appointments }}</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="profile" href="/tabs/profile">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>{{ t.account }}</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  }
 </ion-tabs>

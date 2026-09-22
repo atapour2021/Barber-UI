@@ -17,6 +17,7 @@ import { fa } from '../../core/i18n/fa';
 import { ThemeService } from '../../core/services/theme.service';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ViewRoleService } from '../../core/services/view-role.service';
 import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sidebar';
 
 @Component({
@@ -42,7 +43,7 @@ import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sid
           </button>
           <div class="topbar-brand">
             <span class="brand-icon"><ion-icon name="cut-outline"></ion-icon></span>
-            <span class="brand-text"><b>نیوباربر</b><small>پنل مشتری</small></span>
+            <span class="brand-text"><b>نیوباربر</b><small>{{ activeView() === 'barber' ? 'پنل آرایشگر' : activeView() === 'admin' ? 'پنل مدیریت' : 'پنل مشتری' }}</small></span>
           </div>
           <div class="topbar-actions">
             <button class="topbar-icon" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.isDark() ? 'light' : 'dark'">
@@ -99,9 +100,8 @@ export class AppLayoutComponent {
   private router = inject(Router);
   unread = 0;
   sidebarOpen = signal(false);
-  activeView = signal<'admin' | 'barber' | 'customer'>(
-    this.auth.isAdmin() ? 'admin' : this.auth.isBarber() ? 'barber' : 'customer'
-  );
+  private viewRole = inject(ViewRoleService);
+  activeView = this.viewRole.activeView;
 
   constructor() {
     addIcons({ homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, notificationsOutline, sunnyOutline, moonOutline, menuOutline });
@@ -116,7 +116,7 @@ export class AppLayoutComponent {
 
   toggleSidebar() { this.sidebarOpen.update(v => !v); }
   closeSidebar() { this.sidebarOpen.set(false); }
-  setView(v: 'admin' | 'barber' | 'customer') { this.activeView.set(v); }
+  setView(v: 'admin' | 'barber' | 'customer') { this.viewRole.setView(v); }
 
   @HostListener('document:keydown.escape')
   onEsc() { this.closeSidebar(); }
