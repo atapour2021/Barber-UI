@@ -41,7 +41,7 @@ import { ThemeService } from '../../../core/services/theme.service';
           <span class="sidebar-item-label"><ion-icon name="play-outline"></ion-icon> ویدیوهای آموزشی</span>
           <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
         </a>
-        <a class="sidebar-item" (click)="closed.emit()" routerLink="/services">
+        <a class="sidebar-item" (click)="closed.emit()" routerLink="/tabs/documents">
           <span class="sidebar-item-label"><ion-icon name="ribbon-outline"></ion-icon> مدارک و گواهی‌ها</span>
           <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
         </a>

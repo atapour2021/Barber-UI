@@ -66,7 +66,7 @@ import { fa } from '../../core/i18n/fa';
               <ion-icon name="book-outline"></ion-icon>
               <span>آموزش‌ها</span>
             </a>
-            <a class="dark-card action-card" routerLink="/tabs/services">
+            <a class="dark-card action-card" routerLink="/tabs/documents">
               <ion-icon name="ribbon-outline"></ion-icon>
               <span>مدارک</span>
             </a>

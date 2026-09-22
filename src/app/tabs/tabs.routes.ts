@@ -78,6 +78,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('../pages/training/training.page').then((m) => m.TrainingPage),
       },
+      {
+        path: 'documents',
+        loadComponent: () =>
+          import('../pages/documents/documents.page').then((m) => m.DocumentsPage),
+        canActivate: [authGuard],
+      },
       { path: '', redirectTo: '/tabs/home', pathMatch: 'full' },
     ],
   },
