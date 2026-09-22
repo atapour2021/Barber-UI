@@ -2,11 +2,11 @@ import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonSpinner, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline } from 'ionicons/icons';
+import { peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline, cutOutline, mailOutline, personOutline, appsOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
-import { Appointment, Barber } from '../../core/models';
+import { Appointment, Barber, DashboardData } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
 @Component({
   selector: 'app-home',
@@ -14,7 +14,75 @@ import { fa } from '../../core/i18n/fa';
   imports: [RouterLink, IonContent, IonSpinner, IonIcon],
   template: `
     <ion-content [fullscreen]="true">
-      @if (isBarber()) {
+      @if (isAdmin()) {
+        <div class="page-wrap admin-wrap" dir="rtl">
+          <div class="admin-head">
+            <h1>داشبورد مدیریت</h1>
+            <p>نمای کلی عملکرد نیوباربر</p>
+          </div>
+          @if (dashLoading()) {
+            <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
+          }
+          <div class="grid-4 admin-stats">
+            <div class="dark-card admin-stat">
+              <ion-icon name="people-outline"></ion-icon>
+              <b>{{ usersFa() }}</b>
+              <small>کاربر فعال</small>
+            </div>
+            <div class="dark-card admin-stat">
+              <ion-icon name="cut-outline"></ion-icon>
+              <b>{{ barbersFa() }}</b>
+              <small>آرایشگر</small>
+            </div>
+            <div class="dark-card admin-stat">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <b>{{ apptsFa() }}</b>
+              <small>نوبت امروز</small>
+            </div>
+            <div class="dark-card admin-stat">
+              <ion-icon name="mail-outline"></ion-icon>
+              <b>{{ revenueFa() }}</b>
+              <small>فروش امروز</small>
+            </div>
+          </div>
+          <div class="admin-panels">
+            <div class="dark-card weekly-card">
+              <h3>عملکرد هفتگی</h3>
+              <div class="weekly-chart">
+                @for (d of weekly(); track d.label) {
+                  <div class="wk-col">
+                    <div class="wk-bar-wrap"><span class="wk-bar" [style.height.%]="d.h"></span></div>
+                    <small>{{ d.label }}</small>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="dark-card manage-card">
+              <h3>مدیریت سریع</h3>
+              <a class="manage-row" routerLink="/admin">
+                <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
+                <span class="mr-text"><ion-icon name="people-outline"></ion-icon> کاربران</span>
+              </a>
+              <a class="manage-row" routerLink="/barbers">
+                <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
+                <span class="mr-text"><ion-icon name="cut-outline"></ion-icon> آرایشگران</span>
+              </a>
+              <a class="manage-row" routerLink="/admin">
+                <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
+                <span class="mr-text"><ion-icon name="person-outline"></ion-icon> مشتریان</span>
+              </a>
+              <a class="manage-row" routerLink="/tabs/services">
+                <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
+                <span class="mr-text"><ion-icon name="apps-outline"></ion-icon> خدمات</span>
+              </a>
+              <a class="manage-row" routerLink="/tabs/appointment">
+                <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
+                <span class="mr-text"><ion-icon name="calendar-outline"></ion-icon> نوبت‌ها</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      } @else if (isBarber()) {
         <div class="page-wrap barber-wrap" dir="rtl">
           <div class="barber-greeting">
             <h1>روز بخیر، {{ displayName() }}</h1>
@@ -218,6 +286,33 @@ import { fa } from '../../core/i18n/fa';
     .action-card { padding:18px 8px; display:flex; flex-direction:column; align-items:center; gap:8px; text-decoration:none; color:var(--text-primary); text-align:center; }
     .action-card ion-icon { font-size:20px; color:var(--text-primary); }
     .action-card span { font-size:11px; font-weight:700; }
+    .admin-wrap { gap: 16px; padding-top: 14px; }
+    .admin-head { text-align:right; }
+    .admin-head h1 { margin:0; font-size:20px; font-weight:800; color:var(--text-primary); }
+    .admin-head p { margin:4px 0 0; font-size:11px; color:var(--text-secondary); }
+    .grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; width:100%; }
+    @media(max-width:640px){ .grid-4{ gap:8px; } }
+    @media(max-width:520px){ .grid-4{ grid-template-columns:1fr 1fr; } }
+    .admin-stats { margin-top: 2px; }
+    .admin-stat { text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .admin-stat ion-icon { font-size:18px; color:var(--accent); }
+    .admin-stat b { font-size:17px; font-weight:800; color:var(--text-primary); line-height:1; }
+    .admin-stat small { font-size:10px; color:var(--text-secondary); font-weight:500; }
+    .admin-panels { display:grid; grid-template-columns:1.55fr 1fr; gap:10px; width:100%; }
+    @media(max-width:680px){ .admin-panels{ grid-template-columns:1fr; } }
+    .weekly-card h3, .manage-card h3 { margin:0 0 14px; font-size:12px; font-weight:800; color:var(--text-primary); text-align:right; }
+    .weekly-card { display:flex; flex-direction:column; min-height:200px; }
+    .weekly-chart { flex:1; display:flex; align-items:flex-end; justify-content:space-between; gap:6px; min-height:120px; padding-top:6px; }
+    .wk-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .wk-bar-wrap { height:110px; width:100%; display:flex; align-items:flex-end; justify-content:center; }
+    .wk-bar { display:block; width:100%; max-width:36px; background:var(--accent); border-radius:6px 6px 0 0; min-height:6px; }
+    .wk-col small { font-size:10px; color:var(--text-secondary); }
+    .manage-card { display:flex; flex-direction:column; }
+    .manage-row { display:flex; align-items:center; justify-content:space-between; padding:12px 4px; border-bottom:1px solid var(--card-border); text-decoration:none; color:var(--text-primary); }
+    .manage-row:last-child { border-bottom:none; }
+    .mr-text { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; }
+    .mr-text ion-icon { font-size:15px; color:var(--text-secondary); }
+    .mr-chevron { font-size:12px; color:var(--text-secondary); flex-shrink:0; }
   `],
 })
 export class HomePage implements OnInit {
@@ -227,9 +322,12 @@ export class HomePage implements OnInit {
   fa = fa;
   t = fa.home;
   c = fa.common;
+  isAdmin = computed(() => this.viewRole.activeView() === 'admin');
   isBarber = computed(() => this.viewRole.activeView() === 'barber');
   loading = signal(false);
   loadingAppt = signal(false);
+  dashLoading = signal(false);
+  dash = signal<DashboardData | null>(null);
   barbers = signal<Barber[]>([]);
   appointments = signal<Appointment[]>([]);
   nextAppt = computed(() => {
@@ -259,12 +357,20 @@ export class HomePage implements OnInit {
   });
   todayCountFa = computed(() => this.toFa(this.todayCount()));
   completedCountFa = computed(() => this.toFa(this.completedCount()));
+  usersFa = computed(() => this.toFa((this.dash()?.totalUsers ?? 1248).toLocaleString('en-US')));
+  barbersFa = computed(() => this.toFa(this.dash()?.totalBarbers ?? 36));
+  apptsFa = computed(() => this.toFa(this.dash()?.totalAppointments ?? 184));
+  weekly = computed(() => {
+    const labels = ['ش', 'ی', 'د', 'س', 'ج', 'پ', 'ج'];
+    const hs = [58, 78, 46, 88, 62, 42, 72];
+    return labels.map((label, i) => ({ label, h: hs[i] }));
+  });
   revenueFa = computed(() => {
     const arr = this.appointments();
-    if (!arr.length) return '۱/۲ م';
+    if (!arr.length) return '۴۸/۲ م';
     let sum = 0;
     for (const a of arr) sum += (a.service?.price as number) ?? 0;
-    if (!sum) return '۱/۲ م';
+    if (!sum) return '۴۸/۲ م';
     if (sum >= 1000000) return this.toFa((sum / 1000000).toFixed(1)) + ' م';
     if (sum >= 1000) return this.toFa(Math.round(sum / 1000).toString()) + ' هـ';
     return this.toFa(sum.toString());
@@ -300,7 +406,7 @@ export class HomePage implements OnInit {
     return 'https://i.pravatar.cc/100?u=' + (a?.barberId ?? 'reza');
   });
   constructor() {
-    addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline });
+    addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline, cutOutline, mailOutline, personOutline, appsOutline });
   }
   private toFa(s: string | number) {
     const en = String(s);
@@ -315,6 +421,13 @@ export class HomePage implements OnInit {
   load() {
     this.loading.set(true);
     this.loadingAppt.set(true);
+    if (this.isAdmin()) {
+      this.dashLoading.set(true);
+      this.api.admin.dashboard().subscribe({
+        next: (v) => { this.dash.set(v as DashboardData); this.dashLoading.set(false); },
+        error: () => this.dashLoading.set(false),
+      });
+    }
     this.api.barbers.list().subscribe({
       next: (v) => { this.barbers.set(v as Barber[]); this.loading.set(false); },
       error: () => this.loading.set(false),
