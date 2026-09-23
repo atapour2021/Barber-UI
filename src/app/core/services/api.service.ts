@@ -77,6 +77,7 @@ export class ApiService {
   };
   locations = {
     list: (p?: Record<string, unknown>) => this.locationsApi.list(p),
+    myAddresses: () => this.locationsApi.myAddresses(),
     byBarber: (barberId: string) => this.locationsApi.byBarber(barberId),
     get: (id: string) => this.locationsApi.get(id),
     create: (d: Record<string, unknown>) => this.locationsApi.create(d),

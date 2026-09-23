@@ -11,6 +11,9 @@ export class LocationsApi {
   list(params?: Record<string, unknown>) {
     return this.http.get<Location[]>(`${this.b}/locations`, { params: toParams(params) });
   }
+  myAddresses() {
+    return this.http.get<Location[]>(`${this.b}/locations/me`);
+  }
   byBarber(barberId: string) {
     return this.http.get<Location>(`${this.b}/locations/barber/${barberId}`);
   }

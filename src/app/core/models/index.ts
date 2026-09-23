@@ -140,12 +140,15 @@ export interface Certificate {
 export interface Location {
   id: string;
   address: string;
+  label?: string | null;
   latitude: number;
   longitude: number;
   mapMetadata?: Record<string, unknown> | null;
-  barberId: string;
+  barberId?: string | null;
+  userId?: string | null;
   barber?: Barber;
   createdAt?: string;
+  updatedAt?: string;
 }
 export interface NotificationItem {
   id: string;
