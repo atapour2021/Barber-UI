@@ -4,6 +4,8 @@ import { IonContent, IonCard, IonCardContent, IonList, IonLabel, IonButton, IonS
 import { addIcons } from 'ionicons';
 import { refreshOutline, trashOutline, addOutline, searchOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
+import { ToastService } from '../../core/services/toast.service';
+import { Appointment } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
@@ -16,7 +18,7 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
     <ion-content [fullscreen]="true">
       <div class="page-wrap" dir="rtl">
         <div class="section-head"><h3>{{ t.title }}</h3></div>
-        <ion-segment [value]="tab" (ionChange)="tab = ($event.detail.value ?? 'dash')!.toString()" style="width:100%;--background:var(--card-bg)">
+        <ion-segment [value]="tab" (ionChange)="onTab($event)" style="width:100%;--background:var(--card-bg)">
           <ion-segment-button value="dash">{{ t.dashboard }}</ion-segment-button>
           <ion-segment-button value="users">{{ t.users }}</ion-segment-button>
           <ion-segment-button value="appointments">{{ t.appointments }}</ion-segment-button>
@@ -47,13 +49,65 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
           </ion-list>
         }
         @if (tab === 'appointments') {
-          @if (!appts().length) { <app-empty-state [message]="c.empty" /> }
-          <ion-list lines="none" style="background:transparent;margin-top:12px;width:100%">
+          <div class="dark-card" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select [(ngModel)]="apptStatus" (ngModelChange)="loadAppts()" style="flex:1;min-width:140px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-family:inherit">
+              <option value="">همه وضعیت‌ها</option>
+              <option value="pending">در انتظار</option>
+              <option value="confirmed">تایید شده</option>
+              <option value="cancelled">لغو شده</option>
+              <option value="completed">انجام شده</option>
+              <option value="no_show">عدم حضور</option>
+            </select>
+            <ion-button size="small" (click)="loadAppts()" style="--background:var(--accent);--color:var(--accent-contrast)">به‌روزرسانی</ion-button>
+          </div>
+
+          <div class="dark-card" style="margin-top:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+            <b style="font-size:12px;color:var(--text-primary)">ایجاد نوبت (مدیر)</b>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <input [(ngModel)]="newAppt.barberId" placeholder="barberId" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+              <input [(ngModel)]="newAppt.serviceId" placeholder="serviceId" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+              <input [(ngModel)]="newAppt.date" placeholder="2026-09-30" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+              <input [(ngModel)]="newAppt.startTime" placeholder="09:00 (HH:mm)" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+              <input [(ngModel)]="newAppt.endTime" placeholder="09:30 (HH:mm)" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+              <input [(ngModel)]="newAppt.notes" placeholder="یادداشت" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+            </div>
+            <ion-button size="small" (click)="createAppt()" [disabled]="creating()" style="--background:var(--accent);--color:var(--accent-contrast)">ایجاد</ion-button>
+          </div>
+
+          @if (apptLoading()) { <div class="dark-card" style="text-align:center;padding:16px;margin-top:10px"><ion-spinner></ion-spinner></div> }
+          @if (apptError()) { <div class="dark-card" style="text-align:center;padding:12px;margin-top:10px;color:#ef4444;font-size:12px">{{ apptError() }}</div> }
+          @if (!apptLoading() && !appts().length) { <app-empty-state [message]="c.empty" /> }
+          <ion-list lines="none" style="background:transparent;margin-top:8px;width:100%">
             @for (a of appts(); track a.id) {
-              <ion-card style="margin-bottom:8px"><ion-card-content style="display:flex;justify-content:space-between;align-items:center"><ion-label><h3 style="font-weight:800;color:var(--text-primary);font-size:13px">{{ a.date }} {{ a.startTime }}</h3><p class="muted">{{ a.status }}</p></ion-label><ion-badge style="font-size:10px">{{ a.status }}</ion-badge></ion-card-content></ion-card>
+              <ion-card style="margin-bottom:8px">
+                <ion-card-content style="display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                    <ion-label style="min-width:0"><h3 style="font-weight:800;color:var(--text-primary);font-size:12px">{{ a.date.slice(0,10) }} {{ a.startTime.slice(11,16) || a.startTime }} - {{ a.endTime.slice(11,16) || a.endTime }}</h3><p class="muted" style="font-size:11px">{{ a.barber?.fullName ?? a.barberId.slice(0,8) }} · {{ a.service?.name ?? a.serviceId.slice(0,8) }} · {{ a.user?.username ?? a.userId.slice(0,8) }}</p>@if(a.notes){<p class="muted" style="font-size:11px;white-space:pre-wrap">📝 {{ a.notes }}</p>}</ion-label>
+                    <ion-badge style="font-size:10px;flex-shrink:0">{{ a.status }}</ion-badge>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                    <select [value]="a.status" (change)="updateStatus(a, $any($event.target).value)" [disabled]="apptBusy()===a.id" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:6px;font-size:11px;color:var(--text-primary)">
+                      <option value="pending">pending</option>
+                      <option value="confirmed">confirmed</option>
+                      <option value="cancelled">cancelled</option>
+                      <option value="completed">completed</option>
+                      <option value="no_show">no_show</option>
+                    </select>
+                    <ion-button fill="outline" size="small" (click)="startEditAppt(a)" [disabled]="apptBusy()===a.id">ویرایش</ion-button>
+                    @if (a.status!=='cancelled' && a.status!=='completed' && a.status!=='no_show') { <ion-button fill="clear" size="small" color="warning" (click)="cancelAppt(a)" [disabled]="apptBusy()===a.id">لغو</ion-button> }
+                    <ion-button fill="clear" size="small" color="danger" (click)="deleteAppt(a)" [disabled]="apptBusy()===a.id"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button>
+                  </div>
+                  @if (editId()===a.id) {
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input [(ngModel)]="editNotes" placeholder="یادداشت" maxlength="500" style="flex:1;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;font-size:12px;color:var(--text-primary)" />
+                      <ion-button size="small" (click)="saveEdit(a)" [disabled]="apptBusy()===a.id" style="--background:var(--accent);--color:var(--accent-contrast)">ذخیره</ion-button>
+                      <ion-button size="small" fill="clear" (click)="editId.set(null)">انصراف</ion-button>
+                    </div>
+                  }
+                </ion-card-content>
+              </ion-card>
             }
           </ion-list>
-          <app-ui-button size="small" fill="outline" (pressed)="loadAppts()">{{ t.refresh }}</app-ui-button>
         }
         @if (tab === 'settings') {
           <div class="dark-card" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
@@ -72,23 +126,83 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
 })
 export class AdminPage implements OnInit {
   private api = inject(ApiService);
+  private toast = inject(ToastService);
   t = fa.admin;
   c = fa.common;
   tab = 'dash';
   dash = signal<{ totalUsers: number; totalBarbers: number; totalAppointments: number; totalBarbershops: number; appointmentsByStatus: Record<string, number> } | null>(null);
   dashLoading = signal(false);
   users = signal<{ id: string; username: string; role: string; name: string; family: string; isActive: boolean }[]>([]);
-  appts = signal<{ id: string; date: string; startTime: string; status: string }[]>([]);
+  appts = signal<Appointment[]>([]);
+  apptLoading = signal(false);
+  apptError = signal('');
+  apptBusy = signal<string | null>(null);
+  apptStatus = '';
+  editId = signal<string | null>(null);
+  editNotes = '';
+  newAppt: Record<string,string> = { barberId:'', serviceId:'', date:'', startTime:'', endTime:'', notes:'' };
+  creating = signal(false);
   settings = signal<{ key: string; value?: string | null }[]>([]);
   uq: Record<string, unknown> = {};
   newKey = '';
   newVal = '';
   constructor() { addIcons({ refreshOutline, trashOutline, addOutline, searchOutline }); }
   ngOnInit() { this.loadDash(); this.loadUsers(); this.loadSettings(); }
+  onTab(e: CustomEvent) { this.tab = (e.detail.value ?? 'dash').toString(); if (this.tab==='appointments' && !this.appts().length) this.loadAppts(); }
   loadDash() { this.dashLoading.set(true); this.api.admin.dashboard().subscribe({ next: (v) => { this.dash.set(v as never); this.dashLoading.set(false); }, error: () => this.dashLoading.set(false) }); }
   loadUsers() { this.api.admin.users(this.uq).subscribe({ next: (v) => { const arr = Array.isArray(v) ? v : ((v as { data: unknown[] }).data ?? []); this.users.set(arr as never); } }); }
   delUser(id: string) { this.api.admin.deleteUser(id).subscribe({ next: () => this.loadUsers() }); }
-  loadAppts() { this.api.admin.adminAppointments({}).subscribe({ next: (v) => { const arr = Array.isArray(v) ? v : ((v as { data: unknown[] }).data ?? []); this.appts.set(arr as never); } }); }
+  loadAppts() {
+    this.apptLoading.set(true); this.apptError.set('');
+    const p: Record<string, unknown> = {};
+    if (this.apptStatus) p['status']=this.apptStatus;
+    this.api.admin.adminAppointments(p).subscribe({
+      next: (v) => { const arr = Array.isArray(v) ? v as Appointment[] : ((v as { data: Appointment[] }).data ?? []); this.appts.set(arr as Appointment[]); this.apptLoading.set(false); },
+      error: (e) => { this.apptError.set((e?.error as {message?:string})?.message ?? 'خطا'); this.apptLoading.set(false); },
+    });
+  }
+  updateStatus(a: Appointment, status: string) {
+    this.apptBusy.set(a.id);
+    this.api.admin.updateAppointmentStatus(a.id, status).subscribe({
+      next: () => { this.toast.success(fa.appointments.statusSuccess); this.apptBusy.set(null); this.loadAppts(); },
+      error: (e) => { this.toast.error((e?.error as {message?:string})?.message ?? fa.common.failed); this.apptBusy.set(null); },
+    });
+  }
+  cancelAppt(a: Appointment) {
+    this.apptBusy.set(a.id);
+    this.api.admin.cancelAppointment(a.id).subscribe({
+      next: () => { this.toast.success(fa.appointments.cancelSuccess); this.apptBusy.set(null); this.loadAppts(); },
+      error: (e) => { this.toast.error((e?.error as {message?:string})?.message ?? fa.common.failed); this.apptBusy.set(null); },
+    });
+  }
+  deleteAppt(a: Appointment) {
+    this.apptBusy.set(a.id);
+    this.api.admin.deleteAppointment(a.id).subscribe({
+      next: () => { this.toast.success(fa.common.success); this.apptBusy.set(null); this.loadAppts(); },
+      error: (e) => { this.toast.error((e?.error as {message?:string})?.message ?? fa.common.failed); this.apptBusy.set(null); },
+    });
+  }
+  startEditAppt(a: Appointment) { this.editId.set(a.id); this.editNotes = a.notes ?? ''; }
+  saveEdit(a: Appointment) {
+    this.apptBusy.set(a.id);
+    this.api.appointments.update(a.id, { notes: this.editNotes }).subscribe({
+      next: () => { this.toast.success(fa.common.success); this.editId.set(null); this.apptBusy.set(null); this.loadAppts(); },
+      error: (e) => { this.toast.error((e?.error as {message?:string})?.message ?? fa.common.failed); this.apptBusy.set(null); },
+    });
+  }
+  createAppt() {
+    const d = this.newAppt.date?.slice(0,10);
+    const s = this.newAppt.startTime?.trim();
+    const e = this.newAppt.endTime?.trim();
+    if (!this.newAppt.barberId || !this.newAppt.serviceId || !d || !s || !e) { this.toast.warning('فیلدهای الزامی را پر کنید'); return; }
+    const startTime = s.includes('T') ? s : `${d}T${s.length===5?s+':00':s}.000Z`;
+    const endTime = e.includes('T') ? e : `${d}T${e.length===5?e+':00':e}.000Z`;
+    this.creating.set(true);
+    this.api.appointments.create({ barberId: this.newAppt.barberId, serviceId: this.newAppt.serviceId, date: d, startTime, endTime, notes: this.newAppt.notes || undefined }).subscribe({
+      next: () => { this.toast.success(fa.appointments.createSuccess); this.creating.set(false); this.newAppt={barberId:'',serviceId:'',date:'',startTime:'',endTime:'',notes:''}; this.loadAppts(); },
+      error: (err) => { this.toast.error((err?.error as {message?:string})?.message ?? fa.common.failed); this.creating.set(false); },
+    });
+  }
   loadSettings() { this.api.admin.settings().subscribe({ next: (v) => this.settings.set(v as { key: string; value?: string | null }[]) }); }
   createSetting() { this.api.admin.createSetting({ key: this.newKey, value: this.newVal }).subscribe({ next: () => { this.newKey = ''; this.newVal = ''; this.loadSettings(); } }); }
   delSetting(k: string) { this.api.admin.deleteSetting(k).subscribe({ next: () => this.loadSettings() }); }

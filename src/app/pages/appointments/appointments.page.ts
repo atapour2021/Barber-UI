@@ -290,11 +290,11 @@ export class AppointmentsPage implements OnInit {
           const raw = (v as { slots?: unknown[] })?.slots ?? v;
           const arr = Array.isArray(raw) ? raw : [];
           if (arr.length) {
-            const mapped: TimeSlot[] = (arr as { startTime: string; status?: string }[]).map(s => ({
-              time: s.startTime,
-              fa: this.toFa(s.startTime),
-              disabled: s.status ? s.status !== 'available' && s.status !== 'free' : false,
-            }));
+            const mapped: TimeSlot[] = (arr as { time?: string; startTime: string; status?: string }[]).map(s => {
+              const t = (s as { time?: string }).time ?? s.startTime.slice(11, 16);
+              const st = (s.status ?? '').toLowerCase();
+              return { time: t, fa: this.toFa(t), disabled: st ? st !== 'available' && st !== 'free' : false };
+            });
             this.slots.set(mapped);
           } else {
             this.setFallbackSlots();
