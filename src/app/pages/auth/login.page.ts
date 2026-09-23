@@ -5,6 +5,7 @@ import { IonButton, IonInput, IonItem } from '@ionic/angular';
 import { environment } from '../../../environments/environment';
 import { fa } from '../../core/i18n/fa';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractMessage } from '../../core/utils/error';
 
@@ -56,6 +57,7 @@ import { extractMessage } from '../../core/utils/error';
 export class LoginPage {
   loginForm: FormGroup;
   private auth = inject(AuthService);
+  private theme = inject(ThemeService);
   private router = inject(Router);
   private toast = inject(ToastService);
   t = fa.auth.login;
@@ -89,6 +91,7 @@ export class LoginPage {
       next: () => {
         this.loading = false;
         this.toast.success(fa.common.success);
+        this.theme.loadFromApi();
         this.router.navigateByUrl('/tabs/home');
       },
       error: (e) => {

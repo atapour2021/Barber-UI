@@ -1,10 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { moonOutline, notificationsOutline, locationOutline, chevronBackOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-profile',
@@ -84,9 +85,10 @@ import { ThemeService } from '../../core/services/theme.service';
     @media (min-width: 640px) { .account-wrap { padding-top: 22px; gap: 20px; } .account-title { font-size: 22px; } }
   `],
 })
-export class ProfilePage {
+export class ProfilePage implements OnInit {
   private auth = inject(AuthService);
   theme = inject(ThemeService);
+  private api = inject(ApiService);
   private router = inject(Router);
   smsEnabled = signal(this.readSms());
 
@@ -115,10 +117,23 @@ export class ProfilePage {
     addIcons({ moonOutline, notificationsOutline, locationOutline, chevronBackOutline });
   }
 
+  ngOnInit() {
+    this.api.users.preferences().subscribe({
+      next: (p: any) => {
+        if (typeof p?.smsReminder === 'boolean') {
+          this.smsEnabled.set(p.smsReminder);
+          try { localStorage.setItem('sms_reminder', p.smsReminder ? '1' : '0'); } catch {}
+        }
+      },
+      error: () => {},
+    });
+  }
+
   toggleSms() {
     const v = !this.smsEnabled();
     this.smsEnabled.set(v);
     try { localStorage.setItem('sms_reminder', v ? '1' : '0'); } catch {}
+    this.api.users.updatePreferences({ smsReminder: v } as any).subscribe({ error: () => {} });
   }
 
   logout() {

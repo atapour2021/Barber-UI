@@ -11,8 +11,14 @@ export interface User {
   profileImage?: string | null;
   role: string;
   isActive: boolean;
+  themePreference?: string | null;
+  smsReminder?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+export interface UserPreferences {
+  themePreference: string;
+  smsReminder: boolean;
 }
 export interface AuthResponse {
   user: User;

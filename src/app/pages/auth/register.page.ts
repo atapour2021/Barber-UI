@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { IonButton, IonInput, IonItem, IonSelect, IonSelectOption } from '@ionic/angular';
 import { fa } from '../../core/i18n/fa';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractMessage } from '../../core/utils/error';
 
@@ -73,6 +74,7 @@ import { extractMessage } from '../../core/utils/error';
 })
 export class RegisterPage {
   private auth = inject(AuthService);
+  private theme = inject(ThemeService);
   private router = inject(Router);
   private toast = inject(ToastService);
   t = fa.auth.register;
@@ -116,6 +118,7 @@ export class RegisterPage {
       next: () => {
         this.loading = false;
         this.toast.success(fa.common.success);
+        this.theme.loadFromApi();
         this.router.navigateByUrl('/tabs/home');
       },
       error: (e) => {

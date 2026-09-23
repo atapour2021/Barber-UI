@@ -10,6 +10,7 @@ import { LocationsApi } from '../api/locations.api';
 import { NotificationsApi } from '../api/notifications.api';
 import { UploadsApi } from '../api/uploads.api';
 import { AdminApi } from '../api/admin.api';
+import { UsersApi } from '../api/users.api';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -24,6 +25,7 @@ export class ApiService {
   private notificationsApi = inject(NotificationsApi);
   private uploadsApi = inject(UploadsApi);
   private adminApi = inject(AdminApi);
+  private usersApi = inject(UsersApi);
 
   barbershops = {
     list: () => this.barbershopsApi.list(),
@@ -119,5 +121,9 @@ export class ApiService {
     createSetting: (d: Record<string, unknown>) => this.adminApi.createSetting(d),
     updateSetting: (key: string, d: Record<string, unknown>) => this.adminApi.updateSetting(key, d),
     deleteSetting: (key: string) => this.adminApi.deleteSetting(key),
+  };
+  users = {
+    preferences: () => this.usersApi.getPreferences(),
+    updatePreferences: (dto: Record<string, unknown>) => this.usersApi.updatePreferences(dto as never),
   };
 }
