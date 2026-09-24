@@ -14,6 +14,15 @@ export class BarbersApi {
   me() {
     return this.http.get<Barber>(`${this.b}/barbers/me`);
   }
+  updateMe(dto: Record<string, unknown>) {
+    return this.http.patch<Barber>(`${this.b}/barbers/me`, dto);
+  }
+  uploadMyAvatar(fd: FormData) {
+    return this.http.post<Barber>(`${this.b}/barbers/me/avatar`, fd);
+  }
+  uploadAvatar(id: string, fd: FormData) {
+    return this.http.post<Barber>(`${this.b}/barbers/${id}/avatar`, fd);
+  }
   get(id: string) {
     return this.http.get<Barber>(`${this.b}/barbers/${id}`);
   }

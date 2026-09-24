@@ -2,7 +2,7 @@ import { Component, AfterViewInit, OnDestroy, OnInit, ViewChild, ElementRef, sig
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
+import { IonContent, IonIcon, IonSpinner, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, locationOutline, trashOutline, addOutline, createOutline, closeOutline, locateOutline, saveOutline } from 'ionicons/icons';
 import * as L from 'leaflet';
@@ -123,6 +123,7 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private alertCtrl = inject(AlertController);
   items = signal<Location[]>([]);
   loading = signal(true);
   saving = signal(false);
@@ -198,15 +199,30 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
 
   cancelEdit() { this.resetForm(); }
 
-  remove(id: string) {
-    this.api.locations.remove(id).subscribe({
-      next: () => {
-        this.items.set(this.items().filter(a => a.id !== id));
-        if (this.editingId() === id) this.resetForm();
-        this.toast.success('آدرس حذف شد');
-      },
-      error: (e) => this.toast.error((e?.error?.message as string) || 'حذف ممکن نشد'),
+  async remove(id: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'حذف آدرس',
+      message: 'آیا از حذف این آدرس مطمئن هستید؟',
+      cssClass: 'addr-delete-alert',
+      buttons: [
+        { text: 'انصراف', role: 'cancel' },
+        {
+          text: 'حذف',
+          role: 'destructive',
+          handler: () => {
+            this.api.locations.remove(id).subscribe({
+              next: () => {
+                this.items.set(this.items().filter(a => a.id !== id));
+                if (this.editingId() === id) this.resetForm();
+                this.toast.success('آدرس حذف شد');
+              },
+              error: (e) => this.toast.error((e?.error?.message as string) || 'حذف ممکن نشد'),
+            });
+          },
+        },
+      ],
     });
+    await alert.present();
   }
 
   locateMe() {

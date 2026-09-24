@@ -37,6 +37,9 @@ export class ApiService {
   barbers = {
     list: (p?: Record<string, unknown>) => this.barbersApi.list(p),
     me: () => this.barbersApi.me(),
+    updateMe: (d: Record<string, unknown>) => this.barbersApi.updateMe(d),
+    uploadMyAvatar: (fd: FormData) => this.barbersApi.uploadMyAvatar(fd),
+    uploadAvatar: (id: string, fd: FormData) => this.barbersApi.uploadAvatar(id, fd),
     get: (id: string) => this.barbersApi.get(id),
     create: (d: Record<string, unknown>) => this.barbersApi.create(d),
     update: (id: string, d: Record<string, unknown>) => this.barbersApi.update(id, d),
@@ -123,6 +126,9 @@ export class ApiService {
     deleteSetting: (key: string) => this.adminApi.deleteSetting(key),
   };
   users = {
+    me: () => this.usersApi.me(),
+    updateMe: (d: Record<string, unknown>) => this.usersApi.updateMe(d),
+    uploadAvatar: (fd: FormData) => this.usersApi.uploadAvatar(fd),
     preferences: () => this.usersApi.getPreferences(),
     updatePreferences: (dto: Record<string, unknown>) => this.usersApi.updatePreferences(dto as never),
   };
