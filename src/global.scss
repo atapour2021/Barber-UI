@@ -9,7 +9,6 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 @import "@ionic/angular/css/palettes/dark.class.css";
-@import "@ionic/angular/css/palettes/dark.system.css";
 
 html {
   direction: rtl;
@@ -683,4 +682,44 @@ app-auth-layout .hint {
   color: var(--ion-color-medium);
   font-size: 11px;
   margin-top: 10px;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+.input-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ion-text-color);
+  padding-right: 4px;
+}
+.custom-input {
+  --background: var(--ion-color-step-50);
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: 52px;
+  --color: var(--ion-text-color);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+.custom-input.item-has-focus {
+  border-color: var(--ion-color-primary);
+}
+.custom-input ion-input,
+.custom-input ion-textarea,
+.custom-input ion-select {
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
+  --placeholder-opacity: 1;
+  font-size: 14px;
+}
+.custom-input.ltr ion-input {
+  direction: ltr;
+  text-align: left;
 }

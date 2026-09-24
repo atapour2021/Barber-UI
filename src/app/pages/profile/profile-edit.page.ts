@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
+import { IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, saveOutline, personOutline, callOutline, mailOutline, createOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
@@ -12,7 +12,7 @@ import { extractMessage } from '../../core/utils/error';
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [FormsModule, IonContent, IonIcon, IonSpinner, RouterLink],
+  imports: [FormsModule, IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea, RouterLink],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap edit-wrap" dir="rtl">
@@ -26,19 +26,37 @@ import { extractMessage } from '../../core/utils/error';
         } @else {
           <div class="dark-card edit-form">
             <b style="font-size:12px;color:var(--text-primary)">اطلاعات کاربری</b>
-            <div class="edit-grid">
-              <label class="edit-field"><span>نام</span><input class="edit-input" [(ngModel)]="form.name" placeholder="نام" /></label>
-              <label class="edit-field"><span>نام خانوادگی</span><input class="edit-input" [(ngModel)]="form.family" placeholder="نام خانوادگی" /></label>
+            <div class="grid2">
+              <div class="input-group">
+                <label>نام</label>
+                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="form.name" placeholder="نام"></ion-input></ion-item>
+              </div>
+              <div class="input-group">
+                <label>نام خانوادگی</label>
+                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="form.family" placeholder="نام خانوادگی"></ion-input></ion-item>
+              </div>
             </div>
-            <label class="edit-field"><span><ion-icon name="call-outline"></ion-icon> شماره موبایل</span><input class="edit-input" [(ngModel)]="form.phoneNumber" placeholder="09123456789" inputmode="tel" dir="ltr" style="text-align:left" /></label>
-            <label class="edit-field"><span><ion-icon name="mail-outline"></ion-icon> ایمیل</span><input class="edit-input" [(ngModel)]="form.email" placeholder="email@example.com" inputmode="email" dir="ltr" style="text-align:left" /></label>
+            <div class="input-group">
+              <label><ion-icon name="call-outline"></ion-icon> شماره موبایل</label>
+              <ion-item lines="none" class="custom-input ltr"><ion-input [(ngModel)]="form.phoneNumber" placeholder="09123456789" type="tel"></ion-input></ion-item>
+            </div>
+            <div class="input-group">
+              <label><ion-icon name="mail-outline"></ion-icon> ایمیل</label>
+              <ion-item lines="none" class="custom-input ltr"><ion-input [(ngModel)]="form.email" placeholder="email@example.com" type="email"></ion-input></ion-item>
+            </div>
           </div>
 
           @if (isBarber()) {
             <div class="dark-card edit-form">
               <b style="font-size:12px;color:var(--text-primary)"><ion-icon name="create-outline"></ion-icon> اطلاعات آرایشگر</b>
-              <label class="edit-field"><span>نام نمایشی</span><input class="edit-input" [(ngModel)]="barberForm.fullName" placeholder="نام کامل" /></label>
-              <label class="edit-field"><span>درباره من</span><textarea class="edit-input edit-area" [(ngModel)]="barberForm.bio" placeholder="توضیح کوتاه" rows="3"></textarea></label>
+              <div class="input-group">
+                <label>نام نمایشی</label>
+                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="barberForm.fullName" placeholder="نام کامل"></ion-input></ion-item>
+              </div>
+              <div class="input-group">
+                <label>درباره من</label>
+                <ion-item lines="none" class="custom-input"><ion-textarea [(ngModel)]="barberForm.bio" placeholder="توضیح کوتاه" [autoGrow]="true" rows="3"></ion-textarea></ion-item>
+              </div>
             </div>
           }
 
@@ -59,16 +77,6 @@ import { extractMessage } from '../../core/utils/error';
     .edit-head h1 { margin:0; font-size:18px; font-weight:800; color:var(--text-primary); flex:1; text-align:right; }
     .back-btn { width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-primary); text-decoration:none; font-size:18px; }
     .edit-form { display:grid; gap:10px; }
-    .edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media(max-width:400px){ .edit-grid{ grid-template-columns:1fr; } }
-    .edit-field { display:flex; flex-direction:column; gap:6px; }
-    .edit-field span { font-size:11px; color:var(--text-secondary); display:inline-flex; align-items:center; gap:6px; }
-    .edit-field span ion-icon { font-size:14px; }
-    .edit-input { width:100%; box-sizing:border-box; background:#0f1a2e; border:1px solid var(--card-border); border-radius:8px; padding:10px 12px; color:var(--text-primary); font-family:inherit; font-size:12px; outline:none; }
-    .edit-input::placeholder { color:var(--text-muted); }
-    .edit-input:focus { border-color:var(--accent); }
-    .edit-area { resize: vertical; min-height: 72px; }
-    html:not(.ion-palette-dark) .edit-input { background:#f8fafc; }
     .edit-save { display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--accent); color:var(--accent-contrast); border:none; border-radius:10px; padding:12px 16px; font-family:inherit; font-size:13px; font-weight:800; cursor:pointer; width:100%; }
     .edit-save:disabled { opacity:0.7; cursor:default; }
     .edit-cancel { display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:12px; text-decoration:none; padding:6px; }

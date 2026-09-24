@@ -2,7 +2,7 @@ import { Component, AfterViewInit, OnDestroy, OnInit, ViewChild, ElementRef, sig
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonIcon, IonSpinner, AlertController } from '@ionic/angular';
+import { IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, locationOutline, trashOutline, addOutline, createOutline, closeOutline, locateOutline, saveOutline } from 'ionicons/icons';
 import * as L from 'leaflet';
@@ -15,7 +15,7 @@ import { unwrapArray } from '../../core/api/utils';
 @Component({
   selector: 'app-addresses',
   standalone: true,
-  imports: [IonContent, IonIcon, IonSpinner, RouterLink, FormsModule, DecimalPipe],
+  imports: [IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea, RouterLink, FormsModule, DecimalPipe],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap addr-wrap" dir="rtl">
@@ -52,8 +52,14 @@ import { unwrapArray } from '../../core/api/utils';
 
         <div class="dark-card addr-form">
           <b style="font-size:12px;color:var(--text-primary)">{{ editingId() ? 'ویرایش آدرس' : 'افزودن آدرس' }}</b>
-          <input class="addr-input" [(ngModel)]="label" placeholder="عنوان مثلا خانه" />
-          <input class="addr-input" [(ngModel)]="detail" placeholder="آدرس کامل" />
+          <div class="input-group">
+            <label>عنوان</label>
+            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="label" placeholder="مثلا خانه"></ion-input></ion-item>
+          </div>
+          <div class="input-group">
+            <label>آدرس کامل</label>
+            <ion-item lines="none" class="custom-input"><ion-textarea [(ngModel)]="detail" placeholder="آدرس کامل" [autoGrow]="true" rows="2"></ion-textarea></ion-item>
+          </div>
 
           <div class="addr-map-wrap">
             <div #mapEl class="addr-map"></div>
@@ -100,9 +106,6 @@ import { unwrapArray } from '../../core/api/utils';
     .addr-edit { color:var(--text-secondary); }
     .addr-edit:hover, .addr-del:hover { background:var(--ion-color-step-50); color:var(--text-primary); }
     .addr-form { display:grid; gap:10px; }
-    .addr-input { width:100%; box-sizing:border-box; background:#0f1a2e; border:1px solid var(--card-border); border-radius:8px; padding:10px 12px; color:var(--text-primary); font-family:inherit; font-size:12px; outline:none; }
-    .addr-input::placeholder { color:var(--text-muted); }
-    .addr-input:focus { border-color:var(--accent); }
     .addr-map-wrap { position:relative; width:100%; border-radius:10px; overflow:hidden; border:1px solid var(--card-border); }
     .addr-map { width:100%; height:240px; background:#1e2a44; }
     .addr-locate { position:absolute; bottom:10px; left:10px; z-index:400; width:32px; height:32px; border-radius:8px; background:#0f1a2e; border:1px solid #243150; color:#cbd5e1; display:inline-flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.25); }
@@ -112,7 +115,6 @@ import { unwrapArray } from '../../core/api/utils';
     .addr-add:disabled { opacity:0.7; cursor:default; }
     .addr-cancel { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--card-border); color:var(--text-primary); border-radius:8px; padding:10px 14px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
     html:not(.ion-palette-dark) .addr-map { background:#e2e8f0; }
-    html:not(.ion-palette-dark) .addr-input { background:#f8fafc; }
     html:not(.ion-palette-dark) .addr-locate { background:#fff; border-color:#cbd5e1; color:#475569; }
     :host ::ng-deep .addr-pin { background:transparent; border:none; }
     :host ::ng-deep .addr-pin-inner { width:32px; height:32px; border-radius:999px; background:var(--accent); display:flex; align-items:center; justify-content:center; color:#0b101e; font-size:18px; border:2px solid #fff; box-shadow:0 4px 16px rgba(0,0,0,0.35); }
