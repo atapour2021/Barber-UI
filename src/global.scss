@@ -301,9 +301,24 @@ ion-spinner {
 }
 .app-toast {
   --border-radius: 12px;
+  --color: #fff;
+  --button-color: #fff;
+  color: #fff;
   font-size: 13px;
   text-align: right;
   direction: rtl;
+}
+
+.app-toast::part(message) {
+  color: #fff;
+}
+
+.app-toast::part(icon) {
+  color: #fff;
+}
+
+.app-toast::part(button) {
+  color: #fff;
 }
 .empty-state {
   text-align: center;
