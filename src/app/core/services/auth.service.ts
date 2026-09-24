@@ -87,6 +87,9 @@ export class AuthService {
   reset(dto: { token: string; password: string }) {
     return this.http.post(`${this.base}/reset-password`, dto);
   }
+  changePassword(dto: { newPassword: string; confirmPassword: string }) {
+    return this.http.post(`${this.base}/change-password`, dto);
+  }
   clear() {
     try { localStorage.removeItem(AT); } catch {}
     try { localStorage.removeItem(RT); } catch {}

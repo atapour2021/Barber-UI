@@ -2,7 +2,7 @@ import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline } from 'ionicons/icons';
+import { moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline, lockClosedOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ApiService } from '../../core/services/api.service';
@@ -46,6 +46,11 @@ import { environment } from '../../../environments/environment';
               <em></em>
             </button>
           </div>
+
+          <a class="account-row account-link" routerLink="/tabs/profile/change-password">
+            <span class="row-label"><ion-icon name="lock-closed-outline"></ion-icon> تغییر رمز عبور</span>
+            <ion-icon name="chevron-back-outline" class="row-chevron"></ion-icon>
+          </a>
 
           <a class="account-row account-link" routerLink="/tabs/addresses">
             <span class="row-label"><ion-icon name="location-outline"></ion-icon> آدرس‌ها</span>
@@ -128,7 +133,7 @@ export class ProfilePage implements OnInit {
   });
 
   constructor() {
-    addIcons({ moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline });
+    addIcons({ moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline, lockClosedOutline });
   }
 
   ngOnInit() {
