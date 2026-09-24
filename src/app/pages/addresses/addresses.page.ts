@@ -7,6 +7,7 @@ import { addIcons } from 'ionicons';
 import { arrowForwardOutline, locationOutline, trashOutline, addOutline, createOutline, closeOutline, locateOutline, saveOutline } from 'ionicons/icons';
 import * as L from 'leaflet';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Location } from '../../core/models';
 import { unwrapArray } from '../../core/api/utils';
@@ -120,6 +121,7 @@ import { unwrapArray } from '../../core/api/utils';
 export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapEl', { static: false }) mapEl!: ElementRef<HTMLDivElement>;
   private api = inject(ApiService);
+  private auth = inject(AuthService);
   private toast = inject(ToastService);
   items = signal<Location[]>([]);
   loading = signal(true);
@@ -162,7 +164,8 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
     const lng = this.pickedLng();
     if (!l || !d) { this.formError.set('عنوان و آدرس الزامی است'); return; }
     if (lat == null || lng == null) { this.formError.set('لطفاً موقعیت را روی نقشه انتخاب کنید'); return; }
-    const dto: Record<string, unknown> = { address: d, label: l, latitude: lat, longitude: lng, mapMetadata: { zoom: this.map?.getZoom() ?? 15 } };
+    const uid = this.auth.user()?.id;
+    const dto: Record<string, unknown> = { address: d, label: l, latitude: lat, longitude: lng, mapMetadata: { zoom: this.map?.getZoom() ?? 15 }, ...(uid ? { userId: uid } : {}) };
     this.saving.set(true);
     const id = this.editingId();
     const req = id ? this.api.locations.update(id, dto) : this.api.locations.create(dto);

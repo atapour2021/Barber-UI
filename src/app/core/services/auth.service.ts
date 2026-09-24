@@ -88,9 +88,11 @@ export class AuthService {
     return this.http.post(`${this.base}/reset-password`, dto);
   }
   clear() {
-    localStorage.removeItem(AT);
-    localStorage.removeItem(RT);
-    localStorage.removeItem(US);
+    try { localStorage.removeItem(AT); } catch {}
+    try { localStorage.removeItem(RT); } catch {}
+    try { localStorage.removeItem(US); } catch {}
+    try { localStorage.clear(); } catch {}
+    try { sessionStorage.clear(); } catch {}
     this.token.set(null);
     this.user.set(null);
   }
