@@ -6,6 +6,7 @@ import * as L from 'leaflet';
 import { ToastService } from '../../core/services/toast.service';
 import { ApiService } from '../../core/services/api.service';
 import { Barbershop } from '../../core/models';
+import { fa } from '../../core/i18n/fa';
 
 @Component({
   selector: 'app-barbershops',
@@ -15,12 +16,12 @@ import { Barbershop } from '../../core/models';
     <ion-content [fullscreen]="true">
       <div class="page-wrap loc-wrap" dir="rtl">
         <div class="loc-head">
-          <h1>موقعیت آرایشگاه</h1>
+          <h1>{{ t.title }}</h1>
           <p>{{ shopName() }}</p>
         </div>
         <div class="loc-map-wrap">
           <div #mapEl class="loc-map"></div>
-          <button class="loc-recenter" type="button" aria-label="مرکز نقشه" (click)="recenter()">
+          <button class="loc-recenter" type="button" [attr.aria-label]="t.centerMap" (click)="recenter()">
             <ion-icon name="locate-outline"></ion-icon>
           </button>
           @if (routeInfo()) {
@@ -28,7 +29,7 @@ import { Barbershop } from '../../core/models';
               <span>{{ routeInfo()!.dist }}</span>
               <span class="dot">·</span>
               <span>{{ routeInfo()!.time }}</span>
-              <button type="button" class="badge-close" (click)="clearRoute()" aria-label="حذف مسیر"><ion-icon name="close-outline"></ion-icon></button>
+              <button type="button" class="badge-close" (click)="clearRoute()" [attr.aria-label]="t.removeRoute"><ion-icon name="close-outline"></ion-icon></button>
             </div>
           }
         </div>
@@ -40,7 +41,7 @@ import { Barbershop } from '../../core/models';
             @if (routingLoading()) {
               <ion-spinner name="crescent" style="width:18px;height:18px"></ion-spinner>
             } @else {
-              {{ isRouting() ? 'حذف مسیر' : 'مسیریابی' }}
+              {{ isRouting() ? t.removeRoute : t.routing }}
             }
           </button>
           @if (isRouting() && routeError()) {
@@ -134,6 +135,7 @@ export class BarbershopsPage implements OnInit, AfterViewInit, OnDestroy {
   private toast = inject(ToastService);
   private api = inject(ApiService);
   private map?: L.Map;
+  t = fa.barbershopLocation;
   private salonLatLng: L.LatLngExpression = [35.7826, 51.3675];
   private salonMarker?: L.Marker;
   private userMarker?: L.Marker;
@@ -143,9 +145,9 @@ export class BarbershopsPage implements OnInit, AfterViewInit, OnDestroy {
   routeInfo = signal<{ dist: string; time: string } | null>(null);
   routeError = signal('');
   shop = signal<Barbershop | null>(null);
-  shopName = signal('نیوباربر · شعبه سعادت‌آباد');
-  shopAddr = signal('تهران، سعادت‌آباد، بلوار دریا، مجتمع رویال، طبقه دوم');
-  shopPhone = signal('۰۲۱-۲۲۳۵-۴۸۹۰');
+  shopName = signal<string>(fa.barbershopLocation.branch);
+  shopAddr = signal<string>(fa.barbershopLocation.address);
+  shopPhone = signal<string>(fa.barbershopLocation.phone);
 
   constructor() { addIcons({ locateOutline, closeOutline }); }
 
@@ -156,8 +158,8 @@ export class BarbershopsPage implements OnInit, AfterViewInit, OnDestroy {
         const s = arr[0];
         if (s) {
           this.shop.set(s);
-          this.shopName.set(s.name ?? 'نیوباربر · شعبه سعادت‌آباد');
-          this.shopAddr.set(s.address ?? 'تهران، سعادت‌آباد، بلوار دریا، مجتمع رویال، طبقه دوم');
+          this.shopName.set(s.name ?? this.t.branch);
+          this.shopAddr.set(s.address ?? this.t.address);
           if (s.phoneNumber) this.shopPhone.set(s.phoneNumber as string);
           if (s.latitude && s.longitude) {
             this.salonLatLng = [Number(s.latitude), Number(s.longitude)];
@@ -216,7 +218,7 @@ export class BarbershopsPage implements OnInit, AfterViewInit, OnDestroy {
     });
     this.salonMarker = L.marker(this.salonLatLng, { icon: salonIcon })
       .addTo(this.map)
-      .bindPopup('نیوباربر · سعادت‌آباد');
+      .bindPopup(this.t.popup);
 
     setTimeout(() => this.map?.invalidateSize(), 200);
   }
@@ -258,7 +260,7 @@ export class BarbershopsPage implements OnInit, AfterViewInit, OnDestroy {
       this.drawRoute(user, coords);
       this.isRouting.set(true);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'مسیریابی ممکن نشد';
+      const msg = e instanceof Error ? e.message : (fa.toast.routingFailed ?? this.t.routingFailed);
       this.routeError.set(msg);
       this.toast.error(msg);
     } finally {
@@ -303,19 +305,19 @@ export class BarbershopsPage implements OnInit, AfterViewInit, OnDestroy {
       iconSize: [16, 16],
       iconAnchor: [8, 8],
     });
-    this.userMarker = L.marker(user, { icon: userIcon }).addTo(this.map).bindPopup('موقعیت شما');
+    this.userMarker = L.marker(user, { icon: userIcon }).addTo(this.map).bindPopup(this.t.yourLocation);
 
     const coords: L.LatLngExpression[] = osrm?.coords ?? [user, this.salonLatLng];
     this.routeLine = L.polyline(coords, { color: '#f59e0b', weight: 5, opacity: 0.95 }).addTo(this.map);
 
     if (osrm) {
       const km = osrm.dist / 1000;
-      const distFa = km >= 1 ? `${this.toFa(km.toFixed(1))} کیلومتر` : `${this.toFa(Math.round(osrm.dist).toString())} متر`;
+      const distFa = km >= 1 ? `${this.toFa(km.toFixed(1))} ${this.t.km}` : `${this.toFa(Math.round(osrm.dist).toString())} ${this.t.meter}`;
       const mins = Math.max(1, Math.round(osrm.dur / 60));
-      this.routeInfo.set({ dist: distFa, time: `${this.toFa(mins.toString())} دقیقه` });
+      this.routeInfo.set({ dist: distFa, time: `${this.toFa(mins.toString())} ${this.t.minute}` });
     } else {
       const d = this.haversineKm(user, this.salonLatLng as [number, number]);
-      this.routeInfo.set({ dist: `${this.toFa(d.toFixed(1))} کیلومتر (مستقیم)`, time: '—' });
+      this.routeInfo.set({ dist: `${this.toFa(d.toFixed(1))} ${this.t.km}${this.t.directSuffix}`, time: '—' });
     }
     this.map.fitBounds(this.routeLine.getBounds(), { padding: [28, 28] });
   }

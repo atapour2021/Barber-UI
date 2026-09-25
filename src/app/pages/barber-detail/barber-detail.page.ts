@@ -5,6 +5,7 @@ import { addIcons } from 'ionicons';
 import { star } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Barber } from '../../core/models';
+import { fa } from '../../core/i18n/fa';
 
 type BarberVM = Barber & { _rating?: string; _count?: number; _verifiedLabel?: string };
 
@@ -23,12 +24,12 @@ const FALLBACK_DEFAULT: BarberVM = FALLBACK_MAP['a1'];
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap profile-wrap" dir="rtl">
-        <h1 class="profile-title">پروفایل آرایشگر</h1>
+        <h1 class="profile-title">{{ t.title }}</h1>
 
         @if (loading()) {
-          <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">در حال بارگذاری...</p></div>
+          <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ t.loading }}</p></div>
         } @else if (!barber()) {
-          <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">آرایشگر یافت نشد</p><a routerLink="/barbers" class="link-teal" style="margin-top:8px;display:inline-block">بازگشت به آرایشگران</a></div>
+          <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">{{ t.notFound }}</p><a routerLink="/barbers" class="link-teal" style="margin-top:8px;display:inline-block">{{ t.backToBarbers }}</a></div>
         } @else {
           <div class="profile-hero">
             <div class="avatar-frame">
@@ -38,25 +39,25 @@ const FALLBACK_DEFAULT: BarberVM = FALLBACK_MAP['a1'];
             <small class="hero-spec">{{ spec() }}</small>
             <div class="hero-meta">
               <span class="meta-rating"><ion-icon name="star" aria-hidden="true"></ion-icon> {{ rating() }}</span>
-              <span class="meta-count">{{ countFa() }} مشتری</span>
-              <span class="meta-verified">تایید شده</span>
+              <span class="meta-count">{{ countFa() }} {{ t.customerSuffix }}</span>
+              <span class="meta-verified">{{ t.verified }}</span>
             </div>
           </div>
 
           <div class="info-card">
-            <h3>درباره من</h3>
+            <h3>{{ t.about }}</h3>
             <p>{{ about() }}</p>
           </div>
 
           <div class="info-card">
-            <h3>ساعات امروز</h3>
+            <h3>{{ t.todayHours }}</h3>
             <div class="hours-row">
               <span class="hours-date">{{ todayLabel() }}</span>
               <span class="hours-time">{{ hoursLabel() }}</span>
             </div>
           </div>
 
-          <a class="cta-btn" [routerLink]="['/tabs/booking']" [queryParams]="{ barberId: barber()!.id }">انتخاب خدمت و رزرو</a>
+          <a class="cta-btn" [routerLink]="['/tabs/booking']" [queryParams]="{ barberId: barber()!.id }">{{ t.cta }}</a>
         }
       </div>
     </ion-content>
@@ -89,6 +90,8 @@ const FALLBACK_DEFAULT: BarberVM = FALLBACK_MAP['a1'];
 export class BarberDetailPage implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
+  t = fa.barberDetailExtra;
+  c = fa.common;
   loading = signal(true);
   barber = signal<BarberVM | null>(null);
   todayLabel = signal(this.computeTodayLabel());
@@ -107,7 +110,7 @@ export class BarberDetailPage implements OnInit {
     const b = this.barber();
     if (b?.bio && b.bio.length > 20) return b.bio;
     if (b?.bio) return `بیش از ۹ سال تجربه در ${b.bio}، طراحی استایل و اصلاح حرفه‌ای ریش. کیفیت و رضایت شما اولویت من است.`;
-    return 'بیش از ۹ سال تجربه در کوتاهی تخصصی، طراحی استایل و اصلاح حرفه‌ای ریش. کیفیت و رضایت شما اولویت من است.';
+    return this.t.fallbackAbout;
   });
 
   constructor() { addIcons({ star }); }

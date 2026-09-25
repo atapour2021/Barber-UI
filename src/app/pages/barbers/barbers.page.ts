@@ -6,6 +6,7 @@ import { addIcons } from 'ionicons';
 import { searchOutline, star } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Barber } from '../../core/models';
+import { fa } from '../../core/i18n/fa';
 
 type BarberVM = Barber & { _count?: number; _rating?: string };
 
@@ -23,7 +24,7 @@ const FALLBACK: BarberVM[] = [
     <ion-content [fullscreen]="true">
       <div class="page-wrap barbers-wrap" dir="rtl">
         <div class="barbers-head">
-          <h1>انتخاب آرایشگر</h1>
+          <h1>{{ t.title }}</h1>
           <p>{{ countLabel() }}</p>
         </div>
 
@@ -39,9 +40,9 @@ const FALLBACK: BarberVM[] = [
         </label>
 
         @if (loading()) {
-          <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">در حال بارگذاری...</p></div>
+          <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ c.loading }}</p></div>
         } @else if (!filtered().length) {
-          <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">آرایشگری یافت نشد</p></div>
+          <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">{{ t.empty }}</p></div>
         } @else {
           <div class="barbers-grid">
             @for (b of filtered(); track b.id) {
@@ -54,11 +55,11 @@ const FALLBACK: BarberVM[] = [
                     <span class="bsc-rating">
                       <ion-icon name="star" aria-hidden="true"></ion-icon>
                       <em>{{ rating(b) }}</em>
-                      <span>({{ count(b) }} نویت)</span>
+                      <span>({{ count(b) }} {{ t.appointmentSuffix }})</span>
                     </span>
                   </div>
                 </div>
-                <a class="bsc-btn" [routerLink]="['/barbers', b.id]">مشاهده پروفایل</a>
+                <a class="bsc-btn" [routerLink]="['/barbers', b.id]">{{ t.viewProfile }}</a>
               </div>
             }
           </div>
@@ -123,7 +124,9 @@ const FALLBACK: BarberVM[] = [
 })
 export class BarbersPage implements OnInit {
   private api = inject(ApiService);
-  ph = 'جست‌وجوی نام یا تخصص';
+  t = fa.barbersList;
+  c = fa.common;
+  ph = fa.barbersList.searchPlaceholder;
   loading = signal(false);
   items = signal<BarberVM[]>([]);
   q = signal('');
@@ -139,8 +142,8 @@ export class BarbersPage implements OnInit {
   });
   countLabel = computed(() => {
     const n = this.items().length;
-    const fa = this.toFa(n);
-    return `${fa} آرایشگر حرفه‌ای نزدیک شما`;
+    const f = this.toFa(n);
+    return `${f} ${this.t.countSuffix}`;
   });
 
   constructor() { addIcons({ searchOutline, star }); }

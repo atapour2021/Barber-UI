@@ -7,6 +7,7 @@ import { arrowForwardOutline, lockClosedOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractMessage } from '../../core/utils/error';
+import { fa } from '../../core/i18n/fa';
 
 @Component({
   selector: 'app-change-password',
@@ -17,23 +18,23 @@ import { extractMessage } from '../../core/utils/error';
       <div class="page-wrap cp-wrap" dir="rtl">
         <div class="cp-head">
           <a routerLink="/tabs/profile" class="back-btn" aria-label="back"><ion-icon name="arrow-forward-outline"></ion-icon></a>
-          <h1>تغییر رمز عبور</h1>
+          <h1>{{t.title}}</h1>
         </div>
         <div class="dark-card cp-form">
           <div class="input-group">
-            <label><ion-icon name="lock-closed-outline"></ion-icon> رمز جدید</label>
-            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="newPassword" type="password" placeholder="حداقل ۶ کاراکتر"></ion-input></ion-item>
+            <label><ion-icon name="lock-closed-outline"></ion-icon> {{t.newPassword}}</label>
+            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="newPassword" type="password" [placeholder]="t.placeholder"></ion-input></ion-item>
           </div>
           <div class="input-group">
-            <label><ion-icon name="lock-closed-outline"></ion-icon> تکرار رمز جدید</label>
-            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="confirmPassword" type="password" placeholder="تکرار رمز جدید"></ion-input></ion-item>
+            <label><ion-icon name="lock-closed-outline"></ion-icon> {{t.confirmNewPassword}}</label>
+            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="confirmPassword" type="password" [placeholder]="t.confirmPlaceholder"></ion-input></ion-item>
           </div>
           @if (error()) { <div class="alert-error">{{ error() }}</div> }
           @if (ok()) { <div class="alert-ok">{{ ok() }}</div> }
           <button type="button" class="cp-submit" (click)="submit()" [disabled]="saving()">
-            @if (saving()) { <ion-spinner name="crescent" style="width:16px;height:16px"></ion-spinner> } @else { تغییر رمز }
+            @if (saving()) { <ion-spinner name="crescent" style="width:16px;height:16px"></ion-spinner> } @else { {{t.submit}} }
           </button>
-          <a routerLink="/tabs/profile" class="cp-cancel">انصراف</a>
+          <a routerLink="/tabs/profile" class="cp-cancel">{{t.cancel}}</a>
         </div>
       </div>
     </ion-content>
@@ -53,6 +54,7 @@ export class ChangePasswordPage {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
   private router = inject(Router);
+  t = fa.changePassword;
   newPassword = '';
   confirmPassword = '';
   saving = signal(false);
@@ -63,18 +65,18 @@ export class ChangePasswordPage {
     this.error.set(''); this.ok.set('');
     const np = this.newPassword.trim();
     const cp = this.confirmPassword.trim();
-    if (!np || !cp) { const m='رمز جدید و تکرار آن الزامی است'; this.error.set(m); this.toast.warning(m); return; }
-    if (np.length < 6 || cp.length < 6) { const m='رمز عبور حداقل ۶ کاراکتر'; this.error.set(m); this.toast.warning(m); return; }
-    if (np !== cp) { const m='رمزها مطابقت ندارند'; this.error.set(m); this.toast.warning(m); return; }
+    if (!np || !cp) { const m=this.t.required; this.error.set(m); this.toast.warning(m); return; }
+    if (np.length < 6 || cp.length < 6) { const m=this.t.tooShort; this.error.set(m); this.toast.warning(m); return; }
+    if (np !== cp) { const m=this.t.mismatch; this.error.set(m); this.toast.warning(m); return; }
     this.saving.set(true);
     this.auth.changePassword({ newPassword: np, confirmPassword: cp }).subscribe({
       next: () => {
         this.saving.set(false);
-        this.ok.set('رمز با موفقیت تغییر کرد — لطفا دوباره وارد شوید');
-        this.toast.success('رمز با موفقیت تغییر کرد');
+        this.ok.set(this.t.success);
+        this.toast.success(this.t.success);
         setTimeout(() => { this.auth.clear(); this.router.navigateByUrl('/login'); }, 800);
       },
-      error: (e) => { this.saving.set(false); const m = extractMessage(e,'تغییر رمز ناموفق بود'); this.error.set(m); this.toast.error(m); },
+      error: (e) => { this.saving.set(false); const m = extractMessage(e,this.t.failed); this.error.set(m); this.toast.error(m); },
     });
   }
 }

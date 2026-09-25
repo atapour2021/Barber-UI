@@ -8,6 +8,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { environment } from '../../../environments/environment';
+import { fa } from '../../core/i18n/fa';
 
 @Component({
   selector: 'app-profile',
@@ -16,7 +17,7 @@ import { environment } from '../../../environments/environment';
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap account-wrap" dir="rtl">
-        <h1 class="account-title">پروفایل و تنظیمات</h1>
+        <h1 class="account-title">{{t.settingsTitle}}</h1>
 
         <div class="account-profile">
           <div class="avatar-wrap">
@@ -29,35 +30,35 @@ import { environment } from '../../../environments/environment';
           </div>
           <b class="account-name">{{ displayName() }}</b>
           <small class="account-phone" dir="ltr">{{ displayPhone() }}</small>
-          <a class="account-edit" routerLink="/tabs/profile/edit"><ion-icon name="create-outline" style="font-size:12px"></ion-icon> ویرایش اطلاعات</a>
+          <a class="account-edit" routerLink="/tabs/profile/edit"><ion-icon name="create-outline" style="font-size:12px"></ion-icon> {{t.editInfo}}</a>
         </div>
 
         <div class="account-list">
           <div class="account-row">
-            <span class="row-label"><ion-icon name="moon-outline"></ion-icon> حالت تاریک</span>
+            <span class="row-label"><ion-icon name="moon-outline"></ion-icon> {{t.darkMode}}</span>
             <button type="button" class="toggle" [class.on]="theme.isDark()" (click)="theme.toggle()" role="switch" [attr.aria-checked]="theme.isDark()" aria-label="dark mode">
               <em></em>
             </button>
           </div>
 
           <div class="account-row">
-            <span class="row-label"><ion-icon name="notifications-outline"></ion-icon> یادآوری پیامکی</span>
+            <span class="row-label"><ion-icon name="notifications-outline"></ion-icon> {{t.smsReminder}}</span>
             <button type="button" class="toggle" [class.on]="smsEnabled()" (click)="toggleSms()" role="switch" [attr.aria-checked]="smsEnabled()" aria-label="sms reminder">
               <em></em>
             </button>
           </div>
 
           <a class="account-row account-link" routerLink="/tabs/profile/change-password">
-            <span class="row-label"><ion-icon name="lock-closed-outline"></ion-icon> تغییر رمز عبور</span>
+            <span class="row-label"><ion-icon name="lock-closed-outline"></ion-icon> {{t.changePassword}}</span>
             <ion-icon name="chevron-back-outline" class="row-chevron"></ion-icon>
           </a>
 
           <a class="account-row account-link" routerLink="/tabs/addresses">
-            <span class="row-label"><ion-icon name="location-outline"></ion-icon> آدرس‌ها</span>
+            <span class="row-label"><ion-icon name="location-outline"></ion-icon> {{t.addresses}}</span>
             <ion-icon name="chevron-back-outline" class="row-chevron"></ion-icon>
           </a>
 
-          <button type="button" class="account-row account-logout" (click)="logout()">خروج از حساب</button>
+          <button type="button" class="account-row account-logout" (click)="logout()">{{t.logoutAccount}}</button>
         </div>
       </div>
     </ion-content>
@@ -108,6 +109,8 @@ export class ProfilePage implements OnInit {
   private api = inject(ApiService);
   private toast = inject(ToastService);
   private router = inject(Router);
+  t = fa.profile;
+  c = fa.common;
   smsEnabled = signal(this.readSms());
   uploading = signal(false);
 
@@ -154,19 +157,19 @@ export class ProfilePage implements OnInit {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { this.toast.error('فقط تصویر مجاز است'); input.value=''; return; }
-    if (file.size > 5*1024*1024) { this.toast.error('حجم تصویر باید کمتر از ۵ مگابایت باشد'); input.value=''; return; }
+    if (!file.type.startsWith('image/')) { this.toast.error(fa.toast.avatarInvalidType); input.value=''; return; }
+    if (file.size > 5*1024*1024) { this.toast.error(fa.toast.avatarTooLarge); input.value=''; return; }
     const fd = new FormData();
     fd.set('file', file);
     this.uploading.set(true);
     const done = (url: string) => {
       this.uploading.set(false);
       if (url) this.patchLocalAvatar(url);
-      this.toast.success('تصویر پروفایل به‌روزرسانی شد');
+      this.toast.success(fa.toast.avatarUpdated);
     };
     const fail = (err: any) => {
       this.uploading.set(false);
-      const msg = err?.error?.message ?? err?.message ?? 'آپلود ممکن نشد';
+      const msg = err?.error?.message ?? err?.message ?? fa.toast.uploadFailed;
       this.toast.error(Array.isArray(msg) ? msg.join('، ') : String(msg));
     };
     if (this.isBarber()) {
@@ -239,7 +242,7 @@ export class ProfilePage implements OnInit {
   }
 
   private toFaDigits(s: string): string {
-    const fa = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    return s.replace(/\d/g, d => fa[Number(d)]);
+    const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return s.replace(/\d/g, d => faDigits[Number(d)]);
   }
 }

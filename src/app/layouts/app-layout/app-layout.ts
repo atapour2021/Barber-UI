@@ -1,7 +1,7 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { IonFooter, IonIcon, IonLabel, IonTabBar, IonTabButton } from '@ionic/angular';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { IonFooter, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   homeOutline,
@@ -27,7 +27,7 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
   imports: [
     RouterLink,
     RouterLinkActive,
-    RouterOutlet,
+    IonRouterOutlet,
     IonFooter,
     IonTabBar,
     IonTabButton,
@@ -64,7 +64,7 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
         </div>
       </div>
       <app-sidebar [open]="sidebarOpen()" [activeView]="activeView()" (closed)="closeSidebar()" (viewChange)="setView($event)" (logoutClicked)="logout()" />
-      <div class="app-outlet"><router-outlet /></div>
+      <div class="app-outlet"><ion-router-outlet /></div>
       <ion-footer class="app-footer">
         <ion-tab-bar class="neo-tabbar">
           <ion-tab-button routerLink="/tabs/home" routerLinkActive="tab-selected">

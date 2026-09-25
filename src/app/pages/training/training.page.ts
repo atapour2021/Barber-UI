@@ -5,6 +5,7 @@ import { play } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Educational } from '../../core/models';
 import { environment } from '../../../environments/environment';
+import { fa } from '../../core/i18n/fa';
 
 type TrainingItem = { id: string; title: string; meta: string; duration: string; img: string; videoUrl: string | null };
 
@@ -23,8 +24,8 @@ const FALLBACK: TrainingItem[] = [
     <ion-content [fullscreen]="true">
       <div class="page-wrap training-wrap" dir="rtl">
         <div class="training-head">
-          <h1>آموزش حرفه‌ای</h1>
-          <p>مهارت‌های خود را به‌روز نگه دارید</p>
+          <h1>{{ t.title }}</h1>
+          <p>{{ t.subtitle }}</p>
         </div>
         @if (loading()) {
           <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner></div>
@@ -94,6 +95,7 @@ const FALLBACK: TrainingItem[] = [
 })
 export class TrainingPage implements OnInit {
   private api = inject(ApiService);
+  t = fa.training;
   loading = signal(false);
   private remote = signal<TrainingItem[] | null>(null);
   display = computed(() => this.remote() ?? FALLBACK);
@@ -107,7 +109,7 @@ export class TrainingPage implements OnInit {
           this.remote.set(arr.map((e, i) => ({
             id: e.id,
             title: e.title,
-            meta: e.description ? (e.description as string).slice(0, 60) : `آکادمی نیوباربر · ${e.barberId ? 'ویدیو' : ''}`,
+            meta: e.description ? (e.description as string).slice(0, 60) : `${this.t.academy} · ${e.barberId ? 'ویدیو' : ''}`,
             duration: e.videoFilename ? '۱۲:۴۰' : FALLBACK[i % FALLBACK.length].duration,
             img: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : FALLBACK[i % FALLBACK.length].img,
             videoUrl: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : null,

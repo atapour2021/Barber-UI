@@ -5,6 +5,7 @@ import { addIcons } from 'ionicons';
 import { chevronBackOutline, cutOutline, personOutline, ribbonOutline, sparklesOutline, timeOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Service } from '../../core/models';
+import { fa } from '../../core/i18n/fa';
 
 const DEMO: Service[] = [
   { id: '1', name: 'کوتاهی و استایل', description: null, price: 350000, duration: 45, icon: 'cut', barberId: '' },
@@ -21,27 +22,27 @@ const DEMO: Service[] = [
     <ion-content [fullscreen]="true">
       <div class="page-wrap svc-wrap" dir="rtl">
         <div class="svc-header">
-          <h1>خدمات</h1>
-          <p>خدمت مورد نظر را انتخاب کنید</p>
+          <h1>{{ t.title }}</h1>
+          <p>{{ t.subtitle }}</p>
         </div>
 
         @if (loading()) {
-          <div class="dark-card" style="text-align:center;padding:24px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">در حال بارگذاری...</p></div>
+          <div class="dark-card" style="text-align:center;padding:24px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ t.loading }}</p></div>
         } @else if (error()) {
           <div class="alert-error" style="text-align:center">{{ error() }}</div>
         } @else {
           @if (!displayItems().length) {
-            <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">خدمتی یافت نشد</p></div>
+            <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">{{ t.empty }}</p></div>
           } @else {
             <div class="svc-grid">
               @for (s of displayItems(); track s.id) {
                 <a class="svc-card" [routerLink]="['/tabs/booking']" [queryParams]="{ serviceId: s.id }">
                   <span class="svc-go" aria-hidden="true"><ion-icon name="chevron-back-outline"></ion-icon></span>
-                  <span class="svc-price"><b>{{ formatPrice(s.price) }}</b><small>تومان</small></span>
+                  <span class="svc-price"><b>{{ formatPrice(s.price) }}</b><small>{{ t.currency }}</small></span>
                   <span class="svc-body">
                     <span class="svc-text">
                       <b>{{ s.name }}</b>
-                      <small><ion-icon name="time-outline"></ion-icon> {{ s.duration }} دقیقه</small>
+                      <small><ion-icon name="time-outline"></ion-icon> {{ s.duration }} {{ t.minute }}</small>
                     </span>
                     <span class="svc-icon"><ion-icon [name]="iconFor(s)"></ion-icon></span>
                   </span>
@@ -99,6 +100,7 @@ const DEMO: Service[] = [
 })
 export class ServicesPage implements OnInit {
   private api = inject(ApiService);
+  t = fa.servicesList;
   items = signal<Service[]>([]);
   loading = signal(false);
   error = signal('');

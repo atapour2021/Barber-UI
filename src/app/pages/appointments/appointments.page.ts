@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonContent, IonSpinner } from '@ionic/angular';
 import { ApiService } from '../../core/services/api.service';
 import { Barber, Service } from '../../core/models';
+import { fa } from '../../core/i18n/fa';
 
 interface DayOpt { iso: string; title: string; sub: string; }
 interface TimeSlot { time: string; fa: string; disabled?: boolean; }
@@ -15,11 +16,11 @@ interface TimeSlot { time: string; fa: string; disabled?: boolean; }
     <ion-content [fullscreen]="true">
       <div class="page-wrap choose-wrap" dir="rtl">
         <div class="choose-head">
-          <h1>انتخاب زمان</h1>
+          <h1>{{ t.chooseTime }}</h1>
           <p>{{ subTitle() }}</p>
         </div>
 
-        <div class="days-row" role="tablist" aria-label="انتخاب روز">
+        <div class="days-row" role="tablist" [attr.aria-label]="t.chooseDay">
           @for (d of days(); track d.iso) {
             <button
               type="button"
@@ -64,9 +65,9 @@ interface TimeSlot { time: string; fa: string; disabled?: boolean; }
           (click)="continue()"
         >
           @if (selectedTime()) {
-            ادامه با ساعت {{ selectedTimeFa() }}
+            {{ t.continueWith }} {{ selectedTimeFa() }}
           } @else {
-            انتخاب زمان
+            {{ t.chooseTime }}
           }
         </button>
 
@@ -179,6 +180,9 @@ interface TimeSlot { time: string; fa: string; disabled?: boolean; }
   `],
 })
 export class AppointmentsPage implements OnInit {
+  t = fa.appointmentsExtra;
+  ta = fa.appointments;
+  c = fa.common;
   private api = inject(ApiService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);

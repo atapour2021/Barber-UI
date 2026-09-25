@@ -17,8 +17,8 @@ import { fa } from '../../core/i18n/fa';
       @if (isAdmin()) {
         <div class="page-wrap admin-wrap" dir="rtl">
           <div class="admin-head">
-            <h1>داشبورد مدیریت</h1>
-            <p>نمای کلی عملکرد نیوباربر</p>
+            <h1>{{ fa.admin.dashboard }} {{ fa.admin.title }}</h1>
+            <p>{{ tHome.greetingReady }}</p>
           </div>
           @if (dashLoading()) {
             <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
@@ -27,27 +27,27 @@ import { fa } from '../../core/i18n/fa';
             <div class="dark-card admin-stat">
               <ion-icon name="people-outline"></ion-icon>
               <b>{{ usersFa() }}</b>
-              <small>کاربر فعال</small>
+              <small>{{ fa.admin.totalUsers }}</small>
             </div>
             <div class="dark-card admin-stat">
               <ion-icon name="cut-outline"></ion-icon>
               <b>{{ barbersFa() }}</b>
-              <small>آرایشگر</small>
+              <small>{{ fa.admin.totalBarbers }}</small>
             </div>
             <div class="dark-card admin-stat">
               <ion-icon name="calendar-outline"></ion-icon>
               <b>{{ apptsFa() }}</b>
-              <small>نوبت امروز</small>
+              <small>{{ fa.admin.totalAppointments }}</small>
             </div>
             <div class="dark-card admin-stat">
               <ion-icon name="mail-outline"></ion-icon>
               <b>{{ revenueFa() }}</b>
-              <small>فروش امروز</small>
+              <small>{{ fa.admin.totalAppointments }}</small>
             </div>
           </div>
           <div class="admin-panels">
             <div class="dark-card weekly-card">
-              <h3>عملکرد هفتگی</h3>
+              <h3>{{ fa.admin.dashboard }}</h3>
               <div class="weekly-chart">
                 @for (d of weekly(); track d.label) {
                   <div class="wk-col">
@@ -58,26 +58,26 @@ import { fa } from '../../core/i18n/fa';
               </div>
             </div>
             <div class="dark-card manage-card">
-              <h3>مدیریت سریع</h3>
+              <h3>{{ fa.admin.settings }}</h3>
               <a class="manage-row" routerLink="/admin">
                 <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
-                <span class="mr-text"><ion-icon name="people-outline"></ion-icon> کاربران</span>
+                <span class="mr-text"><ion-icon name="people-outline"></ion-icon> {{ fa.admin.users }}</span>
               </a>
               <a class="manage-row" routerLink="/barbers">
                 <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
-                <span class="mr-text"><ion-icon name="cut-outline"></ion-icon> آرایشگران</span>
+                <span class="mr-text"><ion-icon name="cut-outline"></ion-icon> {{ fa.admin.barbers }}</span>
               </a>
               <a class="manage-row" routerLink="/admin">
                 <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
-                <span class="mr-text"><ion-icon name="person-outline"></ion-icon> مشتریان</span>
+                <span class="mr-text"><ion-icon name="person-outline"></ion-icon> {{ fa.admin.users }}</span>
               </a>
               <a class="manage-row" routerLink="/tabs/services">
                 <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
-                <span class="mr-text"><ion-icon name="apps-outline"></ion-icon> خدمات</span>
+                <span class="mr-text"><ion-icon name="apps-outline"></ion-icon> {{ fa.services.title }}</span>
               </a>
               <a class="manage-row" routerLink="/tabs/appointment">
                 <ion-icon name="chevron-back-outline" class="mr-chevron"></ion-icon>
-                <span class="mr-text"><ion-icon name="calendar-outline"></ion-icon> نوبت‌ها</span>
+                <span class="mr-text"><ion-icon name="calendar-outline"></ion-icon> {{ fa.appointments.title }}</span>
               </a>
             </div>
           </div>
@@ -85,27 +85,27 @@ import { fa } from '../../core/i18n/fa';
       } @else if (isBarber()) {
         <div class="page-wrap barber-wrap" dir="rtl">
           <div class="barber-greeting">
-            <h1>روز بخیر، {{ displayName() }}</h1>
-            <p>امروز {{ todayCount() }} نوبت در برنامه دارید</p>
+            <h1>{{ tHome.greeting }} {{ displayName() }}</h1>
+            <p>{{ tHome.today }} {{ todayCount() }} {{ tHome.appointmentsCount }}</p>
           </div>
           <div class="grid-3 barber-stats">
             <div class="dark-card barber-stat">
               <b>{{ todayCountFa() }}</b>
-              <small>نوبت امروز</small>
+              <small>{{ tHome.today }}</small>
             </div>
             <div class="dark-card barber-stat">
               <b>{{ completedCountFa() }}</b>
-              <small>تکمیل شده</small>
+              <small>{{ fa.appointments.completed }}</small>
             </div>
             <div class="dark-card barber-stat">
               <b>{{ revenueFa() }}</b>
-              <small>درآمد امروز</small>
+              <small>{{ tHome.today }}</small>
             </div>
           </div>
           <div class="section">
             <div class="section-head queue-head">
-              <h3>صف امروز</h3>
-              <a routerLink="/tabs/appointment" class="link-teal">همه</a>
+              <h3>{{ tHome.today }}</h3>
+              <a routerLink="/tabs/appointment" class="link-teal">{{ c.all }}</a>
             </div>
             @if (loadingAppt()) {
               <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
@@ -128,15 +128,15 @@ import { fa } from '../../core/i18n/fa';
           <div class="grid-3 action-grid">
             <a class="dark-card action-card" routerLink="/tabs/booking">
               <ion-icon name="time-outline"></ion-icon>
-              <span>برنامه کاری</span>
+              <span>{{ fa.nav.booking }}</span>
             </a>
             <a class="dark-card action-card" routerLink="/tabs/training">
               <ion-icon name="book-outline"></ion-icon>
-              <span>آموزش‌ها</span>
+              <span>{{ fa.training.title }}</span>
             </a>
             <a class="dark-card action-card" routerLink="/tabs/documents">
               <ion-icon name="ribbon-outline"></ion-icon>
-              <span>مدارک</span>
+              <span>{{ fa.documents.title }}</span>
             </a>
           </div>
         </div>
@@ -321,6 +321,7 @@ export class HomePage implements OnInit {
   private viewRole = inject(ViewRoleService);
   fa = fa;
   t = fa.home;
+  tHome = fa.home;
   c = fa.common;
   isAdmin = computed(() => this.viewRole.activeView() === 'admin');
   isBarber = computed(() => this.viewRole.activeView() === 'barber');

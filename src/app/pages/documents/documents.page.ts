@@ -7,6 +7,7 @@ import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Certificate } from '../../core/models';
+import { fa } from '../../core/i18n/fa';
 
 type DocItem = { id: string; title: string; issuer: string; verified?: boolean; kind: 'trophy' | 'school' };
 
@@ -23,8 +24,8 @@ const DEMO: DocItem[] = [
     <ion-content [fullscreen]="true">
       <div class="page-wrap docs-wrap" dir="rtl">
         <div class="docs-head">
-          <h1>مدارک و گواهی‌ها</h1>
-          <p>سوابق حرفه‌ای قابل نمایش در پروفایل</p>
+          <h1>{{ t.title }}</h1>
+          <p>{{ t.subtitle }}</p>
         </div>
 
         @if (loading()) {
@@ -49,18 +50,18 @@ const DEMO: DocItem[] = [
 
           @if (showForm()) {
             <div class="dark-card" style="display:grid;gap:10px;padding:14px">
-              <ion-item lines="none" class="custom-input"><ion-input placeholder="عنوان مدرک" [(ngModel)]="form.name"></ion-input></ion-item>
-              <ion-item lines="none" class="custom-input"><ion-input placeholder="صادرکننده" [(ngModel)]="form.issuer"></ion-input></ion-item>
+              <ion-item lines="none" class="custom-input"><ion-input [placeholder]="t.certPlaceholder" [(ngModel)]="form.name"></ion-input></ion-item>
+              <ion-item lines="none" class="custom-input"><ion-input [placeholder]="t.issuerPlaceholder" [(ngModel)]="form.issuer"></ion-input></ion-item>
               <ion-item lines="none" class="custom-input"><ion-input type="date" [(ngModel)]="form.issueDate"></ion-input></ion-item>
-              <ion-item lines="none" class="custom-input"><ion-input type="date" placeholder="تاریخ انقضا (اختیاری)" [(ngModel)]="form.expiryDate"></ion-input></ion-item>
+              <ion-item lines="none" class="custom-input"><ion-input type="date" [placeholder]="t.expiryPlaceholder" [(ngModel)]="form.expiryDate"></ion-input></ion-item>
               @if (formError()) { <div class="alert-error" style="text-align:center">{{ formError() }}</div> }
               <div style="display:flex;gap:8px">
-                <ion-button style="flex:1;--background:var(--accent);--color:var(--accent-contrast)" (click)="submit()" [disabled]="submitting()">{{ submitting() ? 'در حال ثبت...' : 'ثبت مدرک' }}</ion-button>
+                <ion-button style="flex:1;--background:var(--accent);--color:var(--accent-contrast)" (click)="submit()" [disabled]="submitting()">{{ submitting() ? t.submitting : t.submit }}</ion-button>
                 <ion-button fill="outline" (click)="showForm.set(false)"><ion-icon name="close-outline" slot="icon-only"></ion-icon></ion-button>
               </div>
             </div>
           } @else {
-            <button type="button" class="add-doc-btn" (click)="showForm.set(true)">افزودن مدرک جدید</button>
+            <button type="button" class="add-doc-btn" (click)="showForm.set(true)">{{ t.addNew }}</button>
           }
         }
       </div>
@@ -116,6 +117,8 @@ export class DocumentsPage implements OnInit {
   private api = inject(ApiService);
   private toast = inject(ToastService);
   private auth = inject(AuthService);
+  t = fa.documents;
+  c = fa.common;
   loading = signal(false);
   submitting = signal(false);
   showForm = signal(false);
@@ -148,7 +151,7 @@ export class DocumentsPage implements OnInit {
     if (this.submitting()) return;
     this.formError.set('');
     if (!this.form['name']?.trim() || !this.form['issuer']?.trim() || !this.form['issueDate']) {
-      this.formError.set('عنوان، صادرکننده و تاریخ صدور الزامی است');
+      this.formError.set(this.t.required);
       return;
     }
     this.submitting.set(true);
@@ -165,12 +168,12 @@ export class DocumentsPage implements OnInit {
           this.submitting.set(false);
           this.showForm.set(false);
           this.form = { name: '', issuer: '', issueDate: new Date().toISOString().slice(0, 10), expiryDate: '' };
-          this.toast.success('مدرک ثبت شد');
+          this.toast.success(this.t.created);
           this.load();
         },
         error: (e) => {
           this.submitting.set(false);
-          const msg = (e?.error as { message?: string })?.message ?? 'ثبت ناموفق بود';
+          const msg = (e?.error as { message?: string })?.message ?? fa.errors.generic;
           this.formError.set(msg);
           this.toast.error(msg);
         },
@@ -180,15 +183,15 @@ export class DocumentsPage implements OnInit {
       next: (b) => resolveBarber((b as unknown as Record<string, unknown>)['id'] as string),
       error: () => {
         const uid = this.auth.user()?.id;
-        if (!uid) { this.submitting.set(false); this.formError.set('پروفایل آرایشگر یافت نشد'); return; }
+        if (!uid) { this.submitting.set(false); this.formError.set(this.t.barberNotFound); return; }
         this.api.barbers.list().subscribe({
           next: (v) => {
             const arr = Array.isArray(v) ? v as unknown as Record<string, unknown>[] : [];
             const found = arr.find((x) => x['userId'] === uid) ?? arr[0];
             if (found?.['id']) resolveBarber(found['id'] as string);
-            else { this.submitting.set(false); this.formError.set('پروفایل آرایشگر یافت نشد'); }
+            else { this.submitting.set(false); this.formError.set(this.t.barberNotFound); }
           },
-          error: () => { this.submitting.set(false); this.formError.set('خطا در یافتن آرایشگر'); },
+          error: () => { this.submitting.set(false); this.formError.set(this.t.findFailed); },
         });
       },
     });

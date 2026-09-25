@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { IonContent, IonIcon } from '@ionic/angular';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { IonContent, IonIcon, IonRouterOutlet } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, cutOutline } from 'ionicons/icons';
 import { filter } from 'rxjs';
@@ -10,7 +10,7 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
-  imports: [IonContent, RouterOutlet, RouterLink, IonIcon, ThemeToggleComponent],
+  imports: [IonContent, IonRouterOutlet, RouterLink, IonIcon, ThemeToggleComponent],
   template: `
     <ion-content [fullscreen]="true" class="login-content">
       <div class="login-wrapper" dir="rtl">
@@ -23,7 +23,7 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
           <h1 class="title">{{ meta.title }}</h1>
           <p class="subtitle">{{ meta.subtitle }}</p>
         </div>
-        <router-outlet />
+        <ion-router-outlet />
       </div>
     </ion-content>
   `,

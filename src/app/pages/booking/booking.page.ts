@@ -27,8 +27,8 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
       <div class="page-wrap booking-wrap" dir="rtl">
         <div class="book-head">
           <div>
-            <h1>{{ isReserveMode() ? 'مرور و تأیید رزرو' : title() }}</h1>
-            <p>{{ isReserveMode() ? 'اطلاعات نوبت را بررسی کنید' : headerSub() }}</p>
+            <h1>{{ isReserveMode() ? tb.reserveTitle : title() }}</h1>
+            <p>{{ isReserveMode() ? tb.reserveSubtitle : headerSub() }}</p>
           </div>
           <span class="role-badge" [class.barber]="isBarber()" [class.admin]="isAdmin()">{{ roleLabel() }}</span>
         </div>
@@ -37,31 +37,31 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
           @if (loadingReserve()) {
             <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner></div>
           } @else {
-            @if (slotChecking()) { <div class="dark-card" style="text-align:center;padding:12px"><ion-spinner></ion-spinner><p class="muted" style="margin:6px 0 0;font-size:11px">بررسی زمان آزاد...</p></div> }
+            @if (slotChecking()) { <div class="dark-card" style="text-align:center;padding:12px"><ion-spinner></ion-spinner><p class="muted" style="margin:6px 0 0;font-size:11px">{{ tb.checking }}</p></div> }
             @if (slotUnavailableReason()) { <div class="alert-error" style="text-align:center">{{ slotUnavailableReason() }}</div> }
             <div class="reserve-card barber-card">
               <img [src]="reserveAvatar()" (error)="onImgError($event)" alt="" />
               <div class="barber-text"><b>{{ reserveBarberName() }}</b><small>{{ reserveBranch() }}</small></div>
             </div>
             <div class="reserve-card details-card">
-              <div class="detail-row"><span class="detail-val">{{ reserveServiceName() }}</span><span class="detail-label">خدمت</span></div>
-              <div class="detail-row"><span class="detail-val">{{ reserveDateLabel() }}</span><span class="detail-label">تاریخ</span></div>
-              <div class="detail-row"><span class="detail-val" dir="ltr">{{ reserveTimeLabel() }}</span><span class="detail-label">ساعت</span></div>
-              <div class="detail-row"><span class="detail-val">{{ reserveDuration() }} دقیقه</span><span class="detail-label">مدت</span></div>
-              <div class="detail-row total-row"><span class="detail-val price">{{ formatPrice(reservePrice()) }} تومان</span><span class="detail-label">مبلغ</span></div>
+              <div class="detail-row"><span class="detail-val">{{ reserveServiceName() }}</span><span class="detail-label">{{ ta.service }}</span></div>
+              <div class="detail-row"><span class="detail-val">{{ reserveDateLabel() }}</span><span class="detail-label">{{ ta.date }}</span></div>
+              <div class="detail-row"><span class="detail-val" dir="ltr">{{ reserveTimeLabel() }}</span><span class="detail-label">{{ ta.startTime }}</span></div>
+              <div class="detail-row"><span class="detail-val">{{ reserveDuration() }} {{ fa.servicesList.minute }}</span><span class="detail-label">{{ fa.services.duration }}</span></div>
+              <div class="detail-row total-row"><span class="detail-val price">{{ formatPrice(reservePrice()) }} {{ fa.servicesList.currency }}</span><span class="detail-label">{{ fa.services.price }}</span></div>
             </div>
-            <div class="note-section"><label class="note-label">توضیحات برای آرایشگر</label><textarea class="note-input" [(ngModel)]="note" placeholder="اختیاری" rows="2"></textarea></div>
+            <div class="note-section"><label class="note-label">{{ tb.noteLabel }}</label><textarea class="note-input" [(ngModel)]="note" [placeholder]="tb.optional" rows="2"></textarea></div>
             @if (reserveError()) { <div class="alert-error" style="text-align:center">{{ reserveError() }}</div> }
             @if (reserveOk()) { <div class="alert-ok" style="text-align:center">{{ reserveOk() }}</div> }
             <button class="confirm-btn" type="button" [disabled]="confirming() || !!slotUnavailableReason()" (click)="confirmReserve()">
-              @if (confirming()) { <ion-spinner name="crescent" style="--color:#0b101e"></ion-spinner> } @else { تأیید و رزرو نهایی }
+              @if (confirming()) { <ion-spinner name="crescent" style="--color:#0b101e"></ion-spinner> } @else { {{ tb.confirmFinal }} }
             </button>
-            <button type="button" class="link-btn" (click)="exitReserve()">بازگشت به فهرست</button>
+            <button type="button" class="link-btn" (click)="exitReserve()">{{ tb.backToList }}</button>
           }
         } @else {
           @if (isBarber()) {
             <button type="button" class="schedule-toggle" (click)="showSchedule.set(!showSchedule())">
-              <span>{{ showSchedule() ? 'بستن برنامه کاری' : 'مدیریت برنامه کاری' }}</span>
+              <span>{{ showSchedule() ? tb.closeSchedule : tb.manageSchedule }}</span>
               <span class="chev" [class.open]="showSchedule()">›</span>
             </button>
             @if (showSchedule()) {
@@ -73,8 +73,8 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
                     <div class="day-card" [class.off]="!d.enabled">
                       <div class="day-text">
                         <b>{{ d.label }}</b>
-                        @if (d.enabled) { <small>{{ faTime(d.start) }} تا {{ faTime(d.end) }} &middot; استراحت {{ faNum(d.breakStart) }} تا {{ faNum(d.breakEnd) }}</small> }
-                        @else { <small class="off">تعطیل</small> }
+                        @if (d.enabled) { <small>{{ faTime(d.start) }} {{ tb.until }} {{ faTime(d.end) }} &middot; {{ tb.breakLabel }} {{ faNum(d.breakStart) }} {{ tb.until }} {{ faNum(d.breakEnd) }}</small> }
+                        @else { <small class="off">{{ tb.off }}</small> }
                       </div>
                       <button class="sw" type="button" role="switch" [attr.aria-checked]="d.enabled" [class.on]="d.enabled" (click)="toggle(d.key)"><span class="knob"></span></button>
                     </div>
@@ -83,24 +83,24 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
                 @if (saveError()) { <div class="alert-error" style="text-align:center">{{ saveError() }}</div> }
                 @if (saveOk()) { <div class="alert-ok" style="text-align:center">{{ saveOk() }}</div> }
                 <button class="save-btn" type="button" [disabled]="saving()" (click)="saveSchedule()">
-                  @if (saving()) { <ion-spinner name="crescent" style="--color:#0b101e;width:18px;height:18px"></ion-spinner> } @else { ذخیره برنامه }
+                  @if (saving()) { <ion-spinner name="crescent" style="--color:#0b101e;width:18px;height:18px"></ion-spinner> } @else { {{ tb.saveSchedule }} }
                 </button>
               }
             }
           }
 
           <div class="filter-row" role="tablist">
-            <button type="button" class="filter-pill" [class.active]="statusFilter()==='all'" (click)="setStatus('all')">همه</button>
-            <button type="button" class="filter-pill" [class.active]="statusFilter()==='pending'" (click)="setStatus('pending')">در انتظار</button>
-            <button type="button" class="filter-pill" [class.active]="statusFilter()==='confirmed'" (click)="setStatus('confirmed')">تایید شده</button>
-            <button type="button" class="filter-pill" [class.active]="statusFilter()==='cancelled'" (click)="setStatus('cancelled')">لغو شده</button>
-            <button type="button" class="filter-pill" [class.active]="statusFilter()==='completed'" (click)="setStatus('completed')">انجام شده</button>
+            <button type="button" class="filter-pill" [class.active]="statusFilter()==='all'" (click)="setStatus('all')">{{ ta.all }}</button>
+            <button type="button" class="filter-pill" [class.active]="statusFilter()==='pending'" (click)="setStatus('pending')">{{ ta.pending }}</button>
+            <button type="button" class="filter-pill" [class.active]="statusFilter()==='confirmed'" (click)="setStatus('confirmed')">{{ ta.confirmed }}</button>
+            <button type="button" class="filter-pill" [class.active]="statusFilter()==='cancelled'" (click)="setStatus('cancelled')">{{ ta.cancelled }}</button>
+            <button type="button" class="filter-pill" [class.active]="statusFilter()==='completed'" (click)="setStatus('completed')">{{ ta.completed }}</button>
           </div>
 
           @if (loading()) {
             <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ fa.common.loading }}</p></div>
           } @else if (errorMsg()) {
-            <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load()">تلاش مجدد</button></div>
+            <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load()">{{ tc.retry }}</button></div>
           } @else if (!items().length) {
             <div class="dark-card" style="text-align:center;padding:22px">
               <p class="muted" style="margin:0 0 12px">{{ fa.turns.empty }}</p>
@@ -128,38 +128,38 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
                   </a>
                   @if (isBarber() && a.status === 'pending') {
                     <div class="card-actions">
-                      <button type="button" class="btn-sm accept" (click)="confirm(a)" [disabled]="busyId()===a.id">تایید</button>
-                      <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">رد</button>
+                      <button type="button" class="btn-sm accept" (click)="confirm(a)" [disabled]="busyId()===a.id">{{ ta.confirm }}</button>
+                      <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">{{ tc.cancel }}</button>
                     </div>
                   }
                   @if (isBarber() && a.status === 'confirmed') {
                     <div class="card-actions">
-                      <button type="button" class="btn-sm done" (click)="complete(a)" [disabled]="busyId()===a.id">انجام شد</button>
-                      <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">لغو</button>
+                      <button type="button" class="btn-sm done" (click)="complete(a)" [disabled]="busyId()===a.id">{{ ta.done }}</button>
+                      <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">{{ ta.cancel }}</button>
                     </div>
                   }
                   @if (!isBarber()) {
                     <div class="card-actions">
                       @if (a.status !== 'cancelled' && a.status !== 'completed' && a.status !== 'no_show') {
-                        <button type="button" class="btn-sm ghost" (click)="startEdit(a)">ویرایش</button>
-                        <button type="button" class="btn-sm reject" (click)="cancel(a)" [disabled]="busyId()===a.id">لغو</button>
+                        <button type="button" class="btn-sm ghost" (click)="startEdit(a)">{{ tc.edit }}</button>
+                        <button type="button" class="btn-sm reject" (click)="cancel(a)" [disabled]="busyId()===a.id">{{ ta.cancel }}</button>
                       }
-                      <button type="button" class="btn-sm danger" (click)="remove(a)" [disabled]="busyId()===a.id">حذف</button>
+                      <button type="button" class="btn-sm danger" (click)="remove(a)" [disabled]="busyId()===a.id">{{ tc.delete }}</button>
                     </div>
                   }
                   @if (isAdmin() && !isBarber()) {
                     <div class="card-actions">
                       @if (a.status==='pending') {
-                        <button type="button" class="btn-sm accept" (click)="confirm(a)" [disabled]="busyId()===a.id">تایید</button>
-                        <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">رد</button>
+                        <button type="button" class="btn-sm accept" (click)="confirm(a)" [disabled]="busyId()===a.id">{{ ta.confirm }}</button>
+                        <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">{{ tc.cancel }}</button>
                       }
                     </div>
                   }
                   @if (editingId()===a.id) {
                     <div class="edit-row">
-                      <input class="edit-input" [(ngModel)]="editNotes" placeholder="یادداشت" maxlength="500" />
-                      <button type="button" class="btn-sm accept" (click)="saveEdit(a)" [disabled]="busyId()===a.id">ذخیره</button>
-                      <button type="button" class="btn-sm ghost" (click)="editingId.set(null)">انصراف</button>
+                      <input class="edit-input" [(ngModel)]="editNotes" [placeholder]="ta.notesPlaceholder" maxlength="500" />
+                      <button type="button" class="btn-sm accept" (click)="saveEdit(a)" [disabled]="busyId()===a.id">{{ tc.save }}</button>
+                      <button type="button" class="btn-sm ghost" (click)="editingId.set(null)">{{ tc.cancel }}</button>
                     </div>
                   }
                 </div>
@@ -167,7 +167,7 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
             </div>
           }
           @if (!isBarber() && !loading()) {
-            <a routerLink="/tabs/appointment/new" class="cta-btn" style="text-decoration:none">+ رزرو نوبت جدید</a>
+            <a routerLink="/tabs/appointment/new" class="cta-btn" style="text-decoration:none">+ {{ ta.book }}</a>
           }
         }
       </div>
@@ -253,6 +253,10 @@ export class BookingPage implements OnInit {
   private viewRole = inject(ViewRoleService);
   private auth = inject(AuthService);
   fa = fa;
+  tb = fa.bookingExtra;
+  ta = fa.appointments;
+  tt = fa.turns;
+  tc = fa.common;
 
   isBarber = computed(() => this.viewRole.activeView() === 'barber' || this.auth.isBarber());
   isAdmin = computed(() => this.viewRole.activeView() === 'admin' || this.auth.isAdmin());
@@ -291,7 +295,7 @@ export class BookingPage implements OnInit {
   slotUnavailableReason = signal('');
   reserveTimeLabel = computed(() => this.reserveTimeStart());
   reserveBarberName = computed(() => this.reserveBarber()?.fullName ?? 'رضا کاظمی');
-  reserveBranch = computed(() => this.reserveBarber()?.barbershop?.name ?? (this.reserveBarber() as unknown as { barbershopName?: string })?.barbershopName ?? 'شعبه سعادت‌آباد');
+  reserveBranch = computed(() => this.reserveBarber()?.barbershop?.name ?? (this.reserveBarber() as unknown as { barbershopName?: string })?.barbershopName ?? fa.bookingExtra.branchFallback);
   reserveAvatar = computed(() => this.reserveBarber()?.profileImage ?? 'https://i.pravatar.cc/150?u=reza-kazemi');
   reserveServiceName = computed(() => this.reserveService()?.name ?? 'کوتاهی و استایل');
   reservePrice = computed(() => this.reserveService()?.price ?? 250000);
@@ -339,7 +343,7 @@ export class BookingPage implements OnInit {
   }
 
   statusFa(s: string) {
-    const m: Record<string,string> = { pending:'در انتظار', confirmed:'تایید شده', cancelled:'لغو شده', completed:'انجام شده', no_show:'عدم حضور' };
+    const m: Record<string,string> = { pending: this.ta.pending, confirmed: this.ta.confirmed, cancelled: this.ta.cancelled, completed: this.ta.completed, no_show:'عدم حضور' };
     return m[s] ?? s;
   }
   badgeBg(s: string) {
@@ -361,8 +365,8 @@ export class BookingPage implements OnInit {
   dateLabel(iso: string) {
     const today = new Date().toISOString().slice(0, 10);
     const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-    if (iso.slice(0,10) === today) return 'امروز';
-    if (iso.slice(0,10) === tomorrow) return 'فردا';
+    if (iso.slice(0,10) === today) return this.tt.today;
+    if (iso.slice(0,10) === tomorrow) return this.tt.tomorrow;
     try { return new Intl.DateTimeFormat('fa-IR').format(new Date(iso.slice(0,10) + 'T12:00:00')); } catch { return iso.slice(0,10); }
   }
 
@@ -457,8 +461,8 @@ export class BookingPage implements OnInit {
     const payload: Record<string, unknown> = { workingDays, workingHours, breakTime };
     const obs = id ? this.api.barbers.update(id, payload) : this.api.barbers.create(payload);
     obs.subscribe({
-      next: () => { this.saving.set(false); this.saveOk.set('برنامه ذخیره شد'); this.toast.success('برنامه ذخیره شد'); },
-      error: (err) => { this.saving.set(false); const msg = (err?.error as { message?: string })?.message ?? 'ذخیره ناموفق بود'; this.saveError.set(msg); this.toast.error(msg); },
+      next: () => { this.saving.set(false); this.saveOk.set(fa.toast.scheduleSaved); this.toast.success(fa.toast.scheduleSaved); },
+      error: (err) => { this.saving.set(false); const msg = (err?.error as { message?: string })?.message ?? fa.toast.scheduleSaveFailed; this.saveError.set(msg); this.toast.error(msg); },
     });
   }
   faTime(t: string) { return this.faNum(t); }
@@ -488,11 +492,11 @@ export class BookingPage implements OnInit {
       next: (v) => {
         const r = v as { slots?: { startTime: string; status: string }[]; reason?: string | null };
         if (r.reason) {
-          const m: Record<string,string> = { holiday:'آرایشگر در مرخصی است', not_working_day:'روز تعطیل آرایشگر', no_working_hours:'ساعات کاری ثبت نشده' };
+          const m: Record<string,string> = { holiday: fa.toast.barberOnHoliday, not_working_day: fa.toast.notWorkingDay, no_working_hours: fa.toast.noWorkingHours };
           this.slotUnavailableReason.set(m[r.reason] ?? r.reason);
         } else if (r.slots?.length) {
           const hit = r.slots.find(s => s.startTime.slice(11,16) === t);
-          if (hit && String(hit.status).toLowerCase() === 'booked') this.slotUnavailableReason.set('این زمان قبلا رزرو شده');
+          if (hit && String(hit.status).toLowerCase() === 'booked') this.slotUnavailableReason.set(fa.toast.slotBooked);
         }
         this.slotChecking.set(false);
       },

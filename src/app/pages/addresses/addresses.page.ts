@@ -11,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Location } from '../../core/models';
 import { unwrapArray } from '../../core/api/utils';
+import { fa } from '../../core/i18n/fa';
 
 @Component({
   selector: 'app-addresses',
@@ -21,18 +22,18 @@ import { unwrapArray } from '../../core/api/utils';
       <div class="page-wrap addr-wrap" dir="rtl">
         <div class="addr-head">
           <a routerLink="/tabs/profile" class="back-btn" aria-label="back"><ion-icon name="arrow-forward-outline"></ion-icon></a>
-          <h1>آدرس‌ها</h1>
+          <h1>{{t.title}}</h1>
         </div>
 
         @if (loading()) {
-          <div class="dark-card" style="text-align:center;padding:18px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">در حال بارگذاری...</p></div>
+          <div class="dark-card" style="text-align:center;padding:18px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{t.loading}}</p></div>
         } @else {
           <div class="addr-list">
             @for (a of items(); track a.id) {
               <div class="addr-card" [class.selected]="editingId()===a.id">
                 <span class="addr-icon"><ion-icon name="location-outline"></ion-icon></span>
                 <div class="addr-text">
-                  <b>{{ a.label || 'آدرس' }}</b>
+                  <b>{{ a.label || t.fallbackLabel }}</b>
                   <small>{{ a.address }}</small>
                   @if (a.latitude && a.longitude) {
                     <small class="addr-coords">{{ a.latitude | number:'1.4-4' }}, {{ a.longitude | number:'1.4-4' }}</small>
@@ -45,30 +46,30 @@ import { unwrapArray } from '../../core/api/utils';
               </div>
             }
             @if (!items().length) {
-              <div class="dark-card" style="text-align:center;padding:18px"><p class="muted" style="margin:0">آدرسی ثبت نشده — روی نقشه انتخاب کنید و ذخیره کنید</p></div>
+              <div class="dark-card" style="text-align:center;padding:18px"><p class="muted" style="margin:0">{{t.empty}}</p></div>
             }
           </div>
         }
 
         <div class="dark-card addr-form">
-          <b style="font-size:12px;color:var(--text-primary)">{{ editingId() ? 'ویرایش آدرس' : 'افزودن آدرس' }}</b>
+          <b style="font-size:12px;color:var(--text-primary)">{{ editingId() ? t.editTitle : t.addTitle }}</b>
           <div class="input-group">
-            <label>عنوان</label>
-            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="label" placeholder="مثلا خانه"></ion-input></ion-item>
+            <label>{{t.label}}</label>
+            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="label" [placeholder]="t.labelPlaceholder"></ion-input></ion-item>
           </div>
           <div class="input-group">
-            <label>آدرس کامل</label>
-            <ion-item lines="none" class="custom-input"><ion-textarea [(ngModel)]="detail" placeholder="آدرس کامل" [autoGrow]="true" rows="2"></ion-textarea></ion-item>
+            <label>{{t.fullAddress}}</label>
+            <ion-item lines="none" class="custom-input"><ion-textarea [(ngModel)]="detail" [placeholder]="t.fullAddressPlaceholder" [autoGrow]="true" rows="2"></ion-textarea></ion-item>
           </div>
 
           <div class="addr-map-wrap">
             <div #mapEl class="addr-map"></div>
-            <button class="addr-locate" type="button" aria-label="موقعیت من" (click)="locateMe()"><ion-icon name="locate-outline"></ion-icon></button>
+            <button class="addr-locate" type="button" [attr.aria-label]="t.myLocation" (click)="locateMe()"><ion-icon name="locate-outline"></ion-icon></button>
             @if (pickedLat()!=null) {
               <div class="addr-picked">lat {{ pickedLat()!.toFixed(5) }} , lng {{ pickedLng()!.toFixed(5) }}</div>
             }
           </div>
-          <small class="muted" style="text-align:right">روی نقشه ضربه بزنید تا موقعیت انتخاب شود. جابجایی نشانگر مختصات را به‌روزرسانی می‌کند.</small>
+          <small class="muted" style="text-align:right">{{t.mapHint}}</small>
 
           @if (formError()) {
             <div class="alert-error">{{ formError() }}</div>
@@ -76,12 +77,12 @@ import { unwrapArray } from '../../core/api/utils';
 
           <div class="addr-form-actions">
             @if (editingId()) {
-              <button type="button" class="addr-cancel" (click)="cancelEdit()"><ion-icon name="close-outline"></ion-icon> انصراف</button>
+              <button type="button" class="addr-cancel" (click)="cancelEdit()"><ion-icon name="close-outline"></ion-icon> {{t.cancel}}</button>
             }
             <button type="button" class="addr-add" (click)="save()" [disabled]="saving()">
               @if (saving()) { <ion-spinner name="crescent" style="width:16px;height:16px"></ion-spinner> }
               @else { <ion-icon [name]="editingId() ? 'save-outline' : 'add-outline'"></ion-icon> }
-              {{ editingId() ? 'ذخیره تغییرات' : 'افزودن' }}
+              {{ editingId() ? t.saveChanges : t.add }}
             </button>
           </div>
         </div>
@@ -126,6 +127,8 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
   private alertCtrl = inject(AlertController);
+  t = fa.addresses;
+  c = fa.common;
   items = signal<Location[]>([]);
   loading = signal(true);
   saving = signal(false);
@@ -165,8 +168,8 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
     const d = this.detail.trim();
     const lat = this.pickedLat();
     const lng = this.pickedLng();
-    if (!l || !d) { this.formError.set('عنوان و آدرس الزامی است'); return; }
-    if (lat == null || lng == null) { this.formError.set('لطفاً موقعیت را روی نقشه انتخاب کنید'); return; }
+    if (!l || !d) { this.formError.set(fa.addresses.required); return; }
+    if (lat == null || lng == null) { this.formError.set(fa.addresses.pickLocation); return; }
     const uid = this.auth.user()?.id;
     const dto: Record<string, unknown> = { address: d, label: l, latitude: lat, longitude: lng, mapMetadata: { zoom: this.map?.getZoom() ?? 15 }, ...(uid ? { userId: uid } : {}) };
     this.saving.set(true);
@@ -174,14 +177,14 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
     const req = id ? this.api.locations.update(id, dto) : this.api.locations.create(dto);
     req.subscribe({
       next: (saved) => {
-        this.toast.success(id ? 'آدرس ویرایش شد' : 'آدرس ذخیره شد');
+        this.toast.success(id ? fa.addresses.updated : fa.addresses.created);
         if (id) this.items.set(this.items().map(x => x.id === id ? { ...x, ...(saved as Location) } : x));
         else this.items.set([(saved as Location), ...this.items()]);
         this.resetForm();
         this.saving.set(false);
       },
       error: (e) => {
-        const msg = (e?.error?.message as string) || e?.message || 'ذخیره آدرس ممکن نشد';
+        const msg = (e?.error?.message as string) || e?.message || fa.toast.addressSaveFailed;
         this.formError.set(Array.isArray(msg) ? msg.join('، ') : String(msg));
         this.toast.error(this.formError());
         this.saving.set(false);
@@ -203,22 +206,22 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
 
   async remove(id: string) {
     const alert = await this.alertCtrl.create({
-      header: 'حذف آدرس',
-      message: 'آیا از حذف این آدرس مطمئن هستید؟',
+      header: fa.addresses.deleteTitle,
+      message: fa.addresses.deleteConfirm,
       cssClass: 'addr-delete-alert',
       buttons: [
-        { text: 'انصراف', role: 'cancel' },
+        { text: fa.common.cancel, role: 'cancel' },
         {
-          text: 'حذف',
+          text: fa.common.delete,
           role: 'destructive',
           handler: () => {
             this.api.locations.remove(id).subscribe({
               next: () => {
                 this.items.set(this.items().filter(a => a.id !== id));
                 if (this.editingId() === id) this.resetForm();
-                this.toast.success('آدرس حذف شد');
+                this.toast.success(fa.addresses.deleted);
               },
-              error: (e) => this.toast.error((e?.error?.message as string) || 'حذف ممکن نشد'),
+              error: (e) => this.toast.error((e?.error?.message as string) || fa.toast.deleteFailed),
             });
           },
         },
@@ -228,10 +231,10 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   locateMe() {
-    if (!navigator.geolocation) { this.toast.error('موقعیت‌یاب در دسترس نیست'); return; }
+    if (!navigator.geolocation) { this.toast.error(fa.toast.geolocationUnavailable); return; }
     navigator.geolocation.getCurrentPosition(
       (p) => { const lat = p.coords.latitude, lng = p.coords.longitude; this.pickedLat.set(lat); this.pickedLng.set(lng); this.setMarker(lat, lng, true); },
-      () => this.toast.error('دسترسی به موقعیت ممکن نشد'),
+      () => this.toast.error(fa.toast.geolocationDenied),
       { enableHighAccuracy: false, timeout: 6000 },
     );
   }

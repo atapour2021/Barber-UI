@@ -8,6 +8,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractMessage } from '../../core/utils/error';
+import { fa } from '../../core/i18n/fa';
 
 @Component({
   selector: 'app-profile-edit',
@@ -18,44 +19,44 @@ import { extractMessage } from '../../core/utils/error';
       <div class="page-wrap edit-wrap" dir="rtl">
         <div class="edit-head">
           <a routerLink="/tabs/profile" class="back-btn" aria-label="back"><ion-icon name="arrow-forward-outline"></ion-icon></a>
-          <h1>ویرایش پروفایل</h1>
+          <h1>{{t.title}}</h1>
         </div>
 
         @if (loading()) {
-          <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">در حال بارگذاری...</p></div>
+          <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{t.loading}}</p></div>
         } @else {
           <div class="dark-card edit-form">
-            <b style="font-size:12px;color:var(--text-primary)">اطلاعات کاربری</b>
+            <b style="font-size:12px;color:var(--text-primary)">{{t.userInfo}}</b>
             <div class="grid2">
               <div class="input-group">
-                <label>نام</label>
-                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="form.name" placeholder="نام"></ion-input></ion-item>
+                <label>{{t.name}}</label>
+                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="form.name" [placeholder]="t.name"></ion-input></ion-item>
               </div>
               <div class="input-group">
-                <label>نام خانوادگی</label>
-                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="form.family" placeholder="نام خانوادگی"></ion-input></ion-item>
+                <label>{{t.family}}</label>
+                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="form.family" [placeholder]="t.family"></ion-input></ion-item>
               </div>
             </div>
             <div class="input-group">
-              <label><ion-icon name="call-outline"></ion-icon> شماره موبایل</label>
+              <label><ion-icon name="call-outline"></ion-icon> {{t.phone}}</label>
               <ion-item lines="none" class="custom-input ltr"><ion-input [(ngModel)]="form.phoneNumber" placeholder="09123456789" type="tel"></ion-input></ion-item>
             </div>
             <div class="input-group">
-              <label><ion-icon name="mail-outline"></ion-icon> ایمیل</label>
+              <label><ion-icon name="mail-outline"></ion-icon> {{t.email}}</label>
               <ion-item lines="none" class="custom-input ltr"><ion-input [(ngModel)]="form.email" placeholder="email@example.com" type="email"></ion-input></ion-item>
             </div>
           </div>
 
           @if (isBarber()) {
             <div class="dark-card edit-form">
-              <b style="font-size:12px;color:var(--text-primary)"><ion-icon name="create-outline"></ion-icon> اطلاعات آرایشگر</b>
+              <b style="font-size:12px;color:var(--text-primary)"><ion-icon name="create-outline"></ion-icon> {{t.barberInfo}}</b>
               <div class="input-group">
-                <label>نام نمایشی</label>
-                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="barberForm.fullName" placeholder="نام کامل"></ion-input></ion-item>
+                <label>{{t.displayName}}</label>
+                <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="barberForm.fullName" [placeholder]="t.displayName"></ion-input></ion-item>
               </div>
               <div class="input-group">
-                <label>درباره من</label>
-                <ion-item lines="none" class="custom-input"><ion-textarea [(ngModel)]="barberForm.bio" placeholder="توضیح کوتاه" [autoGrow]="true" rows="3"></ion-textarea></ion-item>
+                <label>{{t.bio}}</label>
+                <ion-item lines="none" class="custom-input"><ion-textarea [(ngModel)]="barberForm.bio" [placeholder]="t.bioPlaceholder" [autoGrow]="true" rows="3"></ion-textarea></ion-item>
               </div>
             </div>
           }
@@ -64,9 +65,9 @@ import { extractMessage } from '../../core/utils/error';
 
           <button type="button" class="edit-save" (click)="save()" [disabled]="saving()">
             @if (saving()) { <ion-spinner name="crescent" style="width:16px;height:16px"></ion-spinner> } @else { <ion-icon name="save-outline"></ion-icon> }
-            ذخیره تغییرات
+            {{t.saveChanges}}
           </button>
-          <a routerLink="/tabs/profile" class="edit-cancel">انصراف</a>
+          <a routerLink="/tabs/profile" class="edit-cancel">{{t.cancel}}</a>
         }
       </div>
     </ion-content>
@@ -87,6 +88,7 @@ export class ProfileEditPage implements OnInit {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
   private router = inject(Router);
+  t = fa.profileEdit;
   loading = signal(true);
   saving = signal(false);
   error = signal('');
@@ -116,8 +118,8 @@ export class ProfileEditPage implements OnInit {
   save() {
     this.error.set('');
     const phone = this.form.phoneNumber.trim();
-    if (phone && !/^09\d{9}$/.test(phone)) { const m='شماره موبایل معتبر نیست (09xxxxxxxxx)'; this.error.set(m); this.toast.error(m); return; }
-    if (this.form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email.trim())) { const m='ایمیل معتبر نیست'; this.error.set(m); this.toast.error(m); return; }
+    if (phone && !/^09\d{9}$/.test(phone)) { const m=fa.toast.invalidPhone; this.error.set(m); this.toast.error(m); return; }
+    if (this.form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email.trim())) { const m=fa.toast.invalidEmail; this.error.set(m); this.toast.error(m); return; }
     this.saving.set(true);
     const dto: Record<string, unknown> = {};
     if (this.form.name.trim()) dto['name'] = this.form.name.trim();
@@ -136,18 +138,18 @@ export class ProfileEditPage implements OnInit {
           const bDto: Record<string, unknown> = {};
           if (this.barberForm.fullName.trim()) bDto['fullName'] = this.barberForm.fullName.trim();
           if (this.barberForm.bio !== undefined) bDto['bio'] = this.barberForm.bio.trim() || null;
-          if (!Object.keys(bDto).length) { this.saving.set(false); this.toast.success('پروفایل ذخیره شد'); this.router.navigateByUrl('/tabs/profile'); return; }
+          if (!Object.keys(bDto).length) { this.saving.set(false); this.toast.success(fa.toast.profileSaved); this.router.navigateByUrl('/tabs/profile'); return; }
           this.api.barbers.updateMe(bDto).subscribe({
-            next: () => { this.saving.set(false); this.toast.success('پروفایل ذخیره شد'); this.router.navigateByUrl('/tabs/profile'); },
-            error: (e) => { this.saving.set(false); const m = extractMessage(e,'ذخیره اطلاعات آرایشگر ممکن نشد'); this.error.set(m); this.toast.error(m); },
+            next: () => { this.saving.set(false); this.toast.success(fa.toast.profileSaved); this.router.navigateByUrl('/tabs/profile'); },
+            error: (e) => { this.saving.set(false); const m = extractMessage(e,fa.toast.barberSaveFailed); this.error.set(m); this.toast.error(m); },
           });
         } else {
           this.saving.set(false);
-          this.toast.success('پروفایل ذخیره شد');
+          this.toast.success(fa.toast.profileSaved);
           this.router.navigateByUrl('/tabs/profile');
         }
       },
-      error: (e) => { this.saving.set(false); const m = extractMessage(e,'ذخیره پروفایل ممکن نشد'); this.error.set(m); this.toast.error(m); },
+      error: (e) => { this.saving.set(false); const m = extractMessage(e,fa.toast.profileSaveFailed); this.error.set(m); this.toast.error(m); },
     });
   }
 }
