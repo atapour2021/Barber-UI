@@ -27,6 +27,14 @@ export class AdminApi {
     return this.http.patch(`${this.b}/admin/users/${id}`, dto);
   }
 
+  toggleUserActive(id: string, isActive?: boolean) {
+    return this.http.patch(`${this.b}/admin/users/${id}/toggle-active`, isActive === undefined ? {} : { isActive });
+  }
+
+  resetUserPassword(id: string, password: string) {
+    return this.http.post(`${this.b}/admin/users/${id}/reset-password`, { password });
+  }
+
   deleteUser(id: string) {
     return this.http.delete(`${this.b}/admin/users/${id}`);
   }
@@ -45,6 +53,22 @@ export class AdminApi {
 
   barber(id: string) {
     return this.http.get<unknown>(`${this.b}/admin/barbers/${id}`);
+  }
+
+  toggleBarberActive(id: string, isActive?: boolean) {
+    return this.http.patch(`${this.b}/admin/barbers/${id}/toggle-active`, isActive === undefined ? {} : { isActive });
+  }
+
+  resetBarberPassword(id: string, password: string) {
+    return this.http.post(`${this.b}/admin/barbers/${id}/reset-password`, { password });
+  }
+
+  updateBarber(id: string, dto: Record<string, unknown>) {
+    return this.http.patch(`${this.b}/admin/barbers/${id}`, dto);
+  }
+
+  deleteBarber(id: string) {
+    return this.http.delete(`${this.b}/admin/barbers/${id}`);
   }
 
   adminServices(params?: Record<string, unknown>) {
