@@ -1,5 +1,6 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Location } from '@angular/common';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { IonFooter, IonIcon, IonLabel, IonTabBar, IonTabButton } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -9,9 +10,8 @@ import {
   timeOutline,
   personOutline,
   notificationsOutline,
-  sunnyOutline,
-  moonOutline,
   menuOutline,
+  chevronForwardOutline,
 } from 'ionicons/icons';
 import { fa } from '../../core/i18n/fa';
 import { ThemeService } from '../../core/services/theme.service';
@@ -19,6 +19,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
 import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sidebar';
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle.component';
 
 @Component({
   selector: 'app-app-layout',
@@ -33,23 +34,29 @@ import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sid
     IonIcon,
     IonLabel,
     AppSidebarComponent,
+    ThemeToggleComponent,
   ],
   template: `
     <div class="app-shell">
       <div class="app-topbar" dir="rtl">
         <div class="app-topbar-inner">
-          <button class="topbar-icon" type="button" aria-label="menu"  (click)="toggleSidebar()">
-            <ion-icon name="menu-outline"></ion-icon>
-          </button>
-          <div class="topbar-brand">
+          <div class="topbar-leading">
+            <button class="topbar-icon" type="button" aria-label="menu" (click)="toggleSidebar()">
+              <ion-icon name="menu-outline"></ion-icon>
+            </button>
+            @if (showBack) {
+              <button class="topbar-icon" type="button" aria-label="back" (click)="goBack()">
+                <ion-icon name="chevron-forward-outline"></ion-icon>
+              </button>
+            }
+          </div>
+          <a class="topbar-brand topbar-center" routerLink="/tabs/home" aria-label="home">
             <span class="brand-icon"><ion-icon name="cut-outline"></ion-icon></span>
             <span class="brand-text"><b>نیوباربر</b><small>{{ activeView() === 'barber' ? 'پنل آرایشگر' : activeView() === 'admin' ? 'پنل مدیریت' : 'پنل مشتری' }}</small></span>
-          </div>
+          </a>
           <div class="topbar-actions">
-            <button class="topbar-icon" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.isDark() ? 'light' : 'dark'">
-              <ion-icon [name]="theme.isDark() ? 'sunny-outline' : 'moon-outline'"></ion-icon>
-            </button>
-            <a class="topbar-icon topbar-bell" routerLink="/tabs/notifications">
+            <app-theme-toggle />
+            <a class="topbar-icon topbar-bell" routerLink="/tabs/notifications" aria-label="notifications">
               <ion-icon name="notifications-outline"></ion-icon>
               @if (unread > 0) { <em class="bell-dot"></em> }
             </a>
@@ -98,13 +105,16 @@ export class AppLayoutComponent {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private location = inject(Location);
   unread = 0;
   sidebarOpen = signal(false);
+  showBack = false;
   private viewRole = inject(ViewRoleService);
   activeView = this.viewRole.activeView;
+  private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/barbershops','/barbers','/services','/appointments','/notifications','/profile','/admin','/training']);
 
   constructor() {
-    addIcons({ homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, notificationsOutline, sunnyOutline, moonOutline, menuOutline });
+    addIcons({ homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, notificationsOutline, chevronForwardOutline, menuOutline });
     this.api.notifications.unread().subscribe({
       next: (v) => {
         const n = typeof v === 'number' ? v : ((v as { count: number }).count ?? 0);
@@ -112,6 +122,20 @@ export class AppLayoutComponent {
       },
       error: () => {},
     });
+    this.updateBack(this.router.url);
+    this.router.events.subscribe((e) => {
+      if (e instanceof NavigationEnd) this.updateBack(e.urlAfterRedirects);
+    });
+  }
+
+  private updateBack(url: string) {
+    const path = url.split('?')[0].split('#')[0];
+    this.showBack = !this.noBack.has(path) && path !== '/' && path !== '';
+  }
+
+  goBack() {
+    if (window.history.length > 1) this.location.back();
+    else this.router.navigateByUrl('/tabs/home');
   }
 
   toggleSidebar() { this.sidebarOpen.update(v => !v); }

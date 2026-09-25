@@ -2,13 +2,14 @@ import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, sunnyOutline, moonOutline } from 'ionicons/icons';
+import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline } from 'ionicons/icons';
 import { ThemeService } from '../../../core/services/theme.service';
+import { ThemeToggleComponent } from '../theme-toggle.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, IonIcon],
+  imports: [RouterLink, IonIcon, ThemeToggleComponent],
   template: `
     @if (open()) {
       <div class="sidebar-backdrop" (click)="closed.emit()" aria-hidden="true"></div>
@@ -46,10 +47,10 @@ import { ThemeService } from '../../../core/services/theme.service';
           <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
         </a>
       </nav>
-      <button class="sidebar-theme" type="button" (click)="theme.toggle()">
-        <span class="sidebar-item-label"><ion-icon [name]="theme.isDark() ? 'sunny-outline' : 'moon-outline'"></ion-icon> {{ theme.isDark() ? 'حالت روشن' : 'حالت تیره' }}</span>
-        <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
-      </button>
+      <div class="sidebar-theme">
+        <span class="sidebar-item-label">{{ theme.isDark() ? 'حالت تیره' : 'حالت روشن' }}</span>
+        <app-theme-toggle />
+      </div>
       <button class="sidebar-logout" type="button" (click)="logoutClicked.emit()">
         <ion-icon name="log-out-outline"></ion-icon><span>خروج از حساب</span>
       </button>
@@ -73,7 +74,7 @@ import { ThemeService } from '../../../core/services/theme.service';
     .sidebar-item-label { display:inline-flex; align-items:center; gap:8px; }
     .sidebar-item-label ion-icon { font-size:16px; color:var(--text-secondary); }
     .sidebar-chevron { font-size:14px; color:var(--text-muted); flex-shrink:0; }
-    .sidebar-theme { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; padding:13px 4px; background:transparent; border:none; border-top:1px solid var(--card-border); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; text-align:right; margin-top:8px; }
+    .sidebar-theme { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; padding:13px 4px; border-top:1px solid var(--card-border); color:var(--text-primary); font-size:13px; font-weight:600; margin-top:8px; }
     .sidebar-logout { margin-top:8px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px; border-radius:10px; background:transparent; border:1px solid var(--card-border); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; }
     .sidebar-logout ion-icon { font-size:16px; transform:scaleX(-1); }
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -87,6 +88,6 @@ export class AppSidebarComponent {
   viewChange = output<'admin' | 'barber' | 'customer'>();
   logoutClicked = output<void>();
   constructor() {
-    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, sunnyOutline, moonOutline });
+    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline });
   }
 }

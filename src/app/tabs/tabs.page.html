@@ -1,19 +1,24 @@
 <div class="app-topbar" dir="rtl">
   <div class="app-topbar-inner">
-    <button class="topbar-icon" type="button" aria-label="menu" (click)="toggleSidebar()">
-      <ion-icon name="menu-outline"></ion-icon>
-    </button>
-    <div class="topbar-brand">
+    <div class="topbar-leading">
+      <button class="topbar-icon" type="button" aria-label="menu" (click)="toggleSidebar()">
+        <ion-icon name="menu-outline"></ion-icon>
+      </button>
+      @if (showBack) {
+        <button class="topbar-icon" type="button" aria-label="back" (click)="goBack()">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      }
+    </div>
+    <a class="topbar-brand topbar-center" routerLink="/tabs/home" aria-label="home">
       <span class="brand-icon"><ion-icon name="cut-outline"></ion-icon></span>
       <span class="brand-text">
         <b>نیوباربر</b>
         <small>{{ activeView() === 'barber' ? 'پنل آرایشگر' : activeView() === 'admin' ? 'پنل مدیریت' : 'پنل مشتری' }}</small>
       </span>
-    </div>
+    </a>
     <div class="topbar-actions">
-      <button class="topbar-icon" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.isDark() ? 'light' : 'dark'">
-        <ion-icon [name]="theme.isDark() ? 'sunny-outline' : 'moon-outline'"></ion-icon>
-      </button>
+      <app-theme-toggle />
       <a class="topbar-icon topbar-bell" routerLink="/tabs/notifications" aria-label="notifications">
         <ion-icon name="notifications-outline"></ion-icon>
         @if (unread > 0) { <em class="bell-dot"></em> }

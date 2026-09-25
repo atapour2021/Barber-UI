@@ -5,17 +5,19 @@ import { addIcons } from 'ionicons';
 import { arrowForwardOutline, cutOutline } from 'ionicons/icons';
 import { filter } from 'rxjs';
 import { fa } from '../../core/i18n/fa';
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle.component';
 
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
-  imports: [IonContent, RouterOutlet, RouterLink, IonIcon],
+  imports: [IonContent, RouterOutlet, RouterLink, IonIcon, ThemeToggleComponent],
   template: `
     <ion-content [fullscreen]="true" class="login-content">
       <div class="login-wrapper" dir="rtl">
         <div class="auth-header">
-          <a [routerLink]="backLink" class="back-btn"><ion-icon name="arrow-forward-outline" class="back-icon"></ion-icon></a>
+          <a [routerLink]="backLink" class="back-btn" aria-label="back"><ion-icon name="arrow-forward-outline" class="back-icon"></ion-icon></a>
           <div class="logo-box"><ion-icon name="cut-outline"></ion-icon></div>
+          <app-theme-toggle class="auth-theme" />
         </div>
         <div class="auth-titles">
           <h1 class="title">{{ meta.title }}</h1>

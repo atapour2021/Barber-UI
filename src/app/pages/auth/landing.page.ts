@@ -1,16 +1,25 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IonButton, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { arrowBackOutline } from 'ionicons/icons';
+import { arrowBackOutline, cutOutline } from 'ionicons/icons';
 import { fa } from '../../core/i18n/fa';
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [IonContent, IonButton, IonIcon],
+  imports: [IonContent, IonButton, IonIcon, RouterLink, ThemeToggleComponent],
   template: `
     <ion-content [fullscreen]="true" class="ion-padding landing-container">
+      <div class="landing-topbar" dir="rtl">
+        <span></span>
+        <a class="topbar-brand" routerLink="/landing" aria-label="home">
+          <span class="brand-icon"><ion-icon name="cut-outline"></ion-icon></span>
+          <span class="brand-text"><b>نیوباربر</b></span>
+        </a>
+        <app-theme-toggle />
+      </div>
       <div class="main-wrapper">
         <div class="image-wrapper">
           <img src="/assets/images/barber-reza.jpg" alt="Barber" />
@@ -35,6 +44,33 @@ import { fa } from '../../core/i18n/fa';
         --background: var(--ion-background-color);
         --color: var(--ion-text-color);
       }
+      .landing-topbar {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        padding: 6px 0 14px;
+      }
+      .landing-topbar .topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: inherit;
+        justify-self: center;
+      }
+      .landing-topbar app-theme-toggle { justify-self: end; }
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-contrast);
+        font-size: 16px;
+      }
+      .brand-text b { font-size: 12px; font-weight: 800; color: var(--text-primary); }
       .main-wrapper {
         display: flex;
         flex-direction: column;
@@ -87,7 +123,7 @@ export class LandingPage {
   private router = inject(Router);
   t = fa.auth.landing;
   constructor() {
-    addIcons({ 'arrow-back-outline': arrowBackOutline });
+    addIcons({ 'arrow-back-outline': arrowBackOutline, cutOutline });
   }
   onStart(): void {
     this.router.navigateByUrl('/login');
