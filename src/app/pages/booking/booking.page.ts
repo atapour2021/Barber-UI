@@ -104,7 +104,7 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
           } @else if (!items().length) {
             <div class="dark-card" style="text-align:center;padding:22px">
               <p class="muted" style="margin:0 0 12px">{{ fa.turns.empty }}</p>
-              @if (!isBarber()) { <a routerLink="/tabs/appointment/new" class="cta-inline">رزرو نوبت جدید</a> }
+              @if (!isBarber()) { <a routerLink="/tabs/appointment/new" class="cta-inline">{{ ta.book }}</a> }
             </div>
           } @else {
             <div class="turn-grid">
@@ -336,7 +336,7 @@ export class BookingPage implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        this.errorMsg.set((e?.error as { message?: string })?.message ?? 'دریافت نوبت‌ها ناموفق بود');
+        this.errorMsg.set((e?.error as { message?: string })?.message ?? this.tc.failed);
         this.loading.set(false);
       },
     });
@@ -513,17 +513,17 @@ export class BookingPage implements OnInit {
     this.reserveError.set(''); this.reserveOk.set('');
     const barberId = this.reserveBarber()?.id ?? this.route.snapshot.queryParamMap.get('barberId') ?? '';
     const serviceId = this.reserveService()?.id ?? this.route.snapshot.queryParamMap.get('serviceId') ?? '';
-    if (!barberId || !serviceId) { this.reserveError.set('آرایشگر یا خدمت انتخاب نشده'); this.toast.warning('آرایشگر یا خدمت انتخاب نشده'); return; }
+    if (!barberId || !serviceId) { this.reserveError.set(fa.toast.barberOrServiceRequired); this.toast.warning(fa.toast.barberOrServiceRequired); return; }
     if (this.slotUnavailableReason()) { this.reserveError.set(this.slotUnavailableReason()); this.toast.warning(this.slotUnavailableReason()); return; }
     const date = this.reserveDateIso(); const t = this.reserveTimeStart(); const end = this.calcEnd(t, this.reserveDuration());
     const startTime = `${date}T${t}:00.000Z`; const endTime = `${date}T${end}:00.000Z`;
     this.confirming.set(true);
     this.api.appointments.create({ barberId, serviceId, date, startTime, endTime, notes: this.note || undefined }).subscribe({
-      next: () => { this.confirming.set(false); this.reserveOk.set('رزرو با موفقیت ثبت شد'); this.toast.success('رزرو با موفقیت ثبت شد'); setTimeout(() => { this.isReserveMode.set(false); this.router.navigateByUrl('/tabs/booking'); this.load(); }, 700); },
+      next: () => { this.confirming.set(false); this.reserveOk.set(fa.toast.reserveSuccess); this.toast.success(fa.toast.reserveSuccess); setTimeout(() => { this.isReserveMode.set(false); this.router.navigateByUrl('/tabs/booking'); this.load(); }, 700); },
       error: (err) => {
         this.confirming.set(false);
         const raw = (err?.error as { message?: string | string[] })?.message;
-        const msg = Array.isArray(raw) ? raw.join('، ') : (raw ?? 'ثبت رزرو ناموفق بود');
+        const msg = Array.isArray(raw) ? raw.join('، ') : (raw ?? fa.toast.reserveFailed);
         this.reserveError.set(msg); this.toast.error(msg);
       },
     });

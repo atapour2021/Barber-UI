@@ -17,22 +17,22 @@ import { fa } from '../../core/i18n/fa';
     <ion-content [fullscreen]="true">
       <div class="page-wrap detail-wrap" dir="rtl">
         <div class="detail-head">
-          <h1>جزئیات نوبت</h1>
+          <h1>{{ ta.title }} — {{ tc.search }}</h1>
           <span class="status-badge" [style.background]="badgeBg()" [style.border-color]="badgeBg()" [style.color]="'#fff'">{{ statusLabel() }}</span>
         </div>
-        @if (isBarber()) { <p class="muted" style="margin:0;font-size:11px">نمای آرایشگر — تایید / رد / اتمام</p> }
+        @if (isBarber()) { <p class="muted" style="margin:0;font-size:11px">نمای آرایشگر — {{ ta.confirm }} / {{ ta.cancel }} / {{ ta.done }}</p> }
         @else if (isAdmin()) { <p class="muted" style="margin:0;font-size:11px">نمای مدیر — مدیریت کامل</p> }
 
         @if (loading()) {
-          <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ fa.common.loading }}</p></div>
+          <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ tc.loading }}</p></div>
         } @else if (!appt()) {
-          <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">نوبت یافت نشد</p><button type="button" class="link-teal" (click)="back()" style="margin-top:10px;background:none;border:none;font:inherit;cursor:pointer;color:var(--accent)">بازگشت</button></div>
+          <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">{{ fa.errors.notFound }}</p><button type="button" class="link-teal" (click)="back()" style="margin-top:10px;background:none;border:none;font:inherit;cursor:pointer;color:var(--accent)">{{ tc.close }}</button></div>
         } @else {
           <div class="dark-card barber-row">
             <img [src]="avatar()" (error)="onImgError($event)" alt="" />
             <div class="barber-meta">
               <b>{{ barberName() }}</b>
-              <small>آرایشگر</small>
+              <small>{{ ta.barber }}</small>
             </div>
           </div>
 
@@ -44,60 +44,60 @@ import { fa } from '../../core/i18n/fa';
           }
 
           <div class="dark-card detail-card">
-            <div class="d-row"><span class="d-label">خدمت</span><b class="d-val">{{ serviceName() }}</b></div>
-            <div class="d-row"><span class="d-label">تاریخ</span><b class="d-val">{{ dateFa() }}</b></div>
-            <div class="d-row"><span class="d-label">زمان</span><b class="d-val" dir="ltr">{{ timeRange() }}</b></div>
-            <div class="d-row"><span class="d-label">مدت</span><b class="d-val">{{ duration() }} دقیقه</b></div>
-            <div class="d-row"><span class="d-label">مبلغ</span><b class="d-val price">{{ priceFa() }} تومان</b></div>
-            @if (appt()?.notes) { <div class="d-row"><span class="d-label">یادداشت</span><b class="d-val" style="font-weight:600;max-width:60%;text-align:right;white-space:pre-wrap">{{ appt()?.notes }}</b></div> }
+            <div class="d-row"><span class="d-label">{{ ta.service }}</span><b class="d-val">{{ serviceName() }}</b></div>
+            <div class="d-row"><span class="d-label">{{ ta.date }}</span><b class="d-val">{{ dateFa() }}</b></div>
+            <div class="d-row"><span class="d-label">{{ tb.date }}</span><b class="d-val" dir="ltr">{{ timeRange() }}</b></div>
+            <div class="d-row"><span class="d-label">{{ fa.services.duration }}</span><b class="d-val">{{ duration() }} {{ fa.servicesList.minute }}</b></div>
+            <div class="d-row"><span class="d-label">{{ fa.services.price }}</span><b class="d-val price">{{ priceFa() }} {{ fa.servicesList.currency }}</b></div>
+            @if (appt()?.notes) { <div class="d-row"><span class="d-label">{{ ta.notes }}</span><b class="d-val" style="font-weight:600;max-width:60%;text-align:right;white-space:pre-wrap">{{ appt()?.notes }}</b></div> }
           </div>
 
           @if (editing()) {
             <div class="dark-card" style="padding:12px;display:flex;gap:8px;flex-direction:column">
-              <label style="font-size:11px;font-weight:700;color:var(--text-primary);text-align:right">ویرایش یادداشت</label>
-              <textarea [(ngModel)]="editNotes" rows="2" maxlength="500" placeholder="یادداشت" style="width:100%;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:10px;color:var(--text-primary);font-family:inherit;outline:none;resize:vertical"></textarea>
+              <label style="font-size:11px;font-weight:700;color:var(--text-primary);text-align:right">{{ tc.edit }} {{ ta.notes }}</label>
+              <textarea [(ngModel)]="editNotes" rows="2" maxlength="500" [placeholder]="ta.notesPlaceholder" style="width:100%;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:10px;color:var(--text-primary);font-family:inherit;outline:none;resize:vertical"></textarea>
               <div style="display:flex;gap:8px">
-                <button type="button" class="btn btn-contact" style="flex:1" (click)="saveEdit()" [disabled]="saving()">ذخیره</button>
-                <button type="button" class="btn btn-cancel" style="flex:1" (click)="editing.set(false)">انصراف</button>
+                <button type="button" class="btn btn-contact" style="flex:1" (click)="saveEdit()" [disabled]="saving()">{{ tc.save }}</button>
+                <button type="button" class="btn btn-cancel" style="flex:1" (click)="editing.set(false)">{{ tc.cancel }}</button>
               </div>
             </div>
           }
 
           <div class="dark-card address-card">
-            <h3>آدرس</h3>
+            <h3>{{ fa.barberManage.address }}</h3>
             <p class="addr">{{ address() }}</p>
-            <a class="map-link" [href]="mapHref()" target="_blank" rel="noopener">نمایش روی نقشه</a>
+            <a class="map-link" [href]="mapHref()" target="_blank" rel="noopener">{{ fa.barbershopLocation.routing }}</a>
           </div>
 
           <div class="actions">
             @if (isBarber() || isAdmin()) {
               @if (appt()?.status === 'pending') {
-                <button type="button" class="btn btn-contact" (click)="doStatus('confirmed')" [disabled]="busy()">تایید</button>
-                <button type="button" class="btn btn-cancel" (click)="doStatus('cancelled')" [disabled]="busy()">رد</button>
+                <button type="button" class="btn btn-contact" (click)="doStatus('confirmed')" [disabled]="busy()">{{ ta.confirm }}</button>
+                <button type="button" class="btn btn-cancel" (click)="doStatus('cancelled')" [disabled]="busy()">{{ tc.cancel }}</button>
               } @else if (appt()?.status === 'confirmed') {
-                <button type="button" class="btn btn-contact" (click)="doStatus('completed')" [disabled]="busy()">انجام شد</button>
-                <button type="button" class="btn btn-cancel" (click)="doCancel()" [disabled]="busy()">لغو</button>
+                <button type="button" class="btn btn-contact" (click)="doStatus('completed')" [disabled]="busy()">{{ ta.done }}</button>
+                <button type="button" class="btn btn-cancel" (click)="doCancel()" [disabled]="busy()">{{ ta.cancel }}</button>
               } @else {
-                <button type="button" class="btn btn-contact" (click)="contact()">تماس</button>
+                <button type="button" class="btn btn-contact" (click)="contact()">{{ tb.bookAppointment }}</button>
               }
             }
             @if (!isBarber()) {
               @if (appt()?.status !== 'cancelled' && appt()?.status !== 'completed' && appt()?.status !== 'no_show') {
-                @if (!editing()) { <button type="button" class="btn btn-cancel" (click)="editing.set(true)">ویرایش یادداشت</button> }
-                <button type="button" class="btn btn-cancel" (click)="doCancel()" [disabled]="busy()">{{ busy() ? '...' : 'لغو نوبت' }}</button>
+                @if (!editing()) { <button type="button" class="btn btn-cancel" (click)="editing.set(true)">{{ tc.edit }} {{ ta.notes }}</button> }
+                <button type="button" class="btn btn-cancel" (click)="doCancel()" [disabled]="busy()">{{ busy() ? '...' : ta.cancel }}</button>
               }
-              <button type="button" class="btn btn-contact" (click)="contact()">تماس با آرایشگاه</button>
+              <button type="button" class="btn btn-contact" (click)="contact()">{{ tb.bookAppointment }}</button>
             }
           </div>
 
           @if (isAdmin()) {
             <div class="dark-card" style="padding:12px;display:flex;gap:8px;flex-wrap:wrap">
-              <button type="button" class="btn btn-cancel" style="flex:1;background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444" (click)="doDelete()" [disabled]="busy()">حذف نوبت</button>
-              <button type="button" class="btn btn-cancel" style="flex:1" (click)="back()">بازگشت</button>
+              <button type="button" class="btn btn-cancel" style="flex:1;background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444" (click)="doDelete()" [disabled]="busy()">{{ tc.delete }}</button>
+              <button type="button" class="btn btn-cancel" style="flex:1" (click)="back()">{{ tc.close }}</button>
             </div>
           }
           @if (!isAdmin() && !isBarber()) {
-            <button type="button" class="link-teal" (click)="back()" style="background:none;border:none;color:var(--text-secondary);font:inherit;font-size:12px;cursor:pointer;text-align:center;width:100%">بازگشت به فهرست</button>
+            <button type="button" class="link-teal" (click)="back()" style="background:none;border:none;color:var(--text-secondary);font:inherit;font-size:12px;cursor:pointer;text-align:center;width:100%">{{ fa.bookingExtra.backToList }}</button>
           }
         }
       </div>
@@ -141,6 +141,10 @@ export class AppointmentDetailPage implements OnInit {
   private viewRole = inject(ViewRoleService);
   private auth = inject(AuthService);
   fa = fa;
+  ta = fa.appointments;
+  tb = fa.barberDetail;
+  tc = fa.common;
+  tt = fa.turns;
 
   loading = signal(true);
   busy = signal(false);
@@ -161,7 +165,7 @@ export class AppointmentDetailPage implements OnInit {
   timeRange = computed(() => { const a = this.appt(); if (!a) return '—'; const s = a.startTime.includes('T') ? a.startTime.slice(11,16) : a.startTime; const e = a.endTime.includes('T') ? a.endTime.slice(11,16) : a.endTime; return `${s} - ${e}`; });
   statusLabel = computed(() => {
     const s = this.appt()?.status;
-    const m: Record<string,string> = { pending:'در انتظار', confirmed:'تایید شده', cancelled:'لغو شده', completed:'انجام شده', no_show:'عدم حضور' };
+    const m: Record<string,string> = { pending: this.ta.pending, confirmed: this.ta.confirmed, cancelled: this.ta.cancelled, completed: this.ta.completed, no_show:'عدم حضور' };
     return m[s ?? ''] ?? s ?? '—';
   });
   badgeBg = computed(() => {
@@ -196,7 +200,7 @@ export class AppointmentDetailPage implements OnInit {
   contact() {
     const tel = (this.appt()?.barber as unknown as { barbershop?: { phoneNumber?: string } })?.barbershop?.phoneNumber ?? '';
     if (tel) window.open(`tel:${tel}`, '_self');
-    else this.toast.info('شماره تماس ثبت نشده');
+    else this.toast.info(fa.toast.phoneNotRegistered);
   }
 
   doStatus(status: string) {

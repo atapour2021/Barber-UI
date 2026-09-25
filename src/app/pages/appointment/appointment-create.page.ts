@@ -15,34 +15,34 @@ import { fa } from '../../core/i18n/fa';
     <ion-content [fullscreen]="true">
       <div class="page-wrap create-wrap" dir="rtl">
         <div class="head">
-          <h1>رزرو نوبت جدید</h1>
-          <p>آرایشگر، خدمت و زمان را انتخاب کنید</p>
+          <h1>{{ ta.bookTitle }}</h1>
+          <p>{{ ta.barber }}، {{ ta.service }} و {{ ta.date }} را انتخاب کنید</p>
         </div>
 
         @if (loadingMeta()) {
           <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ fa.common.loading }}</p></div>
         } @else {
           <div class="dark-card form-card">
-            <label class="lbl">آرایشگر</label>
+            <label class="lbl">{{ ta.barber }}</label>
             <select [(ngModel)]="barberId" (ngModelChange)="onBarberChange()" class="sel">
-              <option value="">انتخاب کنید</option>
+              <option value="">{{ tc.search }}</option>
               @for (b of barbers(); track b.id) { <option [value]="b.id">{{ b.fullName }}</option> }
             </select>
 
-            <label class="lbl">خدمت</label>
+            <label class="lbl">{{ ta.service }}</label>
             <select [(ngModel)]="serviceId" (ngModelChange)="loadSlots()" class="sel">
-              <option value="">انتخاب کنید</option>
-              @for (s of servicesFiltered; track s.id) { <option [value]="s.id">{{ s.name }} — {{ s.duration }}د — {{ s.price }} تومان</option> }
+              <option value="">{{ tc.search }}</option>
+              @for (s of servicesFiltered; track s.id) { <option [value]="s.id">{{ s.name }} — {{ s.duration }}{{ ts.minute }} — {{ s.price }} {{ ts.currency }}</option> }
             </select>
 
-            <label class="lbl">تاریخ</label>
+            <label class="lbl">{{ ta.date }}</label>
             <input type="date" [(ngModel)]="date" (ngModelChange)="loadSlots()" class="sel" [min]="todayIso" />
 
-            <label class="lbl" style="margin-top:4px">زمان</label>
+            <label class="lbl" style="margin-top:4px">{{ ta.startTime }}</label>
             @if (loadingSlots()) {
               <div style="text-align:center;padding:12px"><ion-spinner></ion-spinner></div>
             } @else if (!slots().length) {
-              <p class="muted" style="margin:0;font-size:11px">زمانی یافت نشد — آرایشگر/تاریخ/خدمت را تغییر دهید</p>
+              <p class="muted" style="margin:0;font-size:11px">{{ ta.empty }}</p>
             } @else {
               <div class="slots">
                 @for (sl of slots(); track sl.startTime) {
@@ -61,13 +61,13 @@ import { fa } from '../../core/i18n/fa';
           </div>
 
           <div class="dark-card form-card">
-            <label class="lbl">یادداشت (اختیاری)</label>
-            <textarea [(ngModel)]="notes" rows="2" maxlength="500" placeholder="توضیح برای آرایشگر" class="ta"></textarea>
+            <label class="lbl">{{ ta.notes }} ({{ fa.bookingExtra.optional }})</label>
+            <textarea [(ngModel)]="notes" rows="2" maxlength="500" [placeholder]="ta.notesPlaceholder" class="ta"></textarea>
             @if (errorMsg()) { <div class="alert-error" style="text-align:center">{{ errorMsg() }}</div> }
             @if (successMsg()) { <div class="alert-ok" style="text-align:center">{{ successMsg() }}</div> }
             <button type="button" class="cta" (click)="create()" [disabled]="creating() || !canCreate()">
               @if (creating()) { <ion-spinner name="crescent" style="--color:#0b101e;width:18px;height:18px"></ion-spinner> }
-              @else { تایید و ایجاد نوبت }
+              @else { {{ ta.create }} }
             </button>
           </div>
         }
@@ -97,6 +97,9 @@ export class AppointmentCreatePage implements OnInit {
   private toast = inject(ToastService);
   private router = inject(Router);
   fa = fa;
+  ta = fa.appointments;
+  tc = fa.common;
+  ts = fa.servicesList;
 
   barbers = signal<Barber[]>([]);
   servicesAll = signal<Service[]>([]);
@@ -209,7 +212,7 @@ export class AppointmentCreatePage implements OnInit {
     }).subscribe({
       next: () => {
         this.toast.success(fa.appointments.createSuccess);
-        this.successMsg.set('نوبت ایجاد شد');
+        this.successMsg.set(fa.appointments.createSuccess);
         this.creating.set(false);
         setTimeout(() => this.router.navigateByUrl('/tabs/appointment'), 600);
       },

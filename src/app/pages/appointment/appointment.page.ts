@@ -27,22 +27,22 @@ type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' 
         </div>
 
         <div class="filter-row" role="tablist">
-          <button type="button" class="filter-pill" [class.active]="statusFilter()==='all'" (click)="setStatus('all')" role="tab">همه</button>
-          <button type="button" class="filter-pill" [class.active]="statusFilter()==='pending'" (click)="setStatus('pending')" role="tab">در انتظار</button>
-          <button type="button" class="filter-pill" [class.active]="statusFilter()==='confirmed'" (click)="setStatus('confirmed')" role="tab">تایید شده</button>
-          <button type="button" class="filter-pill" [class.active]="statusFilter()==='cancelled'" (click)="setStatus('cancelled')" role="tab">لغو شده</button>
-          <button type="button" class="filter-pill" [class.active]="statusFilter()==='completed'" (click)="setStatus('completed')" role="tab">انجام شده</button>
+          <button type="button" class="filter-pill" [class.active]="statusFilter()==='all'" (click)="setStatus('all')" role="tab">{{ ta.all }}</button>
+          <button type="button" class="filter-pill" [class.active]="statusFilter()==='pending'" (click)="setStatus('pending')" role="tab">{{ ta.pending }}</button>
+          <button type="button" class="filter-pill" [class.active]="statusFilter()==='confirmed'" (click)="setStatus('confirmed')" role="tab">{{ ta.confirmed }}</button>
+          <button type="button" class="filter-pill" [class.active]="statusFilter()==='cancelled'" (click)="setStatus('cancelled')" role="tab">{{ ta.cancelled }}</button>
+          <button type="button" class="filter-pill" [class.active]="statusFilter()==='completed'" (click)="setStatus('completed')" role="tab">{{ ta.completed }}</button>
         </div>
 
         @if (loading()) {
           <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ c.loading }}</p></div>
         } @else if (errorMsg()) {
-          <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load()">تلاش مجدد</button></div>
+          <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load()">{{ c.retry }}</button></div>
         } @else if (!items().length) {
           <div class="dark-card" style="text-align:center;padding:22px">
             <p class="muted" style="margin:0 0 12px">{{ t.empty }}</p>
             @if (!isBarber()) {
-              <a routerLink="/tabs/appointment/new" class="cta-inline">رزرو نوبت جدید</a>
+              <a routerLink="/tabs/appointment/new" class="cta-inline">{{ ta.book }}</a>
             }
           </div>
         } @else {
@@ -68,34 +68,34 @@ type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' 
 
                 @if (isBarber() && a.status === 'pending') {
                   <div class="card-actions">
-                    <button type="button" class="btn-sm accept" (click)="confirm(a)" [disabled]="busyId()===a.id">تایید</button>
-                    <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">رد</button>
+                    <button type="button" class="btn-sm accept" (click)="confirm(a)" [disabled]="busyId()===a.id">{{ ta.confirm }}</button>
+                    <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">{{ tc.cancel }}</button>
                   </div>
                 }
                 @if (isBarber() && a.status === 'confirmed') {
                   <div class="card-actions">
-                    <button type="button" class="btn-sm done" (click)="complete(a)" [disabled]="busyId()===a.id">انجام شد</button>
-                    <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">لغو</button>
+                    <button type="button" class="btn-sm done" (click)="complete(a)" [disabled]="busyId()===a.id">{{ ta.done }}</button>
+                    <button type="button" class="btn-sm reject" (click)="reject(a)" [disabled]="busyId()===a.id">{{ ta.cancel }}</button>
                   </div>
                 }
 
                 @if (!isBarber()) {
                   <div class="card-actions">
                     @if (a.status !== 'cancelled' && a.status !== 'completed' && a.status !== 'no_show') {
-                      <button type="button" class="btn-sm ghost" (click)="startEdit(a)">ویرایش</button>
-                      <button type="button" class="btn-sm reject" (click)="cancel(a)" [disabled]="busyId()===a.id">لغو</button>
+                      <button type="button" class="btn-sm ghost" (click)="startEdit(a)">{{ tc.edit }}</button>
+                      <button type="button" class="btn-sm reject" (click)="cancel(a)" [disabled]="busyId()===a.id">{{ ta.cancel }}</button>
                     }
                     @if (isAdmin()) {
-                      <button type="button" class="btn-sm danger" (click)="remove(a)" [disabled]="busyId()===a.id">حذف</button>
+                      <button type="button" class="btn-sm danger" (click)="remove(a)" [disabled]="busyId()===a.id">{{ tc.delete }}</button>
                     }
                   </div>
                 }
 
                 @if (editingId()===a.id) {
                   <div class="edit-row">
-                    <input class="edit-input" [(ngModel)]="editNotes" placeholder="یادداشت" maxlength="500" />
-                    <button type="button" class="btn-sm accept" (click)="saveEdit(a)" [disabled]="busyId()===a.id">ذخیره</button>
-                    <button type="button" class="btn-sm ghost" (click)="editingId.set(null)">انصراف</button>
+                    <input class="edit-input" [(ngModel)]="editNotes" [placeholder]="ta.notesPlaceholder" maxlength="500" />
+                    <button type="button" class="btn-sm accept" (click)="saveEdit(a)" [disabled]="busyId()===a.id">{{ tc.save }}</button>
+                    <button type="button" class="btn-sm ghost" (click)="editingId.set(null)">{{ tc.cancel }}</button>
                   </div>
                 }
               </div>
@@ -104,7 +104,7 @@ type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' 
         }
 
         @if (!isBarber() && !loading()) {
-          <a routerLink="/tabs/appointment/new" class="cta-btn" style="text-decoration:none">+ رزرو نوبت جدید</a>
+          <a routerLink="/tabs/appointment/new" class="cta-btn" style="text-decoration:none">+ {{ ta.book }}</a>
         }
       </div>
     </ion-content>
@@ -153,6 +153,8 @@ export class AppointmentPage implements OnInit {
   private auth = inject(AuthService);
   t = fa.turns;
   c = fa.common;
+  ta = fa.appointments;
+  tc = fa.common;
   loading = signal(false);
   errorMsg = signal('');
   statusFilter = signal<StatusFilter>('all');
@@ -188,14 +190,14 @@ export class AppointmentPage implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        this.errorMsg.set((e?.error as { message?: string })?.message ?? 'دریافت نوبت‌ها ناموفق بود');
+        this.errorMsg.set((e?.error as { message?: string })?.message ?? this.c.failed);
         this.loading.set(false);
       },
     });
   }
 
   statusFa(s: string) {
-    const m: Record<string,string> = { pending:'در انتظار', confirmed:'تایید شده', cancelled:'لغو شده', completed:'انجام شده', no_show:'عدم حضور' };
+    const m: Record<string,string> = { pending: this.ta.pending, confirmed: this.ta.confirmed, cancelled: this.ta.cancelled, completed: this.ta.completed, no_show:'عدم حضور' };
     return m[s] ?? s;
   }
   badgeBg(s: string) {
@@ -217,8 +219,8 @@ export class AppointmentPage implements OnInit {
   dateLabel(iso: string) {
     const today = new Date().toISOString().slice(0, 10);
     const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-    if (iso.slice(0,10) === today) return 'امروز';
-    if (iso.slice(0,10) === tomorrow) return 'فردا';
+    if (iso.slice(0,10) === today) return this.t.today;
+    if (iso.slice(0,10) === tomorrow) return this.t.tomorrow;
     try { return new Intl.DateTimeFormat('fa-IR').format(new Date(iso.slice(0,10) + 'T12:00:00')); } catch { return iso.slice(0,10); }
   }
 
