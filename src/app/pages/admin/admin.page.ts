@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonCard, IonCardContent, IonList, IonLabel, IonButton, IonSpinner, IonSegment, IonSegmentButton, IonBadge, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import { refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline, pencilOutline, createOutline, closeOutline, checkmarkOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Appointment, Barber, User } from '../../core/models';
@@ -67,11 +67,19 @@ import { extractMessage } from '../../core/utils/error';
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
                     <ion-label style="min-width:0;flex:1"><h3 style="font-weight:800;color:var(--text-primary);font-size:13px">{{ u.username }} <span class="muted">({{ u.role }})</span></h3><p class="muted" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.name }} {{ u.family }} · {{ u.phoneNumber }} @if(u.email){· {{ u.email }}}</p><p class="muted" style="font-size:11px"><ion-badge [color]="u.isActive ? 'success' : 'medium'" style="font-size:10px">{{ u.isActive ? t.active : t.inactive }}</ion-badge></p></ion-label>
                     <div style="display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap">
+                      <ion-button size="small" fill="outline" (click)="startUsernameEdit(u)" [disabled]="userBusy()===u.id"><ion-icon name="pencil-outline" slot="icon-only"></ion-icon></ion-button>
                       <ion-button size="small" [color]="u.isActive ? 'warning' : 'success'" fill="outline" (click)="toggleUser(u)" [disabled]="userBusy()===u.id"><ion-icon name="power-outline" slot="icon-only"></ion-icon></ion-button>
                       <ion-button size="small" fill="outline" (click)="startResetUser(u)" [disabled]="userBusy()===u.id"><ion-icon name="key-outline" slot="icon-only"></ion-icon></ion-button>
                       <ion-button size="small" fill="clear" color="danger" (click)="delUser(u.id)" [disabled]="userBusy()===u.id"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button>
                     </div>
                   </div>
+                  @if (usernameEditId()===u.id) {
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px">
+                      <input [(ngModel)]="usernameEditVal" placeholder="{{ t.usernamePlaceholder }}" style="flex:1;min-width:140px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+                      <ion-button size="small" (click)="confirmUsername(u)" [disabled]="userBusy()===u.id" style="--background:var(--accent);--color:var(--accent-contrast)">{{ c.save }}</ion-button>
+                      <ion-button size="small" fill="clear" (click)="usernameEditId.set(null)">{{ c.cancel }}</ion-button>
+                    </div>
+                  }
                   @if (resetUserId()===u.id) {
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px">
                       <input [(ngModel)]="resetUserPwd" type="password" placeholder="{{ t.newPassword }} (≥6)" style="flex:1;min-width:140px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
@@ -109,11 +117,19 @@ import { extractMessage } from '../../core/utils/error';
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
                     <ion-label style="min-width:0;flex:1"><h3 style="font-weight:800;color:var(--text-primary);font-size:13px">{{ b.fullName }} <span class="muted">({{ b.status }})</span></h3><p class="muted" style="font-size:11px">{{ b.user?.username ?? b.userId.slice(0,8) }} · {{ b.barbershop?.name ?? b.barbershopId.slice(0,8) }}</p><p class="muted" style="font-size:11px"><ion-badge [color]="b.isActive ? 'success' : 'medium'" style="font-size:10px">{{ b.isActive ? t.active : t.inactive }}</ion-badge></p></ion-label>
                     <div style="display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap">
+                      <ion-button size="small" fill="outline" (click)="startBarberUsernameEdit(b)" [disabled]="barberBusy()===b.id || !b.userId"><ion-icon name="pencil-outline" slot="icon-only"></ion-icon></ion-button>
                       <ion-button size="small" [color]="b.isActive ? 'warning' : 'success'" fill="outline" (click)="toggleBarber(b)" [disabled]="barberBusy()===b.id"><ion-icon name="power-outline" slot="icon-only"></ion-icon></ion-button>
                       <ion-button size="small" fill="outline" (click)="startResetBarber(b)" [disabled]="barberBusy()===b.id"><ion-icon name="key-outline" slot="icon-only"></ion-icon></ion-button>
                       <ion-button size="small" fill="clear" color="danger" (click)="delBarber(b.id)" [disabled]="barberBusy()===b.id"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button>
                     </div>
                   </div>
+                  @if (barberUsernameEditId()===b.id) {
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px">
+                      <input [(ngModel)]="barberUsernameEditVal" placeholder="{{ t.usernamePlaceholder }}" style="flex:1;min-width:140px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+                      <ion-button size="small" (click)="confirmBarberUsername(b)" [disabled]="barberBusy()===b.id" style="--background:var(--accent);--color:var(--accent-contrast)">{{ c.save }}</ion-button>
+                      <ion-button size="small" fill="clear" (click)="barberUsernameEditId.set(null)">{{ c.cancel }}</ion-button>
+                    </div>
+                  }
                   @if (resetBarberId()===b.id) {
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px">
                       <input [(ngModel)]="resetBarberPwd" type="password" placeholder="{{ t.newPassword }} (≥6)" style="flex:1;min-width:140px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
@@ -215,6 +231,10 @@ export class AdminPage implements OnInit {
   userBusy = signal<string | null>(null);
   resetUserId = signal<string | null>(null);
   resetUserPwd = '';
+  usernameEditId = signal<string | null>(null);
+  usernameEditVal = '';
+  barberUsernameEditId = signal<string | null>(null);
+  barberUsernameEditVal = '';
   barbers = signal<Barber[]>([]);
   barbersLoading = signal(false);
   barberBusy = signal<string | null>(null);
@@ -234,7 +254,7 @@ export class AdminPage implements OnInit {
   bq: Record<string, string> = { search: '', status: '', isActive: '' };
   newKey = '';
   newVal = '';
-  constructor() { addIcons({ refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline }); }
+  constructor() { addIcons({ refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline, pencilOutline, createOutline, closeOutline, checkmarkOutline }); }
   ngOnInit() { this.loadDash(); this.loadUsers(); this.loadBarbers(); this.loadSettings(); }
   onTab(e: CustomEvent) { this.tab = (e.detail.value ?? 'dash').toString(); if (this.tab==='appointments' && !this.appts().length) this.loadAppts(); if (this.tab==='barbers' && !this.barbers().length) this.loadBarbers(); if (this.tab==='users' && !this.users().length) this.loadUsers(); }
   loadDash() { this.dashLoading.set(true); this.api.admin.dashboard().subscribe({ next: (v) => { this.dash.set(v as never); this.dashLoading.set(false); }, error: () => this.dashLoading.set(false) }); }
@@ -273,6 +293,32 @@ export class AdminPage implements OnInit {
     this.api.admin.deleteUser(id).subscribe({
       next: () => { this.toast.success(fa.admin.userDeleteSuccess); this.userBusy.set(null); this.loadUsers(); this.loadDash(); },
       error: (e) => { this.toast.error(extractMessage(e, fa.common.failed)); this.userBusy.set(null); },
+    });
+  }
+  startUsernameEdit(u: User) { this.usernameEditId.set(u.id); this.usernameEditVal = u.username ?? ''; this.resetUserId.set(null); }
+  confirmUsername(u: User) {
+    const v = this.usernameEditVal.trim();
+    if (!v) { this.toast.warning(fa.admin.usernameRequired); return; }
+    if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(v)) { this.toast.warning(fa.admin.usernameInvalid); return; }
+    if (v === u.username) { this.usernameEditId.set(null); return; }
+    this.userBusy.set(u.id);
+    this.api.admin.updateUser(u.id, { username: v }).subscribe({
+      next: () => { this.toast.success(fa.admin.usernameUpdateSuccess); this.usernameEditId.set(null); this.userBusy.set(null); this.loadUsers(); this.loadBarbers(); },
+      error: (e: unknown) => { const m = extractMessage(e, fa.common.failed); this.toast.error(m.includes('taken') || m.includes('exists') ? fa.admin.usernameExists : m); this.userBusy.set(null); },
+    });
+  }
+  startBarberUsernameEdit(b: Barber) { const cur = (b.user as User | undefined)?.username ?? ''; this.barberUsernameEditId.set(b.id); this.barberUsernameEditVal = cur; this.resetBarberId.set(null); }
+  confirmBarberUsername(b: Barber) {
+    const uid = (b as unknown as { userId: string }).userId;
+    if (!uid) { this.toast.error(fa.common.failed); return; }
+    const v = this.barberUsernameEditVal.trim();
+    if (!v) { this.toast.warning(fa.admin.usernameRequired); return; }
+    if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(v)) { this.toast.warning(fa.admin.usernameInvalid); return; }
+    if (v === (b.user as User | undefined)?.username) { this.barberUsernameEditId.set(null); return; }
+    this.barberBusy.set(b.id);
+    this.api.admin.updateUser(uid, { username: v }).subscribe({
+      next: () => { this.toast.success(fa.admin.usernameUpdateSuccess); this.barberUsernameEditId.set(null); this.barberBusy.set(null); this.loadBarbers(); this.loadUsers(); },
+      error: (e: unknown) => { const m = extractMessage(e, fa.common.failed); this.toast.error(m.includes('taken') || m.includes('exists') ? fa.admin.usernameExists : m); this.barberBusy.set(null); },
     });
   }
   loadBarbers() {

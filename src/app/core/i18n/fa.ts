@@ -335,6 +335,13 @@ export const fa = {
     confirmDelete: 'آیا از حذف اطمینان دارید؟',
     roleAll: 'همه نقش‌ها',
     statusAll: 'همه وضعیت‌ها',
+    editUsername: 'تغییر نام کاربری',
+    username: 'نام کاربری',
+    usernamePlaceholder: 'نام کاربری جدید',
+    usernameRequired: 'نام کاربری الزامی است',
+    usernameInvalid: 'نام کاربری باید ۳ تا ۳۰ کاراکتر (حروف، عدد، _ . -)',
+    usernameUpdateSuccess: 'نام کاربری به‌روزرسانی شد',
+    usernameExists: 'این نام کاربری قبلا ثبت شده',
   },
   barberDetail: {
     title: 'آرایشگر',
