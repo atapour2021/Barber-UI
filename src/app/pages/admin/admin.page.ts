@@ -10,11 +10,13 @@ import { fa } from '../../core/i18n/fa';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
 import { extractMessage } from '../../core/utils/error';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, IonContent, IonCard, IonCardContent, IonList, IonLabel, IonButton, IonSpinner, IonSegment, IonSegmentButton, IonBadge, IonIcon, EmptyStateComponent, UiInputComponent, UiButtonComponent],
+  imports: [FormsModule, IonContent, IonCard, IonCardContent, IonList, IonLabel, IonButton, IonSpinner, IonSegment, IonSegmentButton, IonBadge, IonIcon, EmptyStateComponent, UiInputComponent, UiButtonComponent, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap" dir="rtl">
@@ -58,8 +60,8 @@ import { extractMessage } from '../../core/utils/error';
             </select>
             <ion-button (click)="loadUsers()" style="--background:var(--accent);--color:var(--accent-contrast)"><ion-icon name="search-outline" slot="icon-only"></ion-icon></ion-button>
           </div>
-          @if (usersLoading()) { <div class="dark-card" style="text-align:center;padding:16px;margin-top:10px"><ion-spinner></ion-spinner></div> }
-          @if (!usersLoading() && !users().length) { <app-empty-state [message]="c.empty" /> }
+          @if (usersLoading() && !users().length) { <div class="dark-card" style="text-align:center;padding:16px;margin-top:10px"><ion-spinner></ion-spinner></div> }
+          @if (!usersLoading() && !usersLoadingMore() && !users().length) { <app-empty-state [message]="c.empty" /> }
           <ion-list lines="none" style="background:transparent;margin-top:8px;width:100%">
             @for (u of users(); track u.id) {
               <ion-card style="margin-bottom:8px">
@@ -91,6 +93,8 @@ import { extractMessage } from '../../core/utils/error';
               </ion-card>
             }
           </ion-list>
+          @if (usersLoadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+          @if (usersHasMore() && users().length) { <div appInfiniteScroll (scrolled)="loadMoreUsers()" [disabled]="usersLoading() || usersLoadingMore()" style="height:1px"></div> }
         }
 
         @if (tab === 'barbers') {
@@ -108,8 +112,8 @@ import { extractMessage } from '../../core/utils/error';
             </select>
             <ion-button (click)="loadBarbers()" style="--background:var(--accent);--color:var(--accent-contrast)"><ion-icon name="search-outline" slot="icon-only"></ion-icon></ion-button>
           </div>
-          @if (barbersLoading()) { <div class="dark-card" style="text-align:center;padding:16px;margin-top:10px"><ion-spinner></ion-spinner></div> }
-          @if (!barbersLoading() && !barbers().length) { <app-empty-state [message]="c.empty" /> }
+          @if (barbersLoading() && !barbers().length) { <div class="dark-card" style="text-align:center;padding:16px;margin-top:10px"><ion-spinner></ion-spinner></div> }
+          @if (!barbersLoading() && !barbersLoadingMore() && !barbers().length) { <app-empty-state [message]="c.empty" /> }
           <ion-list lines="none" style="background:transparent;margin-top:8px;width:100%">
             @for (b of barbers(); track b.id) {
               <ion-card style="margin-bottom:8px">
@@ -141,6 +145,8 @@ import { extractMessage } from '../../core/utils/error';
               </ion-card>
             }
           </ion-list>
+          @if (barbersLoadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+          @if (barbersHasMore() && barbers().length) { <div appInfiniteScroll (scrolled)="loadMoreBarbers()" [disabled]="barbersLoading() || barbersLoadingMore()" style="height:1px"></div> }
         }
 
         @if (tab === 'appointments') {
@@ -167,9 +173,9 @@ import { extractMessage } from '../../core/utils/error';
             </div>
             <ion-button size="small" (click)="createAppt()" [disabled]="creating()" style="--background:var(--accent);--color:var(--accent-contrast)">ایجاد</ion-button>
           </div>
-          @if (apptLoading()) { <div class="dark-card" style="text-align:center;padding:16px;margin-top:10px"><ion-spinner></ion-spinner></div> }
+          @if (apptLoading() && !appts().length) { <div class="dark-card" style="text-align:center;padding:16px;margin-top:10px"><ion-spinner></ion-spinner></div> }
           @if (apptError()) { <div class="dark-card" style="text-align:center;padding:12px;margin-top:10px;color:#ef4444;font-size:12px">{{ apptError() }}</div> }
-          @if (!apptLoading() && !appts().length) { <app-empty-state [message]="c.empty" /> }
+          @if (!apptLoading() && !apptLoadingMore() && !appts().length) { <app-empty-state [message]="c.empty" /> }
           <ion-list lines="none" style="background:transparent;margin-top:8px;width:100%">
             @for (a of appts(); track a.id) {
               <ion-card style="margin-bottom:8px">
@@ -226,6 +232,8 @@ import { extractMessage } from '../../core/utils/error';
               </ion-card>
             }
           </ion-list>
+          @if (apptLoadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+          @if (apptHasMore() && appts().length) { <div appInfiniteScroll (scrolled)="loadMoreAppts()" [disabled]="apptLoading() || apptLoadingMore()" style="height:1px"></div> }
         }
 
         @if (tab === 'settings') {
@@ -253,6 +261,10 @@ export class AdminPage implements OnInit {
   dashLoading = signal(false);
   users = signal<User[]>([]);
   usersLoading = signal(false);
+  usersLoadingMore = signal(false);
+  usersHasMore = signal(true);
+  private usersPage = 1;
+  private usersLimit = 20;
   userBusy = signal<string | null>(null);
   resetUserId = signal<string | null>(null);
   resetUserPwd = '';
@@ -262,11 +274,19 @@ export class AdminPage implements OnInit {
   barberUsernameEditVal = '';
   barbers = signal<Barber[]>([]);
   barbersLoading = signal(false);
+  barbersLoadingMore = signal(false);
+  barbersHasMore = signal(true);
+  private barbersPage = 1;
+  private barbersLimit = 20;
   barberBusy = signal<string | null>(null);
   resetBarberId = signal<string | null>(null);
   resetBarberPwd = '';
   appts = signal<Appointment[]>([]);
   apptLoading = signal(false);
+  apptLoadingMore = signal(false);
+  apptHasMore = signal(true);
+  private apptPage = 1;
+  private apptLimit = 20;
   apptError = signal('');
   apptBusy = signal<string | null>(null);
   apptStatus = '';
@@ -289,17 +309,26 @@ export class AdminPage implements OnInit {
   ngOnInit() { this.loadDash(); this.loadUsers(); this.loadBarbers(); this.loadSettings(); }
   onTab(e: CustomEvent) { this.tab = (e.detail.value ?? 'dash').toString(); if (this.tab==='appointments' && !this.appts().length) this.loadAppts(); if (this.tab==='barbers' && !this.barbers().length) this.loadBarbers(); if (this.tab==='users' && !this.users().length) this.loadUsers(); }
   loadDash() { this.dashLoading.set(true); this.api.admin.dashboard().subscribe({ next: (v) => { this.dash.set(v as never); this.dashLoading.set(false); }, error: () => this.dashLoading.set(false) }); }
-  loadUsers() {
-    this.usersLoading.set(true);
-    const p: Record<string, unknown> = {};
+  loadUsers(reset = true) {
+    if (reset) { this.usersPage = 1; this.usersHasMore.set(true); this.usersLoading.set(true); } else this.usersLoadingMore.set(true);
+    const p: Record<string, unknown> = { page: this.usersPage, limit: this.usersLimit };
     if (this.uq.search?.trim()) p['search'] = this.uq.search.trim();
     if (this.uq.role) p['role'] = this.uq.role;
     if (this.uq.isActive) p['isActive'] = this.uq.isActive;
     this.api.admin.users(p).subscribe({
-      next: (v) => { const arr = Array.isArray(v) ? v : ((v as { data: unknown[] }).data ?? []); this.users.set(arr as unknown as User[]); this.usersLoading.set(false); },
-      error: (e) => { this.usersLoading.set(false); this.toast.error(extractMessage(e, fa.common.failed)); },
+      next: (v) => {
+        const pg = unwrapPaginated<unknown>(v);
+        const arr = pg.data as unknown as User[];
+        if (reset) this.users.set(arr); else this.users.update((a) => [...a, ...arr]);
+        const more = arr.length === this.usersLimit && (pg.total ? this.users().length < pg.total : true);
+        if (arr.length) this.usersPage++;
+        this.usersHasMore.set(more);
+        this.usersLoading.set(false); this.usersLoadingMore.set(false);
+      },
+      error: (e) => { this.usersLoading.set(false); this.usersLoadingMore.set(false); this.usersHasMore.set(false); this.toast.error(extractMessage(e, fa.common.failed)); },
     });
   }
+  loadMoreUsers() { if (!this.usersHasMore() || this.usersLoading() || this.usersLoadingMore()) return; this.loadUsers(false); }
   toggleUser(u: User) {
     this.userBusy.set(u.id);
     const next = !u.isActive;
@@ -352,17 +381,26 @@ export class AdminPage implements OnInit {
       error: (e: unknown) => { const m = extractMessage(e, fa.common.failed); this.toast.error(m.includes('taken') || m.includes('exists') ? fa.admin.usernameExists : m); this.barberBusy.set(null); },
     });
   }
-  loadBarbers() {
-    this.barbersLoading.set(true);
-    const p: Record<string, unknown> = {};
+  loadBarbers(reset = true) {
+    if (reset) { this.barbersPage = 1; this.barbersHasMore.set(true); this.barbersLoading.set(true); } else this.barbersLoadingMore.set(true);
+    const p: Record<string, unknown> = { page: this.barbersPage, limit: this.barbersLimit };
     if (this.bq.search?.trim()) p['search'] = this.bq.search.trim();
     if (this.bq.status) p['status'] = this.bq.status;
     if (this.bq.isActive) p['isActive'] = this.bq.isActive;
     this.api.admin.barbers(p).subscribe({
-      next: (v) => { const arr = Array.isArray(v) ? v : ((v as { data: unknown[] }).data ?? []); this.barbers.set(arr as unknown as Barber[]); this.barbersLoading.set(false); },
-      error: (e) => { this.barbersLoading.set(false); this.toast.error(extractMessage(e, fa.common.failed)); },
+      next: (v) => {
+        const pg = unwrapPaginated<unknown>(v);
+        const arr = pg.data as unknown as Barber[];
+        if (reset) this.barbers.set(arr); else this.barbers.update((a) => [...a, ...arr]);
+        const more = arr.length === this.barbersLimit && (pg.total ? this.barbers().length < pg.total : true);
+        if (arr.length) this.barbersPage++;
+        this.barbersHasMore.set(more);
+        this.barbersLoading.set(false); this.barbersLoadingMore.set(false);
+      },
+      error: (e) => { this.barbersLoading.set(false); this.barbersLoadingMore.set(false); this.barbersHasMore.set(false); this.toast.error(extractMessage(e, fa.common.failed)); },
     });
   }
+  loadMoreBarbers() { if (!this.barbersHasMore() || this.barbersLoading() || this.barbersLoadingMore()) return; this.loadBarbers(false); }
   toggleBarber(b: Barber) {
     this.barberBusy.set(b.id);
     const next = !b.isActive;
@@ -389,15 +427,24 @@ export class AdminPage implements OnInit {
       error: (e) => { this.toast.error(extractMessage(e, fa.common.failed)); this.barberBusy.set(null); },
     });
   }
-  loadAppts() {
-    this.apptLoading.set(true); this.apptError.set('');
-    const p: Record<string, unknown> = {};
+  loadAppts(reset = true) {
+    if (reset) { this.apptPage = 1; this.apptHasMore.set(true); this.apptLoading.set(true); } else this.apptLoadingMore.set(true);
+    this.apptError.set('');
+    const p: Record<string, unknown> = { page: this.apptPage, limit: this.apptLimit };
     if (this.apptStatus) p['status']=this.apptStatus;
     this.api.admin.adminAppointments(p).subscribe({
-      next: (v) => { const arr = Array.isArray(v) ? v as Appointment[] : ((v as { data: Appointment[] }).data ?? []); this.appts.set(arr as Appointment[]); this.apptLoading.set(false); },
-      error: (e) => { this.apptError.set((e?.error as {message?:string})?.message ?? 'خطا'); this.apptLoading.set(false); },
+      next: (v) => {
+        const pg = unwrapPaginated<Appointment>(v);
+        if (reset) this.appts.set(pg.data as Appointment[]); else this.appts.update((a) => [...a, ...pg.data as Appointment[]]);
+        const more = pg.data.length === this.apptLimit && (pg.total ? this.appts().length < pg.total : true);
+        if (pg.data.length) this.apptPage++;
+        this.apptHasMore.set(more);
+        this.apptLoading.set(false); this.apptLoadingMore.set(false);
+      },
+      error: (e) => { this.apptError.set((e?.error as {message?:string})?.message ?? 'خطا'); this.apptLoading.set(false); this.apptLoadingMore.set(false); this.apptHasMore.set(false); },
     });
   }
+  loadMoreAppts() { if (!this.apptHasMore() || this.apptLoading() || this.apptLoadingMore()) return; this.loadAppts(false); }
   updateStatus(a: Appointment, status: string) {
     this.apptBusy.set(a.id);
     this.api.admin.updateAppointmentStatus(a.id, status).subscribe({

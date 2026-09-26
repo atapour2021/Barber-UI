@@ -15,11 +15,13 @@ import { NotificationItem } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { UiButtonComponent } from '../../shared/ui/ui';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [IonContent, IonList, IonBadge, IonSpinner, IonCard, IonCardContent, IonIcon, EmptyStateComponent, UiButtonComponent],
+  imports: [IonContent, IonList, IonBadge, IonSpinner, IonCard, IonCardContent, IonIcon, EmptyStateComponent, UiButtonComponent, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap" dir="rtl">
@@ -31,10 +33,10 @@ import { UiButtonComponent } from '../../shared/ui/ui';
           <span style="font-size:12px;color:var(--text-primary)">{{ t.title }}</span>
           <app-ui-button size="small" fill="outline" icon="checkmark-done-outline" (pressed)="readAll()">{{ t.markAllRead }}</app-ui-button>
         </div>
-        @if (loading()) {
+        @if (loading() && !items().length) {
           <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted">{{ c.loading }}</p></div>
         }
-        @if (!loading() && !items().length) {
+        @if (!loading() && !loadingMore() && !items().length) {
           <app-empty-state [message]="t.noNotifications" />
         }
         <ion-list lines="none" style="background:transparent;width:100%">
@@ -53,6 +55,8 @@ import { UiButtonComponent } from '../../shared/ui/ui';
             </ion-card>
           }
         </ion-list>
+        @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+        @if (hasMore()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
       </div>
     </ion-content>`,
 })
@@ -63,18 +67,32 @@ export class NotificationsPage implements OnInit {
   items = signal<NotificationItem[]>([]);
   unread = signal(0);
   loading = signal(false);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  private page = 1;
+  private limit = 20;
+  errorMsg = signal('');
   constructor() { addIcons({ checkmarkDoneOutline, mailUnreadOutline }); }
-  ngOnInit() { this.load(); this.loadUnread(); }
-  load() {
-    this.loading.set(true);
-    this.api.notifications.list().subscribe({
-      next: (v) => { const arr = Array.isArray(v) ? v : ((v as { data: NotificationItem[] }).data ?? []); this.items.set(arr as NotificationItem[]); this.loading.set(false); },
-      error: () => this.loading.set(false),
+  ngOnInit() { this.load(true); this.loadUnread(); }
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+  load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); this.errorMsg.set(''); } else this.loadingMore.set(true);
+    this.api.notifications.list({ page: this.page, limit: this.limit }).subscribe({
+      next: (v) => {
+        const p = unwrapPaginated<NotificationItem>(v);
+        if (reset) this.items.set(p.data);
+        else this.items.update((a) => [...a, ...p.data]);
+        const more = p.data.length === this.limit && (p.total ? this.items().length < p.total : true);
+        if (p.data.length) this.page++;
+        this.hasMore.set(more);
+        this.loading.set(false); this.loadingMore.set(false);
+      },
+      error: (e) => { const m = (e?.error as {message?:string})?.message ?? ''; this.errorMsg.set(m); this.loading.set(false); this.loadingMore.set(false); this.hasMore.set(false); },
     });
   }
   loadUnread() {
     this.api.notifications.unread().subscribe({ next: (v) => { const n = typeof v === 'number' ? v : ((v as { count: number }).count ?? 0); this.unread.set(n); } });
   }
-  readAll() { this.api.notifications.readAll().subscribe({ next: () => { this.load(); this.unread.set(0); } }); }
-  readOne(id: string) { this.api.notifications.readOne(id).subscribe({ next: () => this.load() }); }
+  readAll() { this.api.notifications.readAll().subscribe({ next: () => { this.load(true); this.unread.set(0); } }); }
+  readOne(id: string) { this.api.notifications.readOne(id).subscribe({ next: () => this.load(true) }); }
 }

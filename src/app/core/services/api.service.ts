@@ -28,7 +28,7 @@ export class ApiService {
   private usersApi = inject(UsersApi);
 
   barbershops = {
-    list: () => this.barbershopsApi.list(),
+    list: (p?: Record<string, unknown>) => this.barbershopsApi.list(p),
     get: (id: string) => this.barbershopsApi.get(id),
     create: (d: Record<string, unknown>) => this.barbershopsApi.create(d),
     update: (id: string, d: Record<string, unknown>) => this.barbershopsApi.update(id, d),
@@ -82,7 +82,7 @@ export class ApiService {
   };
   locations = {
     list: (p?: Record<string, unknown>) => this.locationsApi.list(p),
-    myAddresses: () => this.locationsApi.myAddresses(),
+    myAddresses: (p?: Record<string, unknown>) => this.locationsApi.myAddresses(p),
     byBarber: (barberId: string) => this.locationsApi.byBarber(barberId),
     get: (id: string) => this.locationsApi.get(id),
     create: (d: Record<string, unknown>) => this.locationsApi.create(d),

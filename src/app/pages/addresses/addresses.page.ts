@@ -10,13 +10,14 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Location } from '../../core/models';
-import { unwrapArray } from '../../core/api/utils';
+import { unwrapArray, unwrapPaginated } from '../../core/api/utils';
 import { fa } from '../../core/i18n/fa';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
 
 @Component({
   selector: 'app-addresses',
   standalone: true,
-  imports: [IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea, RouterLink, FormsModule, DecimalPipe],
+  imports: [IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea, RouterLink, FormsModule, DecimalPipe, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap addr-wrap" dir="rtl">
@@ -25,7 +26,7 @@ import { fa } from '../../core/i18n/fa';
           <h1>{{t.title}}</h1>
         </div>
 
-        @if (loading()) {
+        @if (loading() && !items().length) {
           <div class="dark-card" style="text-align:center;padding:18px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{t.loading}}</p></div>
         } @else {
           <div class="addr-list">
@@ -45,10 +46,13 @@ import { fa } from '../../core/i18n/fa';
                 </div>
               </div>
             }
-            @if (!items().length) {
+            @if (!items().length && !loadingMore()) {
               <div class="dark-card" style="text-align:center;padding:18px"><p class="muted" style="margin:0">{{t.empty}}</p></div>
             }
           </div>
+          @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+          @if (errorMsg()) { <div class="alert-error" style="text-align:center">{{ errorMsg() }}</div> }
+          @if (hasMore()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
         }
 
         <div class="dark-card addr-form">
@@ -131,6 +135,11 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
   c = fa.common;
   items = signal<Location[]>([]);
   loading = signal(true);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  errorMsg = signal('');
+  private page = 1;
+  private limit = 20;
   saving = signal(false);
   label = '';
   detail = '';
@@ -143,20 +152,40 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
 
   constructor() { addIcons({ arrowForwardOutline, locationOutline, trashOutline, addOutline, createOutline, closeOutline, locateOutline, saveOutline }); }
 
-  ngOnInit() { this.load(); }
+  ngOnInit() { this.load(true); }
 
   ngAfterViewInit() { setTimeout(() => this.initMap(), 120); }
 
   ngOnDestroy() { this.map?.remove(); }
 
-  private load() {
-    this.loading.set(true);
-    this.api.locations.myAddresses().subscribe({
-      next: (v) => { this.items.set(unwrapArray<Location>(v)); this.loading.set(false); },
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+
+  private load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); this.errorMsg.set(''); } else this.loadingMore.set(true);
+    const params = { page: this.page, limit: this.limit };
+    this.api.locations.myAddresses(params).subscribe({
+      next: (v) => {
+        const p = unwrapPaginated<Location>(v);
+        if (reset) this.items.set(p.data);
+        else this.items.update((a) => [...a, ...p.data]);
+        const more = p.data.length === this.limit && (p.total ? this.items().length < p.total : true);
+        if (p.data.length) this.page++;
+        this.hasMore.set(more);
+        this.loading.set(false); this.loadingMore.set(false);
+      },
       error: () => {
-        this.api.locations.list().subscribe({
-          next: (v2) => { this.items.set(unwrapArray<Location>(v2).filter(x => !x.barberId)); this.loading.set(false); },
-          error: () => { this.items.set([]); this.loading.set(false); },
+        this.api.locations.list(params).subscribe({
+          next: (v2) => {
+            const p = unwrapPaginated<Location>(v2);
+            const filtered = p.data.filter((x) => !x.barberId);
+            if (reset) this.items.set(filtered);
+            else this.items.update((a) => [...a, ...filtered]);
+            const more = filtered.length === this.limit && (p.total ? this.items().length < p.total : true);
+            if (filtered.length) this.page++;
+            this.hasMore.set(more);
+            this.loading.set(false); this.loadingMore.set(false);
+          },
+          error: (e) => { const m = (e?.error as {message?:string})?.message ?? ''; this.errorMsg.set(m); this.items.set([]); this.loading.set(false); this.loadingMore.set(false); this.hasMore.set(false); },
         });
       },
     });

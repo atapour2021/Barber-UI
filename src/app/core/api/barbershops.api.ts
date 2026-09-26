@@ -2,13 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Barbershop } from '../models';
+import { toParams } from './utils';
 
 @Injectable({ providedIn: 'root' })
 export class BarbershopsApi {
   private http = inject(HttpClient);
   private b = environment.apiUrl;
-  list() {
-    return this.http.get<Barbershop[]>(`${this.b}/barbershops`);
+  list(params?: Record<string, unknown>) {
+    return this.http.get<Barbershop[] | { data: Barbershop[]; meta: { total: number; page: number; limit: number } }>(`${this.b}/barbershops`, {
+      params: toParams(params),
+    });
   }
   get(id: string) {
     return this.http.get<Barbershop>(`${this.b}/barbershops/${id}`);

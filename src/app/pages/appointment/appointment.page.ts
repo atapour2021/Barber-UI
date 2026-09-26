@@ -8,13 +8,15 @@ import { ViewRoleService } from '../../core/services/view-role.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Appointment, Barber } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
 
 @Component({
   selector: 'app-appointment',
   standalone: true,
-  imports: [FormsModule, RouterLink, IonContent, IonSpinner, IonBadge],
+  imports: [FormsModule, RouterLink, IonContent, IonSpinner, IonBadge, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap turns-wrap" dir="rtl">
@@ -34,11 +36,11 @@ type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' 
           <button type="button" class="filter-pill" [class.active]="statusFilter()==='completed'" (click)="setStatus('completed')" role="tab">{{ ta.completed }}</button>
         </div>
 
-        @if (loading()) {
+        @if (loading() && !items().length) {
           <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ c.loading }}</p></div>
         } @else if (errorMsg()) {
-          <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load()">{{ c.retry }}</button></div>
-        } @else if (!items().length) {
+          <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load(true)">{{ c.retry }}</button></div>
+        } @else if (!items().length && !loadingMore()) {
           <div class="dark-card" style="text-align:center;padding:22px">
             <p class="muted" style="margin:0 0 12px">{{ t.empty }}</p>
             @if (!isBarber()) {
@@ -101,6 +103,8 @@ type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' 
               </div>
             }
           </div>
+          @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+          @if (hasMore()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
         }
 
         @if (!isBarber() && !loading()) {
@@ -156,6 +160,10 @@ export class AppointmentPage implements OnInit {
   ta = fa.appointments;
   tc = fa.common;
   loading = signal(false);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  private page = 1;
+  private limit = 20;
   errorMsg = signal('');
   statusFilter = signal<StatusFilter>('all');
   items = signal<Appointment[]>([]);
@@ -173,25 +181,29 @@ export class AppointmentPage implements OnInit {
   });
   roleLabel = computed(() => this.isAdmin() ? 'مدیر' : this.isBarber() ? 'آرایشگر' : 'مشتری');
 
-  ngOnInit() { this.load(); }
+  ngOnInit() { this.load(true); }
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+  setStatus(s: StatusFilter) { this.statusFilter.set(s); this.load(true); }
 
-  setStatus(s: StatusFilter) { this.statusFilter.set(s); this.load(); }
-
-  load() {
-    this.loading.set(true); this.errorMsg.set('');
-    const params: Record<string, unknown> = {};
+  load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); } else this.loadingMore.set(true);
+    this.errorMsg.set('');
+    const params: Record<string, unknown> = { page: this.page, limit: this.limit };
     const sf = this.statusFilter();
     if (sf !== 'all') params['status'] = sf;
     const src = this.isAdmin() ? this.api.admin.adminAppointments(params) : this.api.appointments.list(params);
     src.subscribe({
       next: (v) => {
-        const arr = Array.isArray(v) ? v as Appointment[] : ((v as { data: Appointment[] }).data ?? []);
-        this.items.set(arr as Appointment[]);
-        this.loading.set(false);
+        const p = unwrapPaginated<Appointment>(v);
+        if (reset) this.items.set(p.data as Appointment[]); else this.items.update((a) => [...a, ...p.data as Appointment[]]);
+        const more = p.data.length === this.limit && (p.total ? this.items().length < p.total : true);
+        if (p.data.length) this.page++;
+        this.hasMore.set(more);
+        this.loading.set(false); this.loadingMore.set(false);
       },
       error: (e) => {
         this.errorMsg.set((e?.error as { message?: string })?.message ?? this.c.failed);
-        this.loading.set(false);
+        this.loading.set(false); this.loadingMore.set(false); this.hasMore.set(false);
       },
     });
   }
@@ -235,7 +247,7 @@ export class AppointmentPage implements OnInit {
     this.busyId.set(a.id);
     const obs = this.isAdmin() ? this.api.admin.updateAppointmentStatus(a.id, status) : this.api.appointments.status(a.id, status);
     obs.subscribe({
-      next: () => { this.toast.success(fa.appointments.statusSuccess); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.appointments.statusSuccess); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }
@@ -244,7 +256,7 @@ export class AppointmentPage implements OnInit {
     this.busyId.set(a.id);
     const obs = this.isAdmin() ? this.api.admin.cancelAppointment(a.id) : this.api.appointments.cancel(a.id);
     obs.subscribe({
-      next: () => { this.toast.success(fa.appointments.cancelSuccess); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.appointments.cancelSuccess); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }
@@ -253,7 +265,7 @@ export class AppointmentPage implements OnInit {
     if (!this.isAdmin()) return;
     this.busyId.set(a.id);
     this.api.admin.deleteAppointment(a.id).subscribe({
-      next: () => { this.toast.success(fa.common.success); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.common.success); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }
@@ -262,7 +274,7 @@ export class AppointmentPage implements OnInit {
   saveEdit(a: Appointment) {
     this.busyId.set(a.id);
     this.api.appointments.update(a.id, { notes: this.editNotes }).subscribe({
-      next: () => { this.toast.success(fa.common.success); this.editingId.set(null); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.common.success); this.editingId.set(null); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }

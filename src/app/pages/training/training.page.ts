@@ -6,6 +6,8 @@ import { ApiService } from '../../core/services/api.service';
 import { Educational } from '../../core/models';
 import { environment } from '../../../environments/environment';
 import { fa } from '../../core/i18n/fa';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 type TrainingItem = { id: string; title: string; meta: string; duration: string; img: string; videoUrl: string | null };
 
@@ -19,7 +21,7 @@ const FALLBACK: TrainingItem[] = [
 @Component({
   selector: 'app-training',
   standalone: true,
-  imports: [IonContent, IonIcon, IonSpinner],
+  imports: [IonContent, IonIcon, IonSpinner, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap training-wrap" dir="rtl">
@@ -27,7 +29,7 @@ const FALLBACK: TrainingItem[] = [
           <h1>{{ t.title }}</h1>
           <p>{{ t.subtitle }}</p>
         </div>
-        @if (loading()) {
+        @if (loading() && !remote()) {
           <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner></div>
         }
         <div class="training-grid">
@@ -45,6 +47,9 @@ const FALLBACK: TrainingItem[] = [
             </button>
           }
         </div>
+        @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+        @if (hasMore() && remote()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
+        @if (!loading() && display().length===4 && !remote()) { <p class="muted" style="text-align:center;font-size:11px">—</p> }
       </div>
     </ion-content>
   `,
@@ -97,27 +102,36 @@ export class TrainingPage implements OnInit {
   private api = inject(ApiService);
   t = fa.training;
   loading = signal(false);
-  private remote = signal<TrainingItem[] | null>(null);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  private page = 1;
+  private limit = 12;
+  remote = signal<TrainingItem[] | null>(null);
   display = computed(() => this.remote() ?? FALLBACK);
   constructor() { addIcons({ play }); }
-  ngOnInit() {
-    this.loading.set(true);
-    this.api.educational.list().subscribe({
+  ngOnInit() { this.load(true); }
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+  load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); } else this.loadingMore.set(true);
+    this.api.educational.list({ page: this.page, limit: this.limit }).subscribe({
       next: (v) => {
-        const arr = Array.isArray(v) ? v as Educational[] : [];
-        if (arr.length) {
-          this.remote.set(arr.map((e, i) => ({
-            id: e.id,
-            title: e.title,
-            meta: e.description ? (e.description as string).slice(0, 60) : `${this.t.academy} · ${e.barberId ? 'ویدیو' : ''}`,
-            duration: e.videoFilename ? '۱۲:۴۰' : FALLBACK[i % FALLBACK.length].duration,
-            img: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : FALLBACK[i % FALLBACK.length].img,
-            videoUrl: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : null,
-          })));
-        }
-        this.loading.set(false);
+        const p = unwrapPaginated<Educational>(v);
+        const arr = p.data;
+        const mapped: TrainingItem[] = arr.map((e, i) => ({
+          id: e.id,
+          title: e.title,
+          meta: e.description ? (e.description as string).slice(0, 60) : `${this.t.academy} · ${e.barberId ? 'ویدیو' : ''}`,
+          duration: e.videoFilename ? '۱۲:۴۰' : FALLBACK[i % FALLBACK.length].duration,
+          img: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : FALLBACK[i % FALLBACK.length].img,
+          videoUrl: e.videoUrl ? `${environment.apiUrl}${e.videoUrl}` : null,
+        }));
+        if (reset) { if (mapped.length) this.remote.set(mapped); else this.remote.set(null); } else if (mapped.length) this.remote.update((a) => [...(a ?? []), ...mapped]);
+        const more = mapped.length === this.limit && (p.total ? (this.remote()?.length ?? 0) < p.total : true);
+        if (mapped.length) this.page++;
+        this.hasMore.set(mapped.length ? more : false);
+        this.loading.set(false); this.loadingMore.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => { this.loading.set(false); this.loadingMore.set(false); this.hasMore.set(false); },
     });
   }
   playItem(t: TrainingItem) {

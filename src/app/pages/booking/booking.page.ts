@@ -8,6 +8,8 @@ import { ToastService } from '../../core/services/toast.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
 import { Appointment, Barber, Service } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
 type DayKey = 'saturday' | 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday';
@@ -21,7 +23,7 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [FormsModule, RouterLink, IonContent, IonSpinner, IonBadge],
+  imports: [FormsModule, RouterLink, IonContent, IonSpinner, IonBadge, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap booking-wrap" dir="rtl">
@@ -97,11 +99,11 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
             <button type="button" class="filter-pill" [class.active]="statusFilter()==='completed'" (click)="setStatus('completed')">{{ ta.completed }}</button>
           </div>
 
-          @if (loading()) {
+          @if (loading() && !items().length) {
             <div class="dark-card" style="text-align:center;padding:20px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ fa.common.loading }}</p></div>
           } @else if (errorMsg()) {
-            <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load()">{{ tc.retry }}</button></div>
-          } @else if (!items().length) {
+            <div class="dark-card" style="text-align:center;padding:20px"><p style="color:#ef4444;margin:0 0 10px">{{ errorMsg() }}</p><button type="button" class="filter-pill active" (click)="load(true)">{{ tc.retry }}</button></div>
+          } @else if (!items().length && !loadingMore()) {
             <div class="dark-card" style="text-align:center;padding:22px">
               <p class="muted" style="margin:0 0 12px">{{ fa.turns.empty }}</p>
               @if (!isBarber()) { <a routerLink="/tabs/appointment/new" class="cta-inline">{{ ta.book }}</a> }
@@ -165,8 +167,10 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
                 </div>
               }
             </div>
+            @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+            @if (hasMore()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
           }
-          @if (!isBarber() && !loading()) {
+          @if (!isBarber() && !loading() && !loadingMore()) {
             <a routerLink="/tabs/appointment/new" class="cta-btn" style="text-decoration:none">+ {{ ta.book }}</a>
           }
         }
@@ -267,6 +271,10 @@ export class BookingPage implements OnInit {
   statusFilter = signal<StatusFilter>('all');
   items = signal<Appointment[]>([]);
   loading = signal(false);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  private page = 1;
+  private limit = 20;
   errorMsg = signal('');
   busyId = signal<string | null>(null);
   editingId = signal<string | null>(null);
@@ -321,23 +329,27 @@ export class BookingPage implements OnInit {
     });
   }
 
-  setStatus(s: StatusFilter) { this.statusFilter.set(s); this.load(); }
-
-  load() {
-    this.loading.set(true); this.errorMsg.set('');
-    const params: Record<string, unknown> = {};
+  setStatus(s: StatusFilter) { this.statusFilter.set(s); this.load(true); }
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+  load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); } else this.loadingMore.set(true);
+    this.errorMsg.set('');
+    const params: Record<string, unknown> = { page: this.page, limit: this.limit };
     const sf = this.statusFilter();
     if (sf !== 'all') params['status'] = sf;
     const src = this.isAdmin() ? this.api.admin.adminAppointments(params) : this.api.appointments.list(params);
     src.subscribe({
       next: (v) => {
-        const arr = Array.isArray(v) ? v as Appointment[] : ((v as { data: Appointment[] }).data ?? []);
-        this.items.set(arr as Appointment[]);
-        this.loading.set(false);
+        const p = unwrapPaginated<Appointment>(v);
+        if (reset) this.items.set(p.data as Appointment[]); else this.items.update((a) => [...a, ...p.data as Appointment[]]);
+        const more = p.data.length === this.limit && (p.total ? this.items().length < p.total : true);
+        if (p.data.length) this.page++;
+        this.hasMore.set(more);
+        this.loading.set(false); this.loadingMore.set(false);
       },
       error: (e) => {
         this.errorMsg.set((e?.error as { message?: string })?.message ?? this.tc.failed);
-        this.loading.set(false);
+        this.loading.set(false); this.loadingMore.set(false); this.hasMore.set(false);
       },
     });
   }
@@ -381,7 +393,7 @@ export class BookingPage implements OnInit {
     this.busyId.set(a.id);
     const obs = this.isAdmin() ? this.api.admin.updateAppointmentStatus(a.id, status) : this.api.appointments.status(a.id, status);
     obs.subscribe({
-      next: () => { this.toast.success(fa.appointments.statusSuccess); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.appointments.statusSuccess); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }
@@ -390,7 +402,7 @@ export class BookingPage implements OnInit {
     this.busyId.set(a.id);
     const obs = this.isAdmin() ? this.api.admin.cancelAppointment(a.id) : this.api.appointments.cancel(a.id);
     obs.subscribe({
-      next: () => { this.toast.success(fa.appointments.cancelSuccess); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.appointments.cancelSuccess); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }
@@ -399,7 +411,7 @@ export class BookingPage implements OnInit {
     this.busyId.set(a.id);
     const obs = this.isAdmin() ? this.api.admin.deleteAppointment(a.id) : this.api.appointments.remove(a.id);
     obs.subscribe({
-      next: () => { this.toast.success(fa.common.success); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.common.success); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }
@@ -408,7 +420,7 @@ export class BookingPage implements OnInit {
   saveEdit(a: Appointment) {
     this.busyId.set(a.id);
     this.api.appointments.update(a.id, { notes: this.editNotes }).subscribe({
-      next: () => { this.toast.success(fa.common.success); this.editingId.set(null); this.busyId.set(null); this.load(); },
+      next: () => { this.toast.success(fa.common.success); this.editingId.set(null); this.busyId.set(null); this.load(true); },
       error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.busyId.set(null); },
     });
   }

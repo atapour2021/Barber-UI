@@ -11,8 +11,10 @@ export class LocationsApi {
   list(params?: Record<string, unknown>) {
     return this.http.get<Location[]>(`${this.b}/locations`, { params: toParams(params) });
   }
-  myAddresses() {
-    return this.http.get<Location[]>(`${this.b}/locations/me`);
+  myAddresses(params?: Record<string, unknown>) {
+    return this.http.get<Location[] | { data: Location[]; meta: { total: number; page: number; limit: number } }>(`${this.b}/locations/me`, {
+      params: toParams(params),
+    });
   }
   byBarber(barberId: string) {
     return this.http.get<Location>(`${this.b}/locations/barber/${barberId}`);

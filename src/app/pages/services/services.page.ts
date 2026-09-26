@@ -6,6 +6,8 @@ import { chevronBackOutline, cutOutline, personOutline, ribbonOutline, sparklesO
 import { ApiService } from '../../core/services/api.service';
 import { Service } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 const DEMO: Service[] = [
   { id: '1', name: 'کوتاهی و استایل', description: null, price: 350000, duration: 45, icon: 'cut', barberId: '' },
@@ -17,7 +19,7 @@ const DEMO: Service[] = [
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [RouterLink, IonContent, IonIcon, IonSpinner],
+  imports: [RouterLink, IonContent, IonIcon, IonSpinner, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap svc-wrap" dir="rtl">
@@ -26,12 +28,12 @@ const DEMO: Service[] = [
           <p>{{ t.subtitle }}</p>
         </div>
 
-        @if (loading()) {
+        @if (loading() && !items().length) {
           <div class="dark-card" style="text-align:center;padding:24px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ t.loading }}</p></div>
         } @else if (error()) {
           <div class="alert-error" style="text-align:center">{{ error() }}</div>
         } @else {
-          @if (!displayItems().length) {
+          @if (!displayItems().length && !loadingMore()) {
             <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">{{ t.empty }}</p></div>
           } @else {
             <div class="svc-grid">
@@ -49,6 +51,8 @@ const DEMO: Service[] = [
                 </a>
               }
             </div>
+            @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+            @if (hasMore() && items().length) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
           }
         }
       </div>
@@ -103,6 +107,10 @@ export class ServicesPage implements OnInit {
   t = fa.servicesList;
   items = signal<Service[]>([]);
   loading = signal(false);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  private page = 1;
+  private limit = 20;
   error = signal('');
   displayItems = computed(() => (this.items().length ? this.items() : DEMO));
 
@@ -110,20 +118,28 @@ export class ServicesPage implements OnInit {
     addIcons({ chevronBackOutline, cutOutline, sparklesOutline, personOutline, ribbonOutline, timeOutline });
   }
 
-  ngOnInit() { this.load(); }
+  ngOnInit() { this.load(true); }
 
-  load() {
-    this.loading.set(true);
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+
+  load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); } else this.loadingMore.set(true);
     this.error.set('');
-    this.api.services.list().subscribe({
+    this.api.services.list({ page: this.page, limit: this.limit }).subscribe({
       next: (v) => {
-        const arr = Array.isArray(v) ? v : ((v as { data: Service[] }).data ?? []);
-        this.items.set((arr as Service[]) ?? []);
-        this.loading.set(false);
+        const p = unwrapPaginated<Service>(v);
+        const arr = p.data as Service[];
+        if (reset) this.items.set(arr);
+        else this.items.update((a) => [...a, ...arr]);
+        const more = arr.length === this.limit && (p.total ? this.items().length < p.total : true);
+        if (arr.length) this.page++;
+        this.hasMore.set(more);
+        this.loading.set(false); this.loadingMore.set(false);
       },
       error: () => {
-        this.items.set([]);
-        this.loading.set(false);
+        if (reset) this.items.set([]);
+        this.hasMore.set(false);
+        this.loading.set(false); this.loadingMore.set(false);
       },
     });
   }

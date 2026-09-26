@@ -8,6 +8,8 @@ import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Certificate } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 type DocItem = { id: string; title: string; issuer: string; verified?: boolean; kind: 'trophy' | 'school' };
 
@@ -19,7 +21,7 @@ const DEMO: DocItem[] = [
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [FormsModule, IonContent, IonIcon, IonSpinner, IonInput, IonItem, IonButton],
+  imports: [FormsModule, IonContent, IonIcon, IonSpinner, IonInput, IonItem, IonButton, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap docs-wrap" dir="rtl">
@@ -28,7 +30,7 @@ const DEMO: DocItem[] = [
           <p>{{ t.subtitle }}</p>
         </div>
 
-        @if (loading()) {
+        @if (loading() && !remote()) {
           <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner></div>
         } @else {
           <div class="docs-list">
@@ -47,6 +49,8 @@ const DEMO: DocItem[] = [
               </div>
             }
           </div>
+          @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+          @if (hasMore() && remote()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
 
           @if (showForm()) {
             <div class="dark-card" style="display:grid;gap:10px;padding:14px">
@@ -120,31 +124,33 @@ export class DocumentsPage implements OnInit {
   t = fa.documents;
   c = fa.common;
   loading = signal(false);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  private page = 1;
+  private limit = 20;
   submitting = signal(false);
   showForm = signal(false);
   formError = signal('');
   form: Record<string, string> = { name: '', issuer: '', issueDate: new Date().toISOString().slice(0, 10), expiryDate: '' };
-  private remote = signal<DocItem[] | null>(null);
+  remote = signal<DocItem[] | null>(null);
   items = computed(() => this.remote() ?? DEMO);
   constructor() { addIcons({ trophyOutline, schoolOutline, shieldCheckmarkOutline, closeOutline }); }
-  ngOnInit() { this.load(); }
-  load() {
-    this.loading.set(true);
-    this.api.certificates.list().subscribe({
+  ngOnInit() { this.load(true); }
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+  private toDoc(c: Certificate, i: number): DocItem { return { id: c.id, title: c.name, issuer: [c.issuer, c.issueDate ? String(c.issueDate).slice(0, 4) : ''].filter(Boolean).join(' · ') || '—', verified: i === 0, kind: (i % 2 === 0 ? 'trophy' : 'school') as DocItem['kind'] }; }
+  load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); } else this.loadingMore.set(true);
+    this.api.certificates.list({ page: this.page, limit: this.limit }).subscribe({
       next: (v) => {
-        const arr = Array.isArray(v) ? v as Certificate[] : [];
-        if (arr.length) {
-          this.remote.set(arr.slice(0, 8).map((c, i) => ({
-            id: c.id,
-            title: c.name,
-            issuer: [c.issuer, c.issueDate ? String(c.issueDate).slice(0,4) : ''].filter(Boolean).join(' · ') || '—',
-            verified: i === 0,
-            kind: (i % 2 === 0 ? 'trophy' : 'school') as DocItem['kind'],
-          })));
-        }
-        this.loading.set(false);
+        const p = unwrapPaginated<Certificate>(v);
+        const mapped = p.data.map((c, i) => this.toDoc(c, i + (this.remote()?.length ?? 0)));
+        if (reset) { if (mapped.length) this.remote.set(mapped); else this.remote.set(null); } else if (mapped.length) this.remote.update((a) => [...(a ?? []), ...mapped]);
+        const more = mapped.length === this.limit && (p.total ? (this.remote()?.length ?? 0) < p.total : true);
+        if (mapped.length) this.page++;
+        this.hasMore.set(mapped.length ? more : false);
+        this.loading.set(false); this.loadingMore.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => { this.loading.set(false); this.loadingMore.set(false); this.hasMore.set(false); },
     });
   }
   submit() {

@@ -7,6 +7,8 @@ import { searchOutline, star } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Barber } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { unwrapPaginated } from '../../core/api/utils';
 
 type BarberVM = Barber & { _count?: number; _rating?: string };
 
@@ -19,7 +21,7 @@ const FALLBACK: BarberVM[] = [
 @Component({
   selector: 'app-barbers',
   standalone: true,
-  imports: [FormsModule, RouterLink, IonContent, IonSpinner, IonIcon],
+  imports: [FormsModule, RouterLink, IonContent, IonSpinner, IonIcon, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap barbers-wrap" dir="rtl">
@@ -39,9 +41,9 @@ const FALLBACK: BarberVM[] = [
           />
         </label>
 
-        @if (loading()) {
+        @if (loading() && !items().length) {
           <div class="dark-card" style="text-align:center;padding:22px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ c.loading }}</p></div>
-        } @else if (!filtered().length) {
+        } @else if (!filtered().length && !loadingMore()) {
           <div class="dark-card" style="text-align:center;padding:20px"><p class="muted" style="margin:0">{{ t.empty }}</p></div>
         } @else {
           <div class="barbers-grid">
@@ -63,6 +65,8 @@ const FALLBACK: BarberVM[] = [
               </div>
             }
           </div>
+          @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
+          @if (hasMore()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
         }
       </div>
     </ion-content>
@@ -128,6 +132,10 @@ export class BarbersPage implements OnInit {
   c = fa.common;
   ph = fa.barbersList.searchPlaceholder;
   loading = signal(false);
+  loadingMore = signal(false);
+  hasMore = signal(true);
+  private page = 1;
+  private limit = 20;
   items = signal<BarberVM[]>([]);
   q = signal('');
   query = '';
@@ -148,17 +156,30 @@ export class BarbersPage implements OnInit {
 
   constructor() { addIcons({ searchOutline, star }); }
 
-  ngOnInit() { this.load(); }
+  ngOnInit() { this.load(true); }
 
-  load() {
-    this.loading.set(true);
-    this.api.barbers.list().subscribe({
+  onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
+
+  load(reset = true) {
+    if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); }
+    else this.loadingMore.set(true);
+    this.api.barbers.list({ page: this.page, limit: this.limit }).subscribe({
       next: (v) => {
-        const arr = (Array.isArray(v) ? v : []) as BarberVM[];
-        this.items.set(arr.length ? arr : FALLBACK);
-        this.loading.set(false);
+        const p = unwrapPaginated<BarberVM>(v);
+        const useFallback = reset && !p.data.length && this.page === 1;
+        const arr = useFallback ? FALLBACK : (p.data as BarberVM[]);
+        if (reset) this.items.set(arr);
+        else this.items.update((a) => [...a, ...arr]);
+        const more = p.data.length === this.limit && (p.total ? this.items().length < p.total : true);
+        if (p.data.length) this.page++;
+        this.hasMore.set(more && !useFallback);
+        this.loading.set(false); this.loadingMore.set(false);
       },
-      error: () => { this.items.set(FALLBACK); this.loading.set(false); },
+      error: () => {
+        if (reset) this.items.set(FALLBACK);
+        this.hasMore.set(false);
+        this.loading.set(false); this.loadingMore.set(false);
+      },
     });
   }
 
