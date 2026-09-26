@@ -14,13 +14,10 @@ import {
   chevronForwardOutline,
 } from 'ionicons/icons';
 import { fa } from '../../core/i18n/fa';
-import { ThemeService } from '../../core/services/theme.service';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
 import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sidebar';
-import { ThemeToggleComponent } from '../../shared/components/theme-toggle.component';
-
 @Component({
   selector: 'app-app-layout',
   standalone: true,
@@ -34,7 +31,6 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
     IonIcon,
     IonLabel,
     AppSidebarComponent,
-    ThemeToggleComponent,
   ],
   template: `
     <div class="app-shell">
@@ -55,7 +51,6 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
             <span class="brand-text"><b>نیوباربر</b><small>{{ activeView() === 'barber' ? 'پنل آرایشگر' : activeView() === 'admin' ? 'پنل مدیریت' : 'پنل مشتری' }}</small></span>
           </a>
           <div class="topbar-actions">
-            <app-theme-toggle />
             <a class="topbar-icon topbar-bell" routerLink="/tabs/notifications" aria-label="notifications">
               <ion-icon name="notifications-outline"></ion-icon>
               @if (unread > 0) { <em class="bell-dot"></em> }
@@ -101,7 +96,6 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
 })
 export class AppLayoutComponent {
   t = fa.nav;
-  theme = inject(ThemeService);
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private router = inject(Router);

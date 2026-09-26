@@ -497,34 +497,38 @@ ion-spinner {
   width: 100%;
   box-sizing: border-box;
 }
-app-auth-layout {
-  display: block;
-  height: 100%;
-}
-app-auth-layout ion-content.login-content {
+.auth-content {
   --background: var(--ion-background-color);
   --color: var(--ion-text-color);
 }
-app-auth-layout .login-wrapper {
+.auth-wrapper {
   display: flex;
   flex-direction: column;
   min-height: 100%;
   min-height: 100dvh;
-  padding: 24px;
+  padding: calc(12px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
   max-width: 500px;
   margin: 0 auto;
   position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  gap: 0;
 }
-app-auth-layout .auth-header {
+.auth-header {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
   width: 100%;
-  min-height: 44px;
-  margin-bottom: 20px;
+  min-height: 48px;
+  margin-bottom: 12px;
   gap: 8px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
 }
-app-auth-layout .auth-header .back-btn {
+.auth-header .back-btn {
   justify-self: start;
   transform: scaleX(-1);
   font-size: 22px;
@@ -536,86 +540,115 @@ app-auth-layout .auth-header .back-btn {
   height: 40px;
   border-radius: 10px;
   text-decoration: none;
+  flex-shrink: 0;
 }
-app-auth-layout .auth-header .back-btn:active { background: rgba(0,0,0,0.06); }
-html.ion-palette-dark app-auth-layout .auth-header .back-btn:active { background: rgba(255,255,255,0.08); }
-app-auth-layout .auth-header .auth-theme { justify-self: end; }
-app-auth-layout .auth-header .logo-box {
+.auth-header .back-btn:active { background: rgba(0,0,0,0.06); }
+html.ion-palette-dark .auth-header .back-btn:active { background: rgba(255,255,255,0.08); }
+.auth-header-spacer { width: 40px; height: 40px; justify-self: end; display: block; flex-shrink: 0; }
+.auth-header .logo-box {
   margin: 0;
   justify-self: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
 }
-app-auth-layout .auth-titles {
+.auth-titles {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 4px;
+  overflow-wrap: break-word;
 }
-app-auth-layout .logo-box {
-  width: 60px;
-  height: 60px;
+.logo-box {
+  width: 56px;
+  height: 56px;
   background: var(--ion-color-primary);
   border-radius: 12px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px auto;
+  flex-shrink: 0;
   box-shadow: 0 4px 15px rgba(var(--ion-color-primary-rgb), 0.3);
+  overflow: hidden;
 }
-app-auth-layout .logo-box ion-icon {
-  font-size: 32px;
+.logo-box ion-icon {
+  font-size: 30px;
   color: var(--ion-color-primary-contrast);
   transform: rotate(-90deg);
+  display: block;
+  line-height: 1;
 }
-app-auth-layout .title {
-  font-size: 28px;
+.auth-titles .title {
+  font-size: 26px;
   font-weight: 700;
   margin: 0 0 8px 0;
   color: var(--ion-text-color);
+  overflow-wrap: break-word;
+  line-height: 1.25;
+  text-align: center;
 }
-app-auth-layout .subtitle {
-  font-size: 14px;
+.auth-titles .subtitle {
+  font-size: 13px;
   color: var(--ion-color-medium);
   margin: 0;
   line-height: 1.6;
+  overflow-wrap: break-word;
+  text-align: center;
 }
-app-auth-layout .auth-form {
+.auth-form {
   width: 100%;
+  min-width: 0;
+  flex: 1 0 auto;
+  box-sizing: border-box;
 }
-app-auth-layout .input-group {
-  margin-bottom: 20px;
+.auth-form .input-group {
+  margin-bottom: 16px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
-app-auth-layout .input-group label {
+.auth-form .input-group label {
   display: block;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--ion-text-color);
   padding-right: 4px;
 }
-app-auth-layout .custom-input {
+.auth-form .custom-input {
   --background: var(--ion-color-step-50);
   --border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --min-height: 55px;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --min-height: 52px;
   --color: var(--ion-text-color);
   border: 1px solid var(--ion-color-step-150);
   border-radius: 8px;
   transition: border-color 0.2s ease;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
-app-auth-layout .custom-input.item-has-focus {
+.auth-form .custom-input.item-has-focus {
   border-color: var(--ion-color-primary);
 }
-app-auth-layout .custom-input ion-input,
-app-auth-layout .custom-input ion-select {
+.auth-form .custom-input ion-input,
+.auth-form .custom-input ion-select {
   --color: var(--ion-text-color);
   --placeholder-color: var(--ion-color-medium);
   --placeholder-opacity: 1;
-  font-size: 15px;
+  font-size: 14px;
+  min-width: 0;
 }
-app-auth-layout .custom-input ion-input {
+.auth-form .custom-input ion-input {
   direction: ltr;
   text-align: left;
 }
-app-auth-layout .submit-btn {
+.auth-form .submit-btn {
   --background: var(--ion-color-primary);
   --background-activated: var(--ion-color-primary-shade);
   --background-hover: var(--ion-color-primary-tint);
@@ -626,53 +659,65 @@ app-auth-layout .submit-btn {
   --padding-bottom: 14px;
   font-weight: 700;
   font-size: 16px;
-  margin-top: 30px;
-  height: 54px;
+  margin-top: 24px;
+  height: 52px;
+  min-height: 52px;
   width: 100%;
+  box-sizing: border-box;
 }
-app-auth-layout .forgot-password {
+.auth-form .forgot-password {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
-app-auth-layout .forgot-password a {
+.auth-form .forgot-password a {
   color: var(--ion-color-primary);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
-app-auth-layout .footer,
-app-auth-layout .row-links {
-  margin-top: 24px;
+.auth-wrapper .footer,
+.auth-wrapper .row-links {
+  margin-top: 20px;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ion-color-medium);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  padding-bottom: env(safe-area-inset-bottom);
 }
-app-auth-layout .footer a,
-app-auth-layout .row-links a,
-app-auth-layout .link,
-app-auth-layout .link-strong {
+.auth-wrapper .footer a,
+.auth-wrapper .row-links a,
+.auth-wrapper .link,
+.auth-wrapper .link-strong {
   color: var(--ion-color-primary);
   text-decoration: none;
   font-weight: 700;
   margin-right: 4px;
 }
-app-auth-layout .row-links {
+.auth-wrapper .row-links {
   display: flex;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 }
-app-auth-layout .grid2 {
+.auth-wrapper .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 @media (max-width: 480px) {
-  app-auth-layout .grid2 {
+  .auth-wrapper .grid2 {
     grid-template-columns: 1fr;
   }
 }
-app-auth-layout .token-box {
+.token-box {
   border: 1px dashed var(--ion-color-step-200);
   border-radius: 12px;
   padding: 10px;
@@ -680,12 +725,12 @@ app-auth-layout .token-box {
   width: 100%;
   box-sizing: border-box;
 }
-app-auth-layout .token-label {
+.token-label {
   margin: 0 0 6px;
   color: var(--ion-color-medium);
   font-size: 11px;
 }
-app-auth-layout .token-val {
+.token-val {
   margin: 0;
   word-break: break-all;
   font-family: monospace;
@@ -694,7 +739,7 @@ app-auth-layout .token-val {
   text-align: left;
   color: var(--ion-text-color);
 }
-app-auth-layout .hint {
+.auth-wrapper .hint {
   text-align: center;
   color: var(--ion-color-medium);
   font-size: 11px;

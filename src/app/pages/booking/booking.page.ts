@@ -195,7 +195,7 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
     .day-text b { font-size:13px; font-weight:800; color:var(--text-primary); }
     .day-text small { font-size:11px; color:var(--text-secondary); line-height:1.4; }
     .day-text small.off { color:var(--text-muted); }
-    .sw { width:42px; height:24px; border-radius:999px; background:#1e293b; border:1px solid #334155; position:relative; cursor:pointer; flex-shrink:0; padding:0; }
+    .sw { width:42px; height:24px; border-radius:999px; background:#9ca3b8; border:1px solid #9ca3b8; position:relative; cursor:pointer; flex-shrink:0; padding:0; }
     .sw.on { background:var(--accent); border-color:var(--accent); }
     .sw .knob { position:absolute; top:2px; right:2px; width:16px; height:16px; border-radius:999px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.3); transition: transform 0.18s; }
     .sw.on .knob { transform: translateX(-16px); }

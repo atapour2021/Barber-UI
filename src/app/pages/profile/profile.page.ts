@@ -90,12 +90,12 @@ import { fa } from '../../core/i18n/fa';
       font-weight: 700; cursor: pointer; font-family: inherit;
     }
     .toggle {
-      width: 42px; height: 24px; border-radius: 999px; background: #0f1a2e; border: 1px solid #243150;
+      width: 42px; height: 24px; border-radius: 999px; background: #9ca3b8; border: 1px solid #9ca3b8;
       position: relative; cursor: pointer; padding: 0; flex-shrink: 0; transition: background 0.18s, border-color 0.18s;
     }
     .toggle em {
       position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 999px;
-      background: #0b1220; transition: transform 0.18s, background 0.18s; display: block;
+      background: #fff; transition: transform 0.18s, background 0.18s; display: block;
       box-shadow: 0 1px 4px rgba(0,0,0,0.4);
     }
     .toggle.on { background: var(--accent); border-color: var(--accent); }

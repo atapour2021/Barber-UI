@@ -9,37 +9,28 @@ export const routes: Routes = [
       import('./pages/auth/landing.page').then((m) => m.LandingPage),
   },
   {
-    path: '',
+    path: 'login',
     loadComponent: () =>
-      import('./layouts/auth-layout/auth-layout').then(
-        (m) => m.AuthLayoutComponent,
-      ),
-    children: [
-      {
-        path: 'login',
-        loadComponent: () =>
-          import('./pages/auth/login.page').then((m) => m.LoginPage),
-        canActivate: [guestGuard],
-      },
-      {
-        path: 'register',
-        loadComponent: () =>
-          import('./pages/auth/register.page').then((m) => m.RegisterPage),
-        canActivate: [guestGuard],
-      },
-      {
-        path: 'forgot',
-        loadComponent: () =>
-          import('./pages/auth/forgot.page').then((m) => m.ForgotPage),
-        canActivate: [guestGuard],
-      },
-      {
-        path: 'reset',
-        loadComponent: () =>
-          import('./pages/auth/reset.page').then((m) => m.ResetPage),
-        canActivate: [guestGuard],
-      },
-    ],
+      import('./pages/auth/login.page').then((m) => m.LoginPage),
+    canActivate: [guestGuard],
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./pages/auth/register.page').then((m) => m.RegisterPage),
+    canActivate: [guestGuard],
+  },
+  {
+    path: 'forgot',
+    loadComponent: () =>
+      import('./pages/auth/forgot.page').then((m) => m.ForgotPage),
+    canActivate: [guestGuard],
+  },
+  {
+    path: 'reset',
+    loadComponent: () =>
+      import('./pages/auth/reset.page').then((m) => m.ResetPage),
+    canActivate: [guestGuard],
   },
   {
     path: '',

@@ -10,13 +10,12 @@ import { ThemeService } from '../core/services/theme.service';
 import { ApiService } from '../core/services/api.service';
 import { ViewRoleService } from '../core/services/view-role.service';
 import { AppSidebarComponent } from '../shared/components/app-sidebar/app-sidebar';
-import { ThemeToggleComponent } from '../shared/components/theme-toggle.component';
 
 @Component({
   selector: 'app-tabs',
   templateUrl: 'tabs.page.html',
   styleUrls: ['tabs.page.scss'],
-  imports: [RouterLink, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, AppSidebarComponent, ThemeToggleComponent],
+  imports: [RouterLink, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, AppSidebarComponent],
 })
 export class TabsPage {
   t = fa.nav;
