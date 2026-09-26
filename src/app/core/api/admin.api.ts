@@ -107,6 +107,10 @@ export class AdminApi {
     return this.http.post(`${this.b}/admin/appointments/${id}/cancel`, {});
   }
 
+  updateAppointment(id: string, dto: Record<string, unknown>) {
+    return this.http.patch(`${this.b}/admin/appointments/${id}`, dto);
+  }
+
   deleteAppointment(id: string) {
     return this.http.delete(`${this.b}/admin/appointments/${id}`);
   }

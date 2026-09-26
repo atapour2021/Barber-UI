@@ -5,7 +5,7 @@ import { addIcons } from 'ionicons';
 import { refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline, pencilOutline, createOutline, closeOutline, checkmarkOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
-import { Appointment, Barber, User } from '../../core/models';
+import { Appointment, Barber, Service, User } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
@@ -190,11 +190,36 @@ import { extractMessage } from '../../core/utils/error';
                     @if (a.status!=='cancelled' && a.status!=='completed' && a.status!=='no_show') { <ion-button fill="clear" size="small" color="warning" (click)="cancelAppt(a)" [disabled]="apptBusy()===a.id">لغو</ion-button> }
                     <ion-button fill="clear" size="small" color="danger" (click)="deleteAppt(a)" [disabled]="apptBusy()===a.id"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button>
                   </div>
-                  @if (editId()===a.id) {
-                    <div style="display:flex;gap:8px;align-items:center">
-                      <input [(ngModel)]="editNotes" placeholder="یادداشت" maxlength="500" style="flex:1;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;font-size:12px;color:var(--text-primary)" />
-                      <ion-button size="small" (click)="saveEdit(a)" [disabled]="apptBusy()===a.id" style="--background:var(--accent);--color:var(--accent-contrast)">ذخیره</ion-button>
-                      <ion-button size="small" fill="clear" (click)="editId.set(null)">انصراف</ion-button>
+                    @if (editId()===a.id) {
+                    <div style="display:flex;flex-direction:column;gap:8px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:10px;padding:10px">
+                      @if (!editOptsLoaded()) { <div style="text-align:center;padding:8px"><ion-spinner></ion-spinner></div> }
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                        <select [(ngModel)]="editForm.barberId" (ngModelChange)="onEditBarberChange()" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-family:inherit;font-size:12px">
+                          @for (b of allBarbers(); track b.id) { <option [value]="b.id">{{ b.fullName }}</option> }
+                        </select>
+                        <select [(ngModel)]="editForm.serviceId" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-family:inherit;font-size:12px">
+                          @for (s of editServicesFiltered(); track s.id) { <option [value]="s.id">{{ s.name }} — {{ s.duration }}m</option> }
+                        </select>
+                        <input type="date" [(ngModel)]="editForm.date" (ngModelChange)="loadEditSlots()" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+                        <select [(ngModel)]="editForm.slotKey" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-family:inherit;font-size:12px">
+                          <option value="">{{ editSlotLabel() || '— ساعت —' }}</option>
+                          @for (sl of editSlots(); track sl.startTime) { <option [value]="sl.startTime + '|' + sl.endTime">{{ sl.startTime.slice(11,16) }} - {{ sl.endTime.slice(11,16) }} @if(sl.status!=='available' && sl.status!=='free'){({{ sl.status }})}</option> }
+                        </select>
+                      </div>
+                      @if (editSlotsLoading()) { <div style="text-align:center"><ion-spinner></ion-spinner></div> }
+                      @if (editSlotReason()) { <p class="muted" style="margin:0;font-size:11px">{{ editSlotReason() }}</p> }
+                      <select [(ngModel)]="editForm.status" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-family:inherit;font-size:12px">
+                        <option value="pending">pending</option>
+                        <option value="confirmed">confirmed</option>
+                        <option value="cancelled">cancelled</option>
+                        <option value="completed">completed</option>
+                        <option value="no_show">no_show</option>
+                      </select>
+                      <textarea [(ngModel)]="editForm.notes" placeholder="یادداشت" maxlength="500" rows="2" style="width:100%;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;font-size:12px;color:var(--text-primary);font-family:inherit;resize:vertical"></textarea>
+                      <div style="display:flex;gap:8px">
+                        <ion-button size="small" (click)="saveEdit(a)" [disabled]="apptBusy()===a.id || !canSaveEdit()" style="--background:var(--accent);--color:var(--accent-contrast)">ذخیره</ion-button>
+                        <ion-button size="small" fill="clear" (click)="editId.set(null)">انصراف</ion-button>
+                      </div>
                     </div>
                   }
                 </ion-card-content>
@@ -246,7 +271,13 @@ export class AdminPage implements OnInit {
   apptBusy = signal<string | null>(null);
   apptStatus = '';
   editId = signal<string | null>(null);
-  editNotes = '';
+  allBarbers = signal<Barber[]>([]);
+  allServices = signal<Service[]>([]);
+  editOptsLoaded = signal(false);
+  editSlots = signal<{ startTime: string; endTime: string; status: string }[]>([]);
+  editSlotsLoading = signal(false);
+  editSlotReason = signal('');
+  editForm: { barberId: string; serviceId: string; date: string; slotKey: string; status: string; notes: string } = { barberId: '', serviceId: '', date: '', slotKey: '', status: 'pending', notes: '' };
   newAppt: Record<string,string> = { barberId:'', serviceId:'', date:'', startTime:'', endTime:'', notes:'' };
   creating = signal(false);
   settings = signal<{ key: string; value?: string | null }[]>([]);
@@ -388,12 +419,116 @@ export class AdminPage implements OnInit {
       error: (e) => { this.toast.error((e?.error as {message?:string})?.message ?? fa.common.failed); this.apptBusy.set(null); },
     });
   }
-  startEditAppt(a: Appointment) { this.editId.set(a.id); this.editNotes = a.notes ?? ''; }
+  editServicesFiltered(): Service[] {
+    const bid = this.editForm.barberId;
+    if (!bid) return this.allServices();
+    const filtered = this.allServices().filter(s => s.barberId === bid);
+    return filtered.length ? filtered : this.allServices();
+  }
+  editSlotLabel(): string {
+    if (this.editSlotsLoading()) return 'در حال بارگذاری…';
+    if (!this.editForm.date || !this.editForm.barberId) return 'تاریخ/آرایشگر را انتخاب کنید';
+    if (!this.editSlots().length) return '— اسلاتی یافت نشد —';
+    return '';
+  }
+  canSaveEdit(): boolean {
+    return !!this.editForm.barberId && !!this.editForm.serviceId && !!this.editForm.date;
+  }
+  onEditBarberChange() {
+    const all = this.allServices();
+    if (this.editForm.barberId && !all.some(s => s.id === this.editForm.serviceId && s.barberId === this.editForm.barberId)) {
+      const hit = all.find(s => s.barberId === this.editForm.barberId);
+      if (hit) this.editForm.serviceId = hit.id;
+    }
+    this.editForm.slotKey = '';
+    this.loadEditSlots();
+  }
+  loadEditSlots() {
+    this.editSlotReason.set('');
+    if (!this.editForm.barberId || !this.editForm.date) { this.editSlots.set([]); return; }
+    this.editSlotsLoading.set(true);
+    const p: Record<string, string> = { barberId: this.editForm.barberId, date: this.editForm.date };
+    if (this.editForm.serviceId) p['serviceId'] = this.editForm.serviceId;
+    this.api.appointments.slots(p).subscribe({
+      next: (v) => {
+        const r = v as { slots?: { startTime: string; endTime: string; status: string }[]; reason?: string };
+        const slots = r.slots ?? [];
+        const cur = this.editForm.slotKey;
+        if (cur && !slots.some(s => `${s.startTime}|${s.endTime}` === cur)) {
+          const [st, et] = cur.split('|');
+          if (st && et) slots.unshift({ startTime: st, endTime: et, status: 'current' });
+        }
+        this.editSlots.set(slots);
+        this.editSlotReason.set(r.reason ?? '');
+        this.editSlotsLoading.set(false);
+      },
+      error: () => { this.editSlots.set([]); this.editSlotsLoading.set(false); },
+    });
+  }
+  private ensureEditOpts() {
+    if (this.editOptsLoaded()) return;
+    let done = 0;
+    const check = () => { done++; if (done >= 2) this.editOptsLoaded.set(true); };
+    this.api.barbers.list().subscribe({
+      next: (v) => {
+        const arr = Array.isArray(v) ? v as Barber[] : ((v as { data: Barber[] }).data ?? []);
+        this.allBarbers.set(arr as Barber[]);
+        check();
+      },
+      error: () => check(),
+    });
+    this.api.services.list().subscribe({
+      next: (v) => {
+        const arr = Array.isArray(v) ? v as Service[] : ((v as { data: Service[] }).data ?? []);
+        this.allServices.set(arr as Service[]);
+        check();
+      },
+      error: () => check(),
+    });
+  }
+  startEditAppt(a: Appointment) {
+    this.editId.set(a.id);
+    const d = a.date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+    this.editForm = {
+      barberId: a.barberId,
+      serviceId: a.serviceId,
+      date: d,
+      slotKey: `${a.startTime}|${a.endTime}`,
+      status: a.status,
+      notes: a.notes ?? '',
+    };
+    this.ensureEditOpts();
+    this.loadEditSlots();
+  }
   saveEdit(a: Appointment) {
+    if (!this.canSaveEdit()) { this.toast.warning('فیلدهای الزامی را پر کنید'); return; }
     this.apptBusy.set(a.id);
-    this.api.appointments.update(a.id, { notes: this.editNotes }).subscribe({
-      next: () => { this.toast.success(fa.common.success); this.editId.set(null); this.apptBusy.set(null); this.loadAppts(); },
-      error: (e) => { this.toast.error((e?.error as {message?:string})?.message ?? fa.common.failed); this.apptBusy.set(null); },
+    const f = this.editForm;
+    const dto: Record<string, unknown> = {
+      barberId: f.barberId,
+      serviceId: f.serviceId,
+      date: f.date,
+      notes: f.notes || null,
+    };
+    if (f.slotKey && f.slotKey.includes('|')) {
+      const [st, et] = f.slotKey.split('|');
+      dto['startTime'] = st;
+      dto['endTime'] = et;
+    }
+    const statusChanged = f.status !== a.status;
+    const patch$ = this.api.admin.updateAppointment(a.id, dto);
+    patch$.subscribe({
+      next: () => {
+        if (statusChanged) {
+          this.api.admin.updateAppointmentStatus(a.id, f.status).subscribe({
+            next: () => { this.toast.success(fa.common.success); this.editId.set(null); this.apptBusy.set(null); this.loadAppts(); },
+            error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.apptBusy.set(null); },
+          });
+        } else {
+          this.toast.success(fa.common.success); this.editId.set(null); this.apptBusy.set(null); this.loadAppts();
+        }
+      },
+      error: (e) => { this.toast.error((e?.error as { message?: string })?.message ?? fa.common.failed); this.apptBusy.set(null); },
     });
   }
   createAppt() {

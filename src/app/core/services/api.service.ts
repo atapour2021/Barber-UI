@@ -122,6 +122,7 @@ export class ApiService {
     adminAppointments: (p?: Record<string, unknown>) => this.adminApi.adminAppointments(p),
     adminAppointment: (id: string) => this.adminApi.adminAppointment(id),
     updateAppointmentStatus: (id: string, status: string) => this.adminApi.updateAppointmentStatus(id, status),
+    updateAppointment: (id: string, d: Record<string, unknown>) => this.adminApi.updateAppointment(id, d),
     cancelAppointment: (id: string) => this.adminApi.cancelAppointment(id),
     deleteAppointment: (id: string) => this.adminApi.deleteAppointment(id),
     reports: (p?: Record<string, unknown>) => this.adminApi.reports(p),
