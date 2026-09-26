@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -22,18 +22,12 @@ import { ThemeToggleComponent } from '../theme-toggle.component';
         </button>
       </div>
       <nav class="sidebar-nav">
-        <a class="sidebar-item" (click)="closed.emit()" routerLink="/barbershops">
-          <span class="sidebar-item-label"><ion-icon name="location-outline"></ion-icon> موقعیت آرایشگاه</span>
-          <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
-        </a>
-        <a class="sidebar-item" (click)="closed.emit()" routerLink="/barbers">
-          <span class="sidebar-item-label"><ion-icon name="play-outline"></ion-icon> ویدیوهای آموزشی</span>
-          <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
-        </a>
-        <a class="sidebar-item" (click)="closed.emit()" routerLink="/tabs/documents">
-          <span class="sidebar-item-label"><ion-icon name="ribbon-outline"></ion-icon> مدارک و گواهی‌ها</span>
-          <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
-        </a>
+        @for (item of visibleItems(); track item.route) {
+          <a class="sidebar-item" (click)="closed.emit()" [routerLink]="item.route">
+            <span class="sidebar-item-label"><ion-icon [name]="item.icon"></ion-icon> {{ item.label }}</span>
+            <ion-icon name="chevron-back-outline" class="sidebar-chevron"></ion-icon>
+          </a>
+        }
       </nav>
       <div class="sidebar-theme">
         <span class="sidebar-item-label">{{ theme.isDark() ? 'حالت تیره' : 'حالت روشن' }}</span>
@@ -75,6 +69,13 @@ export class AppSidebarComponent {
   closed = output<void>();
   viewChange = output<'admin' | 'barber' | 'customer'>();
   logoutClicked = output<void>();
+  private menu = [
+    { route: '/barbershops', icon: 'location-outline', label: 'موقعیت آرایشگاه', roles: ['admin', 'barber', 'customer'] as const },
+    { route: '/barbers', icon: 'play-outline', label: 'ویدیوهای آموزشی', roles: ['admin', 'barber', 'customer'] as const },
+    { route: '/tabs/documents', icon: 'ribbon-outline', label: 'مدارک و گواهی‌ها', roles: ['barber', 'admin'] as const },
+    { route: '/admin', icon: 'shield-checkmark-outline', label: 'پنل مدیریت', roles: ['admin'] as const },
+  ];
+  visibleItems = computed(() => this.menu.filter(m => (m.roles as readonly string[]).includes(this.activeView())));
   constructor() {
     addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline });
   }
