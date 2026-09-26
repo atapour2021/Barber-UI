@@ -21,18 +21,6 @@ import { ThemeToggleComponent } from '../theme-toggle.component';
           <ion-icon name="close-outline"></ion-icon>
         </button>
       </div>
-      <p class="sidebar-subtitle">تغییر نمای کاربری</p>
-      <div class="sidebar-roles">
-        <button type="button" class="role-card" [class.active]="activeView() === 'admin'" (click)="viewChange.emit('admin')">
-          <ion-icon name="shield-checkmark-outline"></ion-icon><span>مدیر</span>
-        </button>
-        <button type="button" class="role-card" [class.active]="activeView() === 'barber'" (click)="viewChange.emit('barber')">
-          <ion-icon name="cut-outline"></ion-icon><span>آرایشگر</span>
-        </button>
-        <button type="button" class="role-card" [class.active]="activeView() === 'customer'" (click)="viewChange.emit('customer')">
-          <ion-icon name="person-outline"></ion-icon><span>مشتری</span>
-        </button>
-      </div>
       <nav class="sidebar-nav">
         <a class="sidebar-item" (click)="closed.emit()" routerLink="/barbershops">
           <span class="sidebar-item-label"><ion-icon name="location-outline"></ion-icon> موقعیت آرایشگاه</span>
