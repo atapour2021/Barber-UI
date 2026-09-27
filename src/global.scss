@@ -286,18 +286,6 @@ ion-spinner {
   display: block;
   color: var(--text-primary);
 }
-.field label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  display: block;
-  margin-bottom: 6px;
-}
-.auth-card ion-item {
-  --background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
-  margin-bottom: 10px;
-}
 .app-toast {
   --border-radius: 12px;
   --color: #fff;
@@ -459,12 +447,8 @@ ion-spinner {
 }
 .ui-field label {
   font-size: 12px;
-  color: var(--ion-color-medium);
-}
-.ui-field ion-item {
-  --background: var(--ion-color-step-50);
-  border: 1px solid var(--ion-color-step-150);
-  border-radius: var(--radius-md);
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 .grid2 {
   display: grid;
@@ -605,69 +589,8 @@ html.ion-palette-dark .auth-header .back-btn:active { background: rgba(255,255,2
   flex: 1 0 auto;
   box-sizing: border-box;
 }
-.auth-form .input-group {
-  margin-bottom: 16px;
-  min-width: 0;
-  width: 100%;
-  box-sizing: border-box;
-}
-.auth-form .input-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ion-text-color);
-  padding-right: 4px;
-}
-.auth-form .custom-input {
-  --background: var(--ion-color-step-50);
-  --border-radius: 8px;
-  --padding-start: 14px;
-  --padding-end: 14px;
-  --min-height: 52px;
-  --color: var(--ion-text-color);
-  border: 1px solid var(--ion-color-step-150);
-  border-radius: 8px;
-  transition: border-color 0.2s ease;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-.auth-form .custom-input.item-has-focus {
-  border-color: var(--ion-color-primary);
-}
-.auth-form .custom-input ion-input,
-.auth-form .custom-input ion-select {
-  --color: var(--ion-text-color);
-  --placeholder-color: var(--ion-color-medium);
-  --placeholder-opacity: 1;
-  font-size: 14px;
-  min-width: 0;
-}
-.auth-form .custom-input ion-input {
-  direction: ltr;
-  text-align: left;
-}
-.auth-form .submit-btn {
-  --background: var(--ion-color-primary);
-  --background-activated: var(--ion-color-primary-shade);
-  --background-hover: var(--ion-color-primary-tint);
-  --color: var(--ion-color-primary-contrast);
-  --border-radius: 8px;
-  --box-shadow: none;
-  --padding-top: 14px;
-  --padding-bottom: 14px;
-  font-weight: 700;
-  font-size: 16px;
-  margin-top: 24px;
-  height: 52px;
-  min-height: 52px;
-  width: 100%;
-  box-sizing: border-box;
-}
 .auth-form .forgot-password {
   text-align: center;
-  margin-top: 16px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -746,42 +669,4 @@ html.ion-palette-dark .auth-header .back-btn:active { background: rgba(255,255,2
   margin-top: 10px;
 }
 
-.input-group {
-  margin-bottom: 16px;
-}
-.input-group label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ion-text-color);
-  padding-right: 4px;
-}
-.custom-input {
-  --background: var(--ion-color-step-50);
-  --border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --min-height: 52px;
-  --color: var(--ion-text-color);
-  border: 1px solid var(--ion-color-step-150);
-  border-radius: 8px;
-  transition: border-color 0.2s ease;
-}
-.custom-input.item-has-focus {
-  border-color: var(--ion-color-primary);
-}
-.custom-input ion-input,
-.custom-input ion-textarea,
-.custom-input ion-select {
-  --color: var(--ion-text-color);
-  --placeholder-color: var(--ion-color-medium);
-  --placeholder-opacity: 1;
-  font-size: 14px;
-}
-.custom-input.ltr ion-input {
-  direction: ltr;
-  text-align: left;
-}
+

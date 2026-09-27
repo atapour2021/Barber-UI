@@ -2,7 +2,7 @@ import { Component, AfterViewInit, OnDestroy, OnInit, ViewChild, ElementRef, sig
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea, AlertController } from '@ionic/angular';
+import { IonContent, IonIcon, IonSpinner, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, locationOutline, trashOutline, addOutline, createOutline, closeOutline, locateOutline, saveOutline } from 'ionicons/icons';
 import * as L from 'leaflet';
@@ -10,14 +10,15 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Location } from '../../core/models';
-import { unwrapArray, unwrapPaginated } from '../../core/api/utils';
+import { unwrapPaginated } from '../../core/api/utils';
 import { fa } from '../../core/i18n/fa';
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
+import { UiInputComponent, UiTextareaComponent, UiButtonComponent } from '../../shared/ui/ui';
 
 @Component({
   selector: 'app-addresses',
   standalone: true,
-  imports: [IonContent, IonIcon, IonInput, IonItem, IonSpinner, IonTextarea, RouterLink, FormsModule, DecimalPipe, InfiniteScrollDirective],
+  imports: [IonContent, IonIcon, IonSpinner, RouterLink, FormsModule, DecimalPipe, InfiniteScrollDirective, UiInputComponent, UiTextareaComponent, UiButtonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap addr-wrap" dir="rtl">
@@ -25,7 +26,6 @@ import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll
           <a routerLink="/tabs/profile" class="back-btn" aria-label="back"><ion-icon name="arrow-forward-outline"></ion-icon></a>
           <h1>{{t.title}}</h1>
         </div>
-
         @if (loading() && !items().length) {
           <div class="dark-card" style="text-align:center;padding:18px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{t.loading}}</p></div>
         } @else {
@@ -36,9 +36,7 @@ import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll
                 <div class="addr-text">
                   <b>{{ a.label || t.fallbackLabel }}</b>
                   <small>{{ a.address }}</small>
-                  @if (a.latitude && a.longitude) {
-                    <small class="addr-coords">{{ a.latitude | number:'1.4-4' }}, {{ a.longitude | number:'1.4-4' }}</small>
-                  }
+                  @if (a.latitude && a.longitude) { <small class="addr-coords">{{ a.latitude | number:'1.4-4' }}, {{ a.longitude | number:'1.4-4' }}</small> }
                 </div>
                 <div class="addr-actions">
                   <button type="button" class="addr-edit" (click)="startEdit(a)" aria-label="edit"><ion-icon name="create-outline"></ion-icon></button>
@@ -46,48 +44,26 @@ import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll
                 </div>
               </div>
             }
-            @if (!items().length && !loadingMore()) {
-              <div class="dark-card" style="text-align:center;padding:18px"><p class="muted" style="margin:0">{{t.empty}}</p></div>
-            }
+            @if (!items().length && !loadingMore()) { <div class="dark-card" style="text-align:center;padding:18px"><p class="muted" style="margin:0">{{t.empty}}</p></div> }
           </div>
           @if (loadingMore()) { <div style="text-align:center;padding:14px"><ion-spinner></ion-spinner></div> }
           @if (errorMsg()) { <div class="alert-error" style="text-align:center">{{ errorMsg() }}</div> }
           @if (hasMore()) { <div appInfiniteScroll (scrolled)="onScroll()" [disabled]="loading() || loadingMore()" style="height:1px"></div> }
         }
-
         <div class="dark-card addr-form">
           <b style="font-size:12px;color:var(--text-primary)">{{ editingId() ? t.editTitle : t.addTitle }}</b>
-          <div class="input-group">
-            <label>{{t.label}}</label>
-            <ion-item lines="none" class="custom-input"><ion-input [(ngModel)]="label" [placeholder]="t.labelPlaceholder"></ion-input></ion-item>
-          </div>
-          <div class="input-group">
-            <label>{{t.fullAddress}}</label>
-            <ion-item lines="none" class="custom-input"><ion-textarea [(ngModel)]="detail" [placeholder]="t.fullAddressPlaceholder" [autoGrow]="true" rows="2"></ion-textarea></ion-item>
-          </div>
-
+          <app-ui-input [label]="t.label" [placeholder]="t.labelPlaceholder" [(ngModel)]="label" />
+          <app-ui-textarea [label]="t.fullAddress" [placeholder]="t.fullAddressPlaceholder" [(ngModel)]="detail" />
           <div class="addr-map-wrap">
             <div #mapEl class="addr-map"></div>
             <button class="addr-locate" type="button" [attr.aria-label]="t.myLocation" (click)="locateMe()"><ion-icon name="locate-outline"></ion-icon></button>
-            @if (pickedLat()!=null) {
-              <div class="addr-picked">lat {{ pickedLat()!.toFixed(5) }} , lng {{ pickedLng()!.toFixed(5) }}</div>
-            }
+            @if (pickedLat()!==null) { <div class="addr-picked">lat {{ pickedLat()!.toFixed(5) }} , lng {{ pickedLng()!.toFixed(5) }}</div> }
           </div>
           <small class="muted" style="text-align:right">{{t.mapHint}}</small>
-
-          @if (formError()) {
-            <div class="alert-error">{{ formError() }}</div>
-          }
-
+          @if (formError()) { <div class="alert-error">{{ formError() }}</div> }
           <div class="addr-form-actions">
-            @if (editingId()) {
-              <button type="button" class="addr-cancel" (click)="cancelEdit()"><ion-icon name="close-outline"></ion-icon> {{t.cancel}}</button>
-            }
-            <button type="button" class="addr-add" (click)="save()" [disabled]="saving()">
-              @if (saving()) { <ion-spinner name="crescent" style="width:16px;height:16px"></ion-spinner> }
-              @else { <ion-icon [name]="editingId() ? 'save-outline' : 'add-outline'"></ion-icon> }
-              {{ editingId() ? t.saveChanges : t.add }}
-            </button>
+            @if (editingId()) { <button type="button" class="addr-cancel" (click)="cancelEdit()"><ion-icon name="close-outline"></ion-icon> {{t.cancel}}</button> }
+            <app-ui-button [icon]="editingId() ? 'save-outline' : 'add-outline'" [loading]="saving()" (pressed)="save()">{{ editingId() ? t.saveChanges : t.add }}</app-ui-button>
           </div>
         </div>
       </div>
@@ -115,9 +91,8 @@ import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll
     .addr-map { width:100%; height:240px; background:#1e2a44; }
     .addr-locate { position:absolute; bottom:10px; left:10px; z-index:400; width:32px; height:32px; border-radius:8px; background:#0f1a2e; border:1px solid #243150; color:#cbd5e1; display:inline-flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.25); }
     .addr-picked { position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:400; background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-primary); font-size:10px; font-weight:700; padding:5px 10px; border-radius:999px; direction:ltr; box-shadow:0 2px 8px rgba(0,0,0,0.25); }
-    .addr-form-actions { display:flex; gap:8px; justify-content:flex-end; }
-    .addr-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--accent); color:var(--accent-contrast); border:none; border-radius:8px; padding:10px 14px; font-family:inherit; font-size:12px; font-weight:800; cursor:pointer; }
-    .addr-add:disabled { opacity:0.7; cursor:default; }
+    .addr-form-actions { display:flex; gap:8px; justify-content:flex-end; align-items:center; }
+    :host ::ng-deep app-ui-button{ flex:1; }
     .addr-cancel { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--card-border); color:var(--text-primary); border-radius:8px; padding:10px 14px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
     html:not(.ion-palette-dark) .addr-map { background:#e2e8f0; }
     html:not(.ion-palette-dark) .addr-locate { background:#fff; border-color:#cbd5e1; color:#475569; }
@@ -149,25 +124,18 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
   editingId = signal<string | null>(null);
   private map?: L.Map;
   private marker?: L.Marker;
-
   constructor() { addIcons({ arrowForwardOutline, locationOutline, trashOutline, addOutline, createOutline, closeOutline, locateOutline, saveOutline }); }
-
   ngOnInit() { this.load(true); }
-
   ngAfterViewInit() { setTimeout(() => this.initMap(), 120); }
-
   ngOnDestroy() { this.map?.remove(); }
-
   onScroll() { if (!this.hasMore() || this.loading() || this.loadingMore()) return; this.load(false); }
-
   private load(reset = true) {
     if (reset) { this.page = 1; this.hasMore.set(true); this.loading.set(true); this.errorMsg.set(''); } else this.loadingMore.set(true);
     const params = { page: this.page, limit: this.limit };
     this.api.locations.myAddresses(params).subscribe({
       next: (v) => {
         const p = unwrapPaginated<Location>(v);
-        if (reset) this.items.set(p.data);
-        else this.items.update((a) => [...a, ...p.data]);
+        if (reset) this.items.set(p.data); else this.items.update((a) => [...a, ...p.data]);
         const more = p.data.length === this.limit && (p.total ? this.items().length < p.total : true);
         if (p.data.length) this.page++;
         this.hasMore.set(more);
@@ -178,8 +146,7 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
           next: (v2) => {
             const p = unwrapPaginated<Location>(v2);
             const filtered = p.data.filter((x) => !x.barberId);
-            if (reset) this.items.set(filtered);
-            else this.items.update((a) => [...a, ...filtered]);
+            if (reset) this.items.set(filtered); else this.items.update((a) => [...a, ...filtered]);
             const more = filtered.length === this.limit && (p.total ? this.items().length < p.total : true);
             if (filtered.length) this.page++;
             this.hasMore.set(more);
@@ -190,7 +157,6 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
-
   save() {
     this.formError.set('');
     const l = this.label.trim();
@@ -209,76 +175,30 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
         this.toast.success(id ? fa.addresses.updated : fa.addresses.created);
         if (id) this.items.set(this.items().map(x => x.id === id ? { ...x, ...(saved as Location) } : x));
         else this.items.set([(saved as Location), ...this.items()]);
-        this.resetForm();
-        this.saving.set(false);
+        this.resetForm(); this.saving.set(false);
       },
-      error: (e) => {
-        const msg = (e?.error?.message as string) || e?.message || fa.toast.addressSaveFailed;
-        this.formError.set(Array.isArray(msg) ? msg.join('، ') : String(msg));
-        this.toast.error(this.formError());
-        this.saving.set(false);
-      },
+      error: (e) => { const msg = (e?.error?.message as string) || e?.message || fa.toast.addressSaveFailed; this.formError.set(Array.isArray(msg) ? msg.join('، ') : String(msg)); this.toast.error(this.formError()); this.saving.set(false); },
     });
   }
-
   startEdit(a: Location) {
-    this.editingId.set(a.id);
-    this.label = (a.label as string) || '';
-    this.detail = a.address || '';
-    const lat = Number(a.latitude);
-    const lng = Number(a.longitude);
+    this.editingId.set(a.id); this.label = (a.label as string) || ''; this.detail = a.address || '';
+    const lat = Number(a.latitude); const lng = Number(a.longitude);
     if (!isNaN(lat) && !isNaN(lng)) { this.pickedLat.set(lat); this.pickedLng.set(lng); this.setMarker(lat, lng, true); }
     this.formError.set('');
   }
-
   cancelEdit() { this.resetForm(); }
-
   async remove(id: string) {
     const alert = await this.alertCtrl.create({
-      header: fa.addresses.deleteTitle,
-      message: fa.addresses.deleteConfirm,
-      cssClass: 'addr-delete-alert',
-      buttons: [
-        { text: fa.common.cancel, role: 'cancel' },
-        {
-          text: fa.common.delete,
-          role: 'destructive',
-          handler: () => {
-            this.api.locations.remove(id).subscribe({
-              next: () => {
-                this.items.set(this.items().filter(a => a.id !== id));
-                if (this.editingId() === id) this.resetForm();
-                this.toast.success(fa.addresses.deleted);
-              },
-              error: (e) => this.toast.error((e?.error?.message as string) || fa.toast.deleteFailed),
-            });
-          },
-        },
-      ],
+      header: fa.addresses.deleteTitle, message: fa.addresses.deleteConfirm, cssClass: 'addr-delete-alert',
+      buttons: [{ text: fa.common.cancel, role: 'cancel' }, { text: fa.common.delete, role: 'destructive', handler: () => { this.api.locations.remove(id).subscribe({ next: () => { this.items.set(this.items().filter(a => a.id !== id)); if (this.editingId() === id) this.resetForm(); this.toast.success(fa.addresses.deleted); }, error: (e) => this.toast.error((e?.error?.message as string) || fa.toast.deleteFailed) }); } }],
     });
     await alert.present();
   }
-
   locateMe() {
     if (!navigator.geolocation) { this.toast.error(fa.toast.geolocationUnavailable); return; }
-    navigator.geolocation.getCurrentPosition(
-      (p) => { const lat = p.coords.latitude, lng = p.coords.longitude; this.pickedLat.set(lat); this.pickedLng.set(lng); this.setMarker(lat, lng, true); },
-      () => this.toast.error(fa.toast.geolocationDenied),
-      { enableHighAccuracy: false, timeout: 6000 },
-    );
+    navigator.geolocation.getCurrentPosition((p) => { const lat = p.coords.latitude, lng = p.coords.longitude; this.pickedLat.set(lat); this.pickedLng.set(lng); this.setMarker(lat, lng, true); }, () => this.toast.error(fa.toast.geolocationDenied), { enableHighAccuracy: false, timeout: 6000 });
   }
-
-  private resetForm() {
-    this.label = '';
-    this.detail = '';
-    this.editingId.set(null);
-    this.formError.set('');
-    this.pickedLat.set(null);
-    this.pickedLng.set(null);
-    this.marker?.remove();
-    this.marker = undefined;
-  }
-
+  private resetForm() { this.label = ''; this.detail = ''; this.editingId.set(null); this.formError.set(''); this.pickedLat.set(null); this.pickedLng.set(null); this.marker?.remove(); this.marker = undefined; }
   private initMap() {
     const el = this.mapEl?.nativeElement;
     if (!el || this.map) return;
@@ -290,7 +210,6 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => this.map?.invalidateSize(), 200);
     if (this.pickedLat() != null) this.setMarker(this.pickedLat()!, this.pickedLng()!, true);
   }
-
   private setMarker(lat: number, lng: number, pan: boolean) {
     if (!this.map) return;
     const ll: L.LatLngExpression = [lat, lng];
@@ -298,11 +217,7 @@ export class AddressesPage implements OnInit, AfterViewInit, OnDestroy {
     else {
       const icon = L.divIcon({ className: 'addr-pin', html: `<div class="addr-pin-inner">◎</div>`, iconSize: [32, 32], iconAnchor: [16, 32] });
       this.marker = L.marker(ll, { icon, draggable: true }).addTo(this.map);
-      this.marker.on('dragend', () => {
-        const p = this.marker!.getLatLng();
-        this.pickedLat.set(p.lat);
-        this.pickedLng.set(p.lng);
-      });
+      this.marker.on('dragend', () => { const p = this.marker!.getLatLng(); this.pickedLat.set(p.lat); this.pickedLng.set(p.lng); });
     }
     if (pan) this.map.setView(ll, this.map.getZoom() || 15, { animate: true });
     setTimeout(() => this.map?.invalidateSize(), 100);
