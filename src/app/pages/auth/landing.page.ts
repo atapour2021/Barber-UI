@@ -10,7 +10,10 @@ import { fa } from '../../core/i18n/fa';
   standalone: true,
   imports: [IonContent, IonButton, IonIcon, RouterLink],
   template: `
-    <ion-content [fullscreen]="true" class="landing-container">
+    <ion-content [fullscreen]="true" [scrollY]="false" class="landing-container">
+      <div class="landing-bg" aria-hidden="true">
+        <img src="/assets/images/barber-reza.jpg" alt="" loading="eager" decoding="async" />
+      </div>
       <div class="landing-shell" dir="rtl">
         <div class="landing-topbar">
           <a class="topbar-brand" routerLink="/landing" aria-label="home">
@@ -19,9 +22,6 @@ import { fa } from '../../core/i18n/fa';
           </a>
         </div>
         <div class="main-wrapper">
-          <div class="image-wrapper">
-            <img src="/assets/images/barber-reza.jpg" alt="Barber" />
-          </div>
           <div class="text-content">
             <p class="subtitle">{{ t.subtitle }}</p>
             <h1>{{ t.title1 }}<br />{{ t.title2 }}</h1>
@@ -39,23 +39,53 @@ import { fa } from '../../core/i18n/fa';
   `,
   styles: [
     `
-      :host { display: block; height: 100%; }
+      :host { display: block; height: 100%; overflow: hidden; }
       .landing-container {
-        --background: var(--ion-background-color);
-        --color: var(--ion-text-color);
+        --background: transparent;
+        --color: #fff;
         --padding-start: 0;
         --padding-end: 0;
         --padding-top: 0;
         --padding-bottom: 0;
+        --overflow: hidden;
+        position: relative;
+        background: #0b101e;
+      }
+      .landing-container::part(scroll) { overflow: hidden; }
+      .landing-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+      }
+      .landing-bg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
+      }
+      .landing-bg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(180deg, rgba(11,16,30,0.55) 0%, rgba(11,16,30,0.18) 38%, rgba(11,16,30,0.72) 100%),
+          linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.45) 100%);
       }
       .landing-shell {
+        position: relative;
+        z-index: 1;
         display: flex;
         flex-direction: column;
-        min-height: 100%;
-        min-height: 100dvh;
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
         padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
         box-sizing: border-box;
         width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
       }
       .landing-topbar {
         display: flex;
@@ -69,7 +99,8 @@ import { fa } from '../../core/i18n/fa';
         align-items: center;
         gap: 8px;
         text-decoration: none;
-        color: inherit;
+        color: #fff;
+        text-shadow: 0 1px 10px rgba(0,0,0,0.45);
       }
       .brand-icon {
         width: 32px;
@@ -81,55 +112,45 @@ import { fa } from '../../core/i18n/fa';
         justify-content: center;
         color: var(--accent-contrast);
         font-size: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
       }
-      .brand-text b { font-size: 12px; font-weight: 800; color: var(--text-primary); }
+      .brand-text b { font-size: 12px; font-weight: 800; color: #fff; }
       .main-wrapper {
         display: flex;
         flex-direction: column;
-        min-height: 0;
         flex: 1;
-        justify-content: space-between;
+        min-height: 0;
+        justify-content: flex-end;
         text-align: right;
         gap: 16px;
         box-sizing: border-box;
         overflow: hidden;
-      }
-      .image-wrapper {
-        flex: 1;
-        min-height: 180px;
-        overflow: hidden;
-        margin-bottom: 16px;
-        border-radius: 20px;
-      }
-      .image-wrapper img {
-        width: 100%;
-        height: 100%;
-        min-height: 180px;
-        object-fit: cover;
-        border-radius: 20px;
-        display: block;
+        padding-bottom: 4px;
       }
       .text-content {
-        margin-bottom: 16px;
+        flex-shrink: 0;
         overflow-wrap: break-word;
         min-width: 0;
+        text-shadow: 0 2px 18px rgba(0,0,0,0.55);
       }
       .subtitle {
-        color: var(--ion-color-primary);
+        color: var(--accent-strong);
         margin: 0;
         font-size: 14px;
+        font-weight: 700;
+        text-shadow: 0 1px 12px rgba(0,0,0,0.5);
       }
       h1 {
-        color: var(--ion-text-color);
+        color: #fff;
         font-size: clamp(26px, 7vw, 32px);
         line-height: 1.2;
         margin: 10px 0;
         overflow-wrap: break-word;
       }
       .description {
-        color: var(--ion-color-medium);
+        color: rgba(255,255,255,0.88);
         font-size: 15px;
-        line-height: 1.5;
+        line-height: 1.6;
         margin-bottom: 0;
         overflow-wrap: break-word;
       }
@@ -141,16 +162,16 @@ import { fa } from '../../core/i18n/fa';
         font-weight: bold;
         height: 50px;
         width: 100%;
+        --box-shadow: 0 8px 24px rgba(0,0,0,0.35);
       }
-      @media (max-width: 1024px) {
-        .landing-shell { max-width: 600px; margin: 0 auto; }
+      @media (min-width: 768px) {
+        .landing-shell { max-width: 480px; padding-left: 20px; padding-right: 20px; }
+        h1 { font-size: 34px; }
       }
-      @media (max-width: 768px) {
-        .landing-shell { max-width: 500px; }
-      }
-      @media (max-width: 480px) {
-        .landing-shell { padding-left: 16px; padding-right: 16px; }
-        .image-wrapper { min-height: 150px; margin-bottom: 12px; }
+      @media (max-height: 640px) {
+        .main-wrapper { gap: 12px; }
+        h1 { font-size: clamp(22px, 6vw, 28px); margin: 8px 0; }
+        .description { font-size: 13px; }
       }
     `,
   ],
