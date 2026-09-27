@@ -41,7 +41,7 @@ import { UiInputComponent, UiSelectComponent, UiButtonComponent } from '../../sh
       </div>
     </ion-content>
   `,
-  styles: [`:host { display:block; height:100%; } .alert-error { overflow-wrap:break-word; word-break:break-word; } .auth-form{ display:grid; gap:14px; }`],
+  styles: [`:host { display:block; height:100%; } .alert-error { overflow-wrap:break-word; word-break:break-word; }`],
 })
 export class RegisterPage {
   private auth = inject(AuthService);

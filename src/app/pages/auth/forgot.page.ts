@@ -31,7 +31,7 @@ import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
       </div>
     </ion-content>
   `,
-  styles: [`:host { display:block; height:100%; } .auth-form{ display:grid; gap:14px; } .token-box { overflow:hidden; } .alert-ok, .alert-error { overflow-wrap:break-word; word-break:break-word; }`],
+  styles: [`:host { display:block; height:100%; } .alert-ok, .alert-error { overflow-wrap:break-word; word-break:break-word; }`],
 })
 export class ForgotPage {
   private auth = inject(AuthService);
