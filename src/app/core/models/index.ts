@@ -211,3 +211,6 @@ export interface Setting {
   value?: string | null;
   description?: string | null;
 }
+export interface WalletBalance { balance: number; currency: string; walletId: string; userId: string; }
+export interface WalletTx { id: string; walletId: string; userId: string; type: string; status: string; amount: number; balanceAfter: number; description?: string | null; referenceId?: string | null; createdAt: string; }
+export interface WalletAdminStats { walletsCount: number; transactionsCount: number; totalInflow: number; totalOutflow: number; totalBalance: number; }

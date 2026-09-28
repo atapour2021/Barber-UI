@@ -2,7 +2,7 @@ import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline, lockClosedOutline } from 'ionicons/icons';
+import { moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline, lockClosedOutline, walletOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ApiService } from '../../core/services/api.service';
@@ -50,6 +50,12 @@ import { fa } from '../../core/i18n/fa';
 
           <a class="account-row account-link" routerLink="/tabs/profile/change-password">
             <span class="row-label"><ion-icon name="lock-closed-outline"></ion-icon> {{t.changePassword}}</span>
+            <ion-icon name="chevron-back-outline" class="row-chevron"></ion-icon>
+          </a>
+
+          <a class="account-row account-link" routerLink="/tabs/wallet">
+            <span class="row-label"><ion-icon name="wallet-outline"></ion-icon> {{walletFa.myWallet}}</span>
+            <span class="muted" style="font-size:11px">{{ walletBalanceFa() }} {{walletFa.currency}}</span>
             <ion-icon name="chevron-back-outline" class="row-chevron"></ion-icon>
           </a>
 
@@ -113,6 +119,13 @@ export class ProfilePage implements OnInit {
   c = fa.common;
   smsEnabled = signal(this.readSms());
   uploading = signal(false);
+  walletBalance = signal<number | null>(null);
+  walletBalanceFa = computed(() => {
+    const v = this.walletBalance();
+    if (v === null) return '—';
+    return this.toFaDigits(v.toLocaleString('en-US'));
+  });
+  walletFa = fa.wallet;
 
   displayName = computed(() => {
     const u = this.auth.user();
@@ -136,7 +149,7 @@ export class ProfilePage implements OnInit {
   });
 
   constructor() {
-    addIcons({ moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline, lockClosedOutline });
+    addIcons({ moonOutline, notificationsOutline, locationOutline, chevronBackOutline, cameraOutline, createOutline, lockClosedOutline, walletOutline });
   }
 
   ngOnInit() {
@@ -149,6 +162,7 @@ export class ProfilePage implements OnInit {
       },
       error: () => {},
     });
+    this.api.wallet.me().subscribe({ next: (v: any) => this.walletBalance.set(Number(v?.balance ?? 0)), error: () => {} });
   }
 
   isBarber = () => (this.auth.user()?.role ?? '').toLowerCase() === 'barber';

@@ -11,6 +11,7 @@ import { NotificationsApi } from '../api/notifications.api';
 import { UploadsApi } from '../api/uploads.api';
 import { AdminApi } from '../api/admin.api';
 import { UsersApi } from '../api/users.api';
+import { WalletApi } from '../api/wallet.api';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -26,6 +27,7 @@ export class ApiService {
   private uploadsApi = inject(UploadsApi);
   private adminApi = inject(AdminApi);
   private usersApi = inject(UsersApi);
+  private walletApi = inject(WalletApi);
 
   barbershops = {
     list: (p?: Record<string, unknown>) => this.barbershopsApi.list(p),
@@ -138,5 +140,18 @@ export class ApiService {
     uploadAvatar: (fd: FormData) => this.usersApi.uploadAvatar(fd),
     preferences: () => this.usersApi.getPreferences(),
     updatePreferences: (dto: Record<string, unknown>) => this.usersApi.updatePreferences(dto as never),
+  };
+  wallet = {
+    me: () => this.walletApi.me(),
+    transactions: (p?: Record<string, unknown>) => this.walletApi.transactions(p),
+    topup: (a: number, d?: string) => this.walletApi.topup(a, d),
+    pay: (a: number, d?: string, r?: string) => this.walletApi.pay(a, d, r),
+    withdraw: (a: number, d?: string) => this.walletApi.withdraw(a, d),
+    adminStats: () => this.walletApi.adminStats(),
+    adminWallets: (p?: Record<string, unknown>) => this.walletApi.adminWallets(p),
+    adminWallet: (id: string) => this.walletApi.adminWallet(id),
+    adminTransactions: (p?: Record<string, unknown>) => this.walletApi.adminTransactions(p),
+    adminTopup: (uid: string, a: number, d?: string) => this.walletApi.adminTopup(uid, a, d),
+    adminAdjust: (uid: string, a: number, d?: string) => this.walletApi.adminAdjust(uid, a, d),
   };
 }

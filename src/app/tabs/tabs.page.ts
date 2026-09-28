@@ -29,7 +29,7 @@ export class TabsPage {
   showBack = false;
   private viewRole = inject(ViewRoleService);
   activeView = this.viewRole.activeView;
-  private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/tabs/training']);
+  private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/tabs/training','/tabs/wallet']);
   constructor() {
     addIcons({ home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline });
     this.api.notifications.unread().subscribe({

@@ -105,7 +105,7 @@ export class AppLayoutComponent {
   showBack = false;
   private viewRole = inject(ViewRoleService);
   activeView = this.viewRole.activeView;
-  private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/barbershops','/barbers','/services','/appointments','/notifications','/profile','/admin','/training']);
+  private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/tabs/wallet','/barbershops','/barbers','/services','/appointments','/notifications','/profile','/admin','/training','/wallet']);
 
   constructor() {
     addIcons({ homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, notificationsOutline, chevronForwardOutline, menuOutline });

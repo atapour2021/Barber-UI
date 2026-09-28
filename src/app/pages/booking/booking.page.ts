@@ -52,6 +52,11 @@ const DEFAULT_START = '10:00'; const DEFAULT_END = '21:00'; const DEFAULT_BREAK_
               <div class="detail-row"><span class="detail-val">{{ reserveDuration() }} {{ fa.servicesList.minute }}</span><span class="detail-label">{{ fa.services.duration }}</span></div>
               <div class="detail-row total-row"><span class="detail-val price">{{ formatPrice(reservePrice()) }} {{ fa.servicesList.currency }}</span><span class="detail-label">{{ fa.services.price }}</span></div>
             </div>
+            <div class="dark-card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px">
+              <label style="display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer"><input type="checkbox" [(ngModel)]="payWithWallet" /> {{ fa.wallet.payWithWallet }}</label>
+              <small class="muted" style="font-size:11px">{{ walletBalanceFa() }} {{ fa.wallet.currency }}</small>
+            </div>
+            @if (payWithWallet && walletBalance() !== null && reservePrice() > walletBalance()!) { <div class="alert-error" style="text-align:center">{{ fa.wallet.insufficient }} — <a routerLink="/tabs/wallet" style="color:inherit;text-decoration:underline">{{ fa.wallet.topup }}</a></div> }
             <div class="note-section"><label class="note-label">{{ tb.noteLabel }}</label><textarea class="note-input" [(ngModel)]="note" [placeholder]="tb.optional" rows="2"></textarea></div>
             @if (reserveError()) { <div class="alert-error" style="text-align:center">{{ reserveError() }}</div> }
             @if (reserveOk()) { <div class="alert-ok" style="text-align:center">{{ reserveOk() }}</div> }
@@ -299,6 +304,13 @@ export class BookingPage implements OnInit {
   reserveDateIso = signal(new Date().toISOString().slice(0, 10));
   reserveTimeStart = signal('14:30');
   reserveDateLabel = signal('شنبه، ۲۹ شهریور');
+  payWithWallet = false;
+  walletBalance = signal<number | null>(null);
+  walletBalanceFa = computed(() => {
+    const v = this.walletBalance();
+    if (v === null) return '—';
+    return v.toLocaleString('fa-IR');
+  });
   slotChecking = signal(false);
   slotUnavailableReason = signal('');
   reserveTimeLabel = computed(() => this.reserveTimeStart());
@@ -310,6 +322,7 @@ export class BookingPage implements OnInit {
   reserveDuration = computed(() => this.reserveService()?.duration ?? 45);
 
   ngOnInit() {
+    this.api.wallet.me().subscribe({ next: (v: any) => this.walletBalance.set(Number(v?.balance ?? 0)), error: () => {} });
     const qp = this.route.snapshot.queryParamMap;
     const hasReserve = !!(qp.get('barberId') || qp.get('serviceId') || qp.get('startTime') || qp.get('time'));
     if (hasReserve) {
@@ -527,17 +540,28 @@ export class BookingPage implements OnInit {
     const serviceId = this.reserveService()?.id ?? this.route.snapshot.queryParamMap.get('serviceId') ?? '';
     if (!barberId || !serviceId) { this.reserveError.set(fa.toast.barberOrServiceRequired); this.toast.warning(fa.toast.barberOrServiceRequired); return; }
     if (this.slotUnavailableReason()) { this.reserveError.set(this.slotUnavailableReason()); this.toast.warning(this.slotUnavailableReason()); return; }
+    if (this.payWithWallet && this.walletBalance() !== null && this.reservePrice() > this.walletBalance()!) { this.reserveError.set(fa.wallet.insufficient); this.toast.warning(fa.wallet.insufficient); return; }
     const date = this.reserveDateIso(); const t = this.reserveTimeStart(); const end = this.calcEnd(t, this.reserveDuration());
     const startTime = `${date}T${t}:00.000Z`; const endTime = `${date}T${end}:00.000Z`;
     this.confirming.set(true);
-    this.api.appointments.create({ barberId, serviceId, date, startTime, endTime, notes: this.note || undefined }).subscribe({
-      next: () => { this.confirming.set(false); this.reserveOk.set(fa.toast.reserveSuccess); this.toast.success(fa.toast.reserveSuccess); setTimeout(() => { this.isReserveMode.set(false); this.router.navigateByUrl('/tabs/booking'); this.load(); }, 700); },
-      error: (err) => {
-        this.confirming.set(false);
-        const raw = (err?.error as { message?: string | string[] })?.message;
-        const msg = Array.isArray(raw) ? raw.join('، ') : (raw ?? fa.toast.reserveFailed);
-        this.reserveError.set(msg); this.toast.error(msg);
-      },
+    const doPay = () => {
+      if (!this.payWithWallet) return Promise.resolve();
+      return new Promise<void>((resolve, reject) => this.api.wallet.pay(this.reservePrice(), fa.wallet.useForBooking).subscribe({ next: () => { this.walletBalance.set((this.walletBalance() ?? 0) - this.reservePrice()); resolve(); }, error: (e: any) => reject(e) }));
+    };
+    doPay().then(() => {
+      this.api.appointments.create({ barberId, serviceId, date, startTime, endTime, notes: this.note || undefined }).subscribe({
+        next: () => { this.confirming.set(false); this.reserveOk.set(fa.toast.reserveSuccess); this.toast.success(fa.toast.reserveSuccess); setTimeout(() => { this.isReserveMode.set(false); this.router.navigateByUrl('/tabs/booking'); this.load(); }, 700); },
+        error: (err) => {
+          this.confirming.set(false);
+          const raw = (err?.error as { message?: string | string[] })?.message;
+          const msg = Array.isArray(raw) ? raw.join('، ') : (raw ?? fa.toast.reserveFailed);
+          this.reserveError.set(msg); this.toast.error(msg);
+        },
+      });
+    }).catch((e: any) => {
+      this.confirming.set(false);
+      const m = (e?.error as { message?: string })?.message ?? fa.wallet.insufficient;
+      this.reserveError.set(m); this.toast.error(m.includes('Insufficient') ? fa.wallet.insufficient : m);
     });
   }
   exitReserve() { this.router.navigateByUrl('/tabs/booking'); this.isReserveMode.set(false); this.load(); }

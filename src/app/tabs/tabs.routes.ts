@@ -92,6 +92,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'wallet',
+        loadComponent: () =>
+          import('../pages/wallet/wallet.page').then((m) => m.WalletPage),
+        canActivate: [authGuard],
+      },
+      {
         path: 'training',
         loadComponent: () =>
           import('../pages/training/training.page').then((m) => m.TrainingPage),
