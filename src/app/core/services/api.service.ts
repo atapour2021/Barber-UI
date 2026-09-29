@@ -12,6 +12,7 @@ import { UploadsApi } from '../api/uploads.api';
 import { AdminApi } from '../api/admin.api';
 import { UsersApi } from '../api/users.api';
 import { WalletApi } from '../api/wallet.api';
+import { AiApi } from '../api/ai.api';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -28,6 +29,7 @@ export class ApiService {
   private adminApi = inject(AdminApi);
   private usersApi = inject(UsersApi);
   private walletApi = inject(WalletApi);
+  private aiApi = inject(AiApi);
 
   barbershops = {
     list: (p?: Record<string, unknown>) => this.barbershopsApi.list(p),
@@ -153,5 +155,9 @@ export class ApiService {
     adminTransactions: (p?: Record<string, unknown>) => this.walletApi.adminTransactions(p),
     adminTopup: (uid: string, a: number, d?: string) => this.walletApi.adminTopup(uid, a, d),
     adminAdjust: (uid: string, a: number, d?: string) => this.walletApi.adminAdjust(uid, a, d),
+  };
+  ai = {
+    recommend: (fd: FormData) => this.aiApi.recommend(fd),
+    preview: (fd: FormData) => this.aiApi.preview(fd),
   };
 }

@@ -3,7 +3,7 @@ import { Location } from '@angular/common';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline } from 'ionicons/icons';
+import { home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline, sparklesOutline } from 'ionicons/icons';
 import { fa } from '../core/i18n/fa';
 import { AuthService } from '../core/services/auth.service';
 import { ThemeService } from '../core/services/theme.service';
@@ -31,7 +31,7 @@ export class TabsPage {
   activeView = this.viewRole.activeView;
   private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/tabs/training','/tabs/wallet']);
   constructor() {
-    addIcons({ home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline });
+    addIcons({ home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline, sparklesOutline });
     this.api.notifications.unread().subscribe({
       next: (v) => {
         const n = typeof v === 'number' ? v : ((v as { count: number }).count ?? 0);

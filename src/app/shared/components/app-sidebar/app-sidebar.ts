@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline } from 'ionicons/icons';
+import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline, sparklesOutline } from 'ionicons/icons';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ThemeToggleComponent } from '../theme-toggle.component';
 
@@ -70,6 +70,7 @@ export class AppSidebarComponent {
   viewChange = output<'admin' | 'barber' | 'customer'>();
   logoutClicked = output<void>();
   private menu = [
+    { route: '/tabs/ai-advisor', icon: 'sparkles-outline', label: 'مشاور هوشمند استایل', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/tabs/wallet', icon: 'wallet-outline', label: 'کیف پول', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/barbershops', icon: 'location-outline', label: 'موقعیت آرایشگاه', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/barbers', icon: 'play-outline', label: 'ویدیوهای آموزشی', roles: ['admin', 'barber', 'customer'] as const },
@@ -78,6 +79,6 @@ export class AppSidebarComponent {
   ];
   visibleItems = computed(() => this.menu.filter(m => (m.roles as readonly string[]).includes(this.activeView())));
   constructor() {
-    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline });
+    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline, sparklesOutline });
   }
 }

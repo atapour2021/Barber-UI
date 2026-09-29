@@ -106,6 +106,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'ai-advisor',
+        loadComponent: () =>
+          import('./pages/ai-advisor/ai-advisor.page').then((m) => m.AiAdvisorPage),
+        canActivate: [authGuard],
+      },
+      {
         path: 'training',
         loadComponent: () =>
           import('./pages/training/training.page').then((m) => m.TrainingPage),

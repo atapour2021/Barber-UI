@@ -291,3 +291,13 @@ npm test           # ng test (vitest, tsconfig.spec.json)
 
 - 2026-09-24 — Initial `AI.md` from codebase scan (Angular 22 + Ionic 9, RTL Vazirmatn, signals, ViewRole, Theme, booking reserve flow, Leaflet).
 
+
+---
+
+## 15. AI Hair Style Advisor (new)
+
+Provider: HeuristicProvider default (free, offline, no key, deterministic hash -> face shapes + scored POOL). Optional OpenAiCompatibleProvider env-gated (AI_API_URL + AI_API_KEY|OPENAI_API_KEY, AI_MODEL, AI_TIMEOUT_MS), fallback to heuristic. Isolated behind AiProvider interface + AI_PROVIDER token.
+
+Backend POST /ai/hair-style/recommend (auth, memoryStorage, 5MB, image/*) -> {analysis{faceShape,faceShapeConfidence,hairCharacteristics,detectedFeatures,confidence}, recommendations[3-5]{id,title,titleFa,category,length,description,descriptionFa,reason,reasonFa,stylingTipsFa,confidence,suitableFaceShapes,maintenance,tags}, matchedServices, meta{provider,model}}. No persistence, in-memory only.
+
+Frontend src/app/pages/ai-advisor/ai-advisor.page.ts (signals, dual file+camera inputs, preview, skeleton, error, Persian rec cards + matched services -> /tabs/booking?serviceId=). API src/app/core/api/ai.api.ts + ApiService.ai. i18n fa.aiAdvisor. Routes App + Tabs ai-advisor [authGuard]. Sidebar + Home sparkles CTA. Privacy banner. Tests ai-advisor.page.spec.ts. See barber-app AI.md section 23 for full backend detail.
