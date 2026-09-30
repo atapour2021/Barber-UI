@@ -48,11 +48,20 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
           }
         </div>
 
-        @if (previewUrl()) {
+        @if (displayUrl()) {
           <div class="preview-card">
-            <img [src]="previewUrl()!" alt="preview" />
-            <span class="preview-badge"><ion-icon name="image-outline"></ion-icon> {{ t.original }}</span>
+            <img [src]="displayUrl()!" alt="preview" (error)="onImgError($event)" />
+            <span class="preview-badge"><ion-icon name="image-outline"></ion-icon> {{ generatedPreview() ? t.previewResult : t.original }}</span>
+            @if (generatedPreview() && displayUrl() !== previewUrl()) {
+              <span class="preview-badge gen-badge"><ion-icon name="sparkles-outline"></ion-icon> {{ t.previewResult }}</span>
+            }
           </div>
+          @if (generatedPreview()) {
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+              <app-ui-button size="small" [fill]="displayUrl() === previewUrl() ? 'solid' : 'outline'" (pressed)="showOriginal()">{{ t.original }}</app-ui-button>
+              <app-ui-button size="small" [fill]="displayUrl() === generatedPreview() ? 'solid' : 'outline'" (pressed)="showGenerated()">{{ t.previewResult }}</app-ui-button>
+            </div>
+          }
         } @else {
           <div class="empty-preview">
             <ion-icon name="images-outline"></ion-icon>
@@ -108,14 +117,14 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
                   </div>
                   <p class="muted" style="margin:8px 0 0">{{ rec.descriptionFa || rec.description }}</p>
                   <div class="rec-reason"><b>{{ t.reason }}:</b> {{ rec.reasonFa || rec.reason }}</div>
-                  @if (rec.stylingTipsFa?.length || rec.stylingTips?.length) {
-                    <div class="rec-tips"><b>{{ t.stylingTips }}:</b> {{ (rec.stylingTipsFa?.length ? rec.stylingTipsFa : rec.stylingTips).join(' · ') }}</div>
+                  @if (rec.stylingTipsFa.length || rec.stylingTips.length) {
+                    <div class="rec-tips"><b>{{ t.stylingTips }}:</b> {{ (rec.stylingTipsFa.length ? rec.stylingTipsFa : rec.stylingTips).join(' · ') }}</div>
                   }
 
                   <div class="preview-compare">
                     <div class="preview-col">
                       <span class="preview-label">{{ t.original }}</span>
-                      <img class="preview-img" [src]="previewUrl()!" alt="original" (error)="onImgError($event)" />
+                      <img class="preview-img" [src]="previewUrl()!" alt="original" (error)="onImgError($event)" (click)="showOriginal()" style="cursor:pointer" />
                     </div>
                     <div class="preview-col">
                       <span class="preview-label"><ion-icon name="eye-outline" style="margin-inline-end:4px"></ion-icon>{{ t.previewResult }}</span>
@@ -131,7 +140,8 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
                           <app-ui-button size="small" fill="outline" (pressed)="retryPreview(rec)">{{ t.previewRetry }}</app-ui-button>
                         </div>
                       } @else if (previewMap()[rec.id]) {
-                        <img class="preview-img" [src]="previewMap()[rec.id]!" alt="preview hairstyle" (error)="onImgError($event)" />
+                        <img class="preview-img selectable" [class.selected]="generatedPreview() === previewMap()[rec.id]" [src]="previewMap()[rec.id]!" alt="preview hairstyle" (error)="onImgError($event)" (click)="selectPreview(rec.id)" style="cursor:pointer" />
+                        <app-ui-button size="small" fill="outline" (pressed)="selectPreview(rec.id)">{{ t.previewResult }}</app-ui-button>
                       } @else {
                         <div class="preview-placeholder">
                           <ion-icon name="sparkles-outline"></ion-icon>
@@ -152,7 +162,7 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
 
           <div class="section">
             <div class="section-head"><h3>{{ t.matchedServices }}</h3></div>
-            @if (r.matchedServices?.length) {
+            @if (r.matchedServices.length) {
               <div class="svc-mini-grid">
                 @for (s of r.matchedServices; track s.id) {
                   <a class="svc-mini-card" routerLink="/tabs/booking" [queryParams]="{ serviceId: s.id }">
@@ -186,6 +196,7 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
     .preview-card { background: var(--card-bg); border:1px solid var(--card-border); border-radius:12px; overflow:hidden; padding:0; position:relative; }
     .preview-card img { width:100%; max-height:360px; object-fit:contain; display:block; background:#0b101e; }
     .preview-badge { position:absolute; top:10px; right:10px; background: rgba(0,0,0,0.62); color:#fff; font-size:10px; font-weight:700; padding:4px 8px; border-radius:999px; display:inline-flex; align-items:center; gap:4px; }
+    .gen-badge { top:auto; bottom:10px; background: rgba(245,158,11,0.9); color:#0b101e; }
     .empty-preview { background: var(--card-bg); border:1px dashed var(--card-border-2); border-radius:12px; padding:28px; text-align:center; color:var(--text-muted); }
     .empty-preview ion-icon { font-size:28px; }
     .empty-preview p { margin:8px 0 0; font-size:12px; }
@@ -208,6 +219,7 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
     .preview-col { display:flex; flex-direction:column; gap:6px; }
     .preview-label { font-size:10px; font-weight:700; color:var(--text-secondary); text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:4px; }
     .preview-img { width:100%; aspect-ratio: 3 / 4; object-fit:cover; border-radius:10px; background:#0b101e; border:1px solid var(--card-border); display:block; }
+    .preview-img.selectable.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(245,158,11,0.3); }
     .preview-placeholder { width:100%; aspect-ratio: 3 / 4; border-radius:10px; background: var(--card-bg-2); border:1px dashed var(--card-border-2); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted); font-size:11px; text-align:center; padding:10px; min-height:160px; }
     .pill-link { display:inline-flex; align-items:center; gap:6px; background: var(--accent); color: var(--accent-contrast); border-radius:10px; padding:8px 12px; font-size:12px; font-weight:700; text-decoration:none; }
     .pill-link.ghost { background: transparent; border:1px solid var(--card-border-2); color:var(--text-primary); }
@@ -228,6 +240,8 @@ export class AiAdvisorPage {
   t = fa.aiAdvisor;
   file = signal<File | null>(null);
   previewUrl = signal<string | null>(null);
+  generatedPreview = signal<string | null>(null);
+  displayUrl = signal<string | null>(null);
   loading = signal(false);
   errorMsg = signal('');
   result = signal<AiAdvisorResponse | null>(null);
@@ -262,13 +276,21 @@ export class AiAdvisorPage {
     const url = URL.createObjectURL(f);
     const prev = this.previewUrl();
     if (prev) URL.revokeObjectURL(prev);
+    const gen = this.generatedPreview();
+    if (gen && gen.startsWith('blob:')) URL.revokeObjectURL(gen);
     this.previewUrl.set(url);
+    this.generatedPreview.set(null);
+    this.displayUrl.set(url);
   }
 
   clear() {
     const prev = this.previewUrl();
     if (prev) URL.revokeObjectURL(prev);
+    const gen = this.generatedPreview();
+    if (gen && gen.startsWith('blob:')) URL.revokeObjectURL(gen);
     this.previewUrl.set(null);
+    this.generatedPreview.set(null);
+    this.displayUrl.set(null);
     this.file.set(null);
     this.errorMsg.set('');
     this.result.set(null);
@@ -292,6 +314,8 @@ export class AiAdvisorPage {
     this.errorMsg.set('');
     this.result.set(null);
     this.resetPreviews();
+    this.generatedPreview.set(null);
+    this.displayUrl.set(this.previewUrl());
     const fd = new FormData();
     fd.append('image', f, f.name);
     this.api.ai.recommend(fd).subscribe({
@@ -316,7 +340,7 @@ export class AiAdvisorPage {
     for (const rec of recs) this.runPreview(rec, src);
   }
 
-  private async runPreview(rec: { id: string; category?: string; length?: string; title?: string }, src: File) {
+  private async runPreview(rec: { id: string; category?: string; length?: string; title?: string; titleFa?: string }, src: File) {
     const id = rec.id;
     this.previewLoading.update((m) => ({ ...m, [id]: true }));
     this.previewError.update((m) => {
@@ -326,7 +350,12 @@ export class AiAdvisorPage {
     });
     try {
       const url = await this.previewSvc.render(src, rec);
-      this.previewMap.update((m) => ({ ...m, [id]: url }));
+      const normalized = this.normalizePreviewUrl(url);
+      this.previewMap.update((m) => ({ ...m, [id]: normalized }));
+      if (!this.generatedPreview()) {
+        this.generatedPreview.set(normalized);
+        this.displayUrl.set(normalized);
+      }
     } catch {
       this.previewError.update((m) => ({ ...m, [id]: this.t.previewFailed }));
     } finally {
@@ -334,7 +363,31 @@ export class AiAdvisorPage {
     }
   }
 
-  retryPreview(rec: { id: string; category?: string; length?: string; title?: string }) {
+  private normalizePreviewUrl(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
+    if (/^[A-Za-z0-9+/=\n\r]+$/.test(url.slice(0, 80)) && url.length > 80) return `data:image/png;base64,${url.replace(/\s/g, '')}`;
+    return url;
+  }
+
+  selectPreview(id: string) {
+    const url = this.previewMap()[id];
+    if (url) {
+      this.generatedPreview.set(url);
+      this.displayUrl.set(url);
+    }
+  }
+
+  showOriginal() {
+    this.displayUrl.set(this.previewUrl());
+  }
+
+  showGenerated() {
+    const g = this.generatedPreview();
+    if (g) this.displayUrl.set(g);
+  }
+
+  retryPreview(rec: { id: string; category?: string; length?: string; title?: string; titleFa?: string }) {
     const src = this.file();
     if (!src) return;
     this.previewMap.update((m) => {

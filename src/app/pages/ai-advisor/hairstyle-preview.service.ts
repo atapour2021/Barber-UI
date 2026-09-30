@@ -35,12 +35,19 @@ export class HairstylePreviewService {
       previewImage?: string | null;
       url?: string;
       note?: string;
+      mime?: string;
     };
     const img = res?.previewImage;
-    if (img && typeof img === 'string' && img.startsWith('data:')) return img;
-    if (img && typeof img === 'string' && img.startsWith('http')) return img;
-    if (res?.url) return res.url;
-    if (img) return img;
+    if (typeof img === 'string' && img.length > 10) {
+      if (img.startsWith('data:')) return img;
+      if (img.startsWith('http://') || img.startsWith('https://')) return img;
+      if (/^[A-Za-z0-9+/=]+$/.test(img.slice(0, 80)) && img.length > 100) {
+        const mime = res?.mime || 'image/png';
+        return `data:${mime};base64,${img}`;
+      }
+      return img;
+    }
+    if (res?.url && typeof res.url === 'string') return res.url;
     throw new Error(res?.note || 'preview unavailable');
   }
 }
