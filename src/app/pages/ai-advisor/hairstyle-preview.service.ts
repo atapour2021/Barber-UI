@@ -19,6 +19,42 @@ export function hashStr(s: string): number {
   return Math.abs(h);
 }
 
+export function dataUrlToSvgString(dataUrl: string): string {
+  if (!dataUrl) return '';
+  if (dataUrl.startsWith('data:image/svg+xml')) {
+    const comma = dataUrl.indexOf(',');
+    const payload = dataUrl.slice(comma + 1);
+    const isB64 = dataUrl.slice(0, comma).includes('base64');
+    try {
+      return isB64 ? atob(payload) : decodeURIComponent(payload);
+    } catch {
+      return payload;
+    }
+  }
+  const esc = dataUrl.replace(/"/g, '&quot;');
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="800" viewBox="0 0 600 800"><image href="${esc}" xlink:href="${esc}" x="0" y="0" width="600" height="800" preserveAspectRatio="xMidYMid meet"/></svg>`;
+}
+
+export function downloadSvgString(svg: string, filename: string) {
+  const name = filename.endsWith('.svg') ? filename : `${filename}.svg`;
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    a.remove();
+  }, 1000);
+}
+
+export function downloadDataUrlAsSvg(dataUrl: string, filename: string) {
+  if (!dataUrl) return;
+  downloadSvgString(dataUrlToSvgString(dataUrl), filename);
+}
+
 @Injectable({ providedIn: 'root' })
 export class HairstylePreviewService {
   private api = inject(ApiService);

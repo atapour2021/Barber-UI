@@ -23,7 +23,12 @@ import { UiButtonComponent } from '../../shared/ui/ui';
 import { fa } from '../../core/i18n/fa';
 import { extractMessage } from '../../core/utils/error';
 import { AiAdvisorResponse } from '../../core/api/ai.api';
-import { HairstylePreviewService } from './hairstyle-preview.service';
+import {
+  HairstylePreviewService,
+  dataUrlToSvgString,
+  downloadDataUrlAsSvg,
+  downloadSvgString,
+} from './hairstyle-preview.service';
 
 @Component({
   selector: 'app-ai-advisor',
@@ -57,9 +62,10 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
             }
           </div>
           @if (generatedPreview()) {
-            <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap">
               <app-ui-button size="small" [fill]="displayUrl() === previewUrl() ? 'solid' : 'outline'" (pressed)="showOriginal()">{{ t.original }}</app-ui-button>
               <app-ui-button size="small" [fill]="displayUrl() === generatedPreview() ? 'solid' : 'outline'" (pressed)="showGenerated()">{{ t.previewResult }}</app-ui-button>
+              <app-ui-button size="small" fill="outline" (pressed)="downloadSvg()">{{ t.downloadSvg }}</app-ui-button>
             </div>
           }
         } @else {
@@ -151,9 +157,10 @@ import { HairstylePreviewService } from './hairstyle-preview.service';
                     </div>
                   </div>
 
-                  <div style="display:flex;gap:8px;margin-top:10px">
+                  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
                     <a class="pill-link" routerLink="/tabs/booking">{{ t.bookWithStyle }}</a>
                     <a class="pill-link ghost" routerLink="/tabs/services">{{ t.viewServices }}</a>
+                    <button type="button" class="pill-link ghost" (click)="downloadPreviewSvg(rec.id)">{{ t.downloadSvg }}</button>
                   </div>
                 </div>
               }
@@ -342,6 +349,7 @@ export class AiAdvisorPage {
 
   private async runPreview(rec: { id: string; category?: string; length?: string; title?: string; titleFa?: string }, src: File) {
     const id = rec.id;
+    const isFirst = !this.generatedPreview();
     this.previewLoading.update((m) => ({ ...m, [id]: true }));
     this.previewError.update((m) => {
       const n = { ...m };
@@ -352,9 +360,13 @@ export class AiAdvisorPage {
       const url = await this.previewSvc.render(src, rec);
       const normalized = this.normalizePreviewUrl(url);
       this.previewMap.update((m) => ({ ...m, [id]: normalized }));
-      if (!this.generatedPreview()) {
+      if (isFirst) {
         this.generatedPreview.set(normalized);
         this.displayUrl.set(normalized);
+        try {
+          downloadDataUrlAsSvg(normalized, `ai-hairstyle-${id}.svg`);
+          this.toast.success(this.t.downloadSuccess);
+        } catch {}
       }
     } catch {
       this.previewError.update((m) => ({ ...m, [id]: this.t.previewFailed }));
@@ -396,6 +408,28 @@ export class AiAdvisorPage {
       return n;
     });
     this.runPreview(rec, src);
+  }
+
+  downloadSvg() {
+    const g = this.generatedPreview() || this.displayUrl();
+    if (!g) return;
+    try {
+      downloadDataUrlAsSvg(g, 'ai-hairstyle.svg');
+      this.toast.success(this.t.downloadSuccess);
+    } catch {
+      this.toast.warning(this.t.previewFailed);
+    }
+  }
+
+  downloadPreviewSvg(id: string) {
+    const url = this.previewMap()[id] || this.generatedPreview();
+    if (!url) return;
+    try {
+      downloadDataUrlAsSvg(url, `ai-hairstyle-${id}.svg`);
+      this.toast.success(this.t.downloadSuccess);
+    } catch {
+      this.toast.warning(this.t.previewFailed);
+    }
   }
 
   onImgError(e: Event) {

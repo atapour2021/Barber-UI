@@ -587,6 +587,10 @@ export const fa = {
     previewFailed: 'ساخت پیش‌نمایش ممکن نشد',
     previewRetry: 'تلاش دوباره',
     compareHint: 'مقایسه اصلی و پیش‌نمایش',
+    downloadSvg: 'دانلود SVG',
+    downloadSvgHint: 'ذخیره نتیجه به صورت فایل SVG',
+    downloading: 'در حال دانلود...',
+    downloadSuccess: 'فایل SVG دانلود شد',
   },
   wallet: {
     title: 'کیف پول',
