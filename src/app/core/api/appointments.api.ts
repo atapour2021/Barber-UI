@@ -16,6 +16,26 @@ export class AppointmentsApi {
     );
   }
 
+  smartSuggestions(params: Record<string, string>) {
+    return this.http.get<{
+      from: string;
+      to: string;
+      count: number;
+      suggestions: Array<{
+        barberId: string;
+        barberName: string;
+        serviceId: string;
+        serviceName: string;
+        price: number;
+        duration: number;
+        date: string;
+        time: string;
+        startTime: string;
+        endTime: string;
+      }>;
+    }>(`${this.b}/appointments/smart-suggestions`, { params: toParams(params) });
+  }
+
   list(params?: Record<string, unknown>) {
     return this.http.get<Appointment[]>(`${this.b}/appointments`, { params: toParams(params) });
   }

@@ -98,6 +98,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'smart-booking',
+        loadComponent: () =>
+          import('../pages/smart-booking/smart-booking.page').then((m) => m.SmartBookingPage),
+        canActivate: [authGuard],
+      },
+      {
         path: 'ai-advisor',
         loadComponent: () =>
           import('../pages/ai-advisor/ai-advisor.page').then((m) => m.AiAdvisorPage),

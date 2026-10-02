@@ -70,6 +70,7 @@ export class AppSidebarComponent {
   viewChange = output<'admin' | 'barber' | 'customer'>();
   logoutClicked = output<void>();
   private menu = [
+    { route: '/tabs/smart-booking', icon: 'sparkles-outline', label: 'رزرو هوشمند', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/tabs/ai-advisor', icon: 'sparkles-outline', label: 'مشاور هوشمند استایل', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/tabs/wallet', icon: 'wallet-outline', label: 'کیف پول', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/barbershops', icon: 'location-outline', label: 'موقعیت آرایشگاه', roles: ['admin', 'barber', 'customer'] as const },

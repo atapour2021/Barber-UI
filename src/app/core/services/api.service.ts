@@ -58,6 +58,7 @@ export class ApiService {
   };
   appointments = {
     slots: (p: Record<string, string>) => this.appointmentsApi.availableSlots(p),
+    smartSuggestions: (p: Record<string, string>) => this.appointmentsApi.smartSuggestions(p),
     list: (p?: Record<string, unknown>) => this.appointmentsApi.list(p),
     get: (id: string) => this.appointmentsApi.get(id),
     create: (d: Record<string, unknown>) => this.appointmentsApi.create(d),
