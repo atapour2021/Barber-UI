@@ -13,6 +13,7 @@ import { AdminApi } from '../api/admin.api';
 import { UsersApi } from '../api/users.api';
 import { WalletApi } from '../api/wallet.api';
 import { AiApi } from '../api/ai.api';
+import { ChatbotApi } from '../api/chatbot.api';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -30,6 +31,7 @@ export class ApiService {
   private usersApi = inject(UsersApi);
   private walletApi = inject(WalletApi);
   private aiApi = inject(AiApi);
+  private chatbotApi = inject(ChatbotApi);
 
   barbershops = {
     list: (p?: Record<string, unknown>) => this.barbershopsApi.list(p),
@@ -160,5 +162,9 @@ export class ApiService {
   ai = {
     recommend: (fd: FormData) => this.aiApi.recommend(fd),
     preview: (fd: FormData) => this.aiApi.preview(fd),
+  };
+  chatbot = {
+    ask: (m: string, r: string) => this.chatbotApi.ask(m, r),
+    faqs: (r: string) => this.chatbotApi.faqs(r),
   };
 }
