@@ -9,6 +9,7 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 @import "@ionic/angular/css/palettes/dark.class.css";
+@import url("https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-FD-font-face.css");
 
 html {
   direction: rtl;
@@ -17,10 +18,10 @@ html[dir="rtl"] {
   direction: rtl;
 }
 * {
-  font-family: "Vazirmatn", sans-serif;
+  font-family: "Vazirmatn FD", "Vazirmatn", sans-serif;
 }
 :root {
-  --ion-font-family: "Vazirmatn", sans-serif;
+  --ion-font-family: "Vazirmatn FD", "Vazirmatn", sans-serif;
   --radius-xl: 20px;
   --radius-lg: 16px;
   --radius-md: 12px;
@@ -96,8 +97,17 @@ ion-app {
   height: 100%;
   min-height: 100dvh;
 }
+body,
+ion-input,
+ion-textarea,
+ion-select,
+input,
+textarea,
+select,
+button {
+  font-family: "Vazirmatn FD", "Vazirmatn", sans-serif;
+}
 body {
-  font-family: "Vazirmatn", sans-serif;
   -webkit-font-smoothing: antialiased;
   background: var(--app-bg);
   color: var(--text-primary);
