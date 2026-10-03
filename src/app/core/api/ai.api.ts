@@ -54,6 +54,21 @@ export interface CustomerProfileResponse {
   recentAppointments: Array<{ date: string; serviceName: string; barberName: string; status: string }>;
 }
 
+export interface SmartReminderResponse {
+  predictedDate: string | null;
+  predictedDaysFromNow: number | null;
+  frequencyLabelFa: string;
+  confidence: number;
+  message: string;
+  messageFa: string;
+  insightsFa: string[];
+  suggestedServices: Array<{ serviceId?: string; title: string; titleFa: string; reasonFa: string; confidence: number }>;
+  meta: { provider: string; model: string };
+  customer: { id: string; name: string; family: string; username: string };
+  stats: { totalAppointments: number; completed: number; cancelled: number; noShow: number; pending: number; confirmed: number; lastVisitAt: string | null; firstVisitAt: string | null; avgDaysBetween: number | null; favoriteServiceNames: string[]; favoriteBarberName: string | null; preferredDayOfWeek: string | null; totalServices: number; daysSinceLastVisit: number | null };
+  recentAppointments: Array<{ date: string; serviceName: string; barberName: string; status: string }>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AiApi {
   private http = inject(HttpClient);
@@ -69,5 +84,17 @@ export class AiApi {
   }
   customerProfile(customerId: string) {
     return this.http.get<CustomerProfileResponse>(`${this.b}/ai/customer-profile/${customerId}`);
+  }
+  smartReminderMe() {
+    return this.http.get<SmartReminderResponse>(`${this.b}/ai/smart-reminder/me`);
+  }
+  smartReminderCustomer(customerId: string) {
+    return this.http.get<SmartReminderResponse>(`${this.b}/ai/smart-reminder/customer/${customerId}`);
+  }
+  sendSmartReminderMe() {
+    return this.http.post<{ reminder: SmartReminderResponse; notification: unknown }>(`${this.b}/ai/smart-reminder/me/send`, {});
+  }
+  sendSmartReminderCustomer(customerId: string) {
+    return this.http.post<{ reminder: SmartReminderResponse; notification: unknown }>(`${this.b}/ai/smart-reminder/customer/${customerId}/send`, {});
   }
 }

@@ -164,6 +164,10 @@ export class ApiService {
     preview: (fd: FormData) => this.aiApi.preview(fd),
     serviceRecommendations: (body: Record<string, unknown>) => this.aiApi.serviceRecommendations(body as never),
     customerProfile: (customerId: string) => this.aiApi.customerProfile(customerId),
+    smartReminderMe: () => this.aiApi.smartReminderMe(),
+    smartReminderCustomer: (id: string) => this.aiApi.smartReminderCustomer(id),
+    sendSmartReminderMe: () => this.aiApi.sendSmartReminderMe(),
+    sendSmartReminderCustomer: (id: string) => this.aiApi.sendSmartReminderCustomer(id),
   };
   chatbot = {
     ask: (m: string, r?: string, h?: Array<{ role: string; text: string }>) => this.chatbotApi.ask(m, r, h as never),

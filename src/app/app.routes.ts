@@ -118,6 +118,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'smart-reminder',
+        loadComponent: () =>
+          import('./pages/smart-reminder/smart-reminder.page').then((m) => m.SmartReminderPage),
+        canActivate: [authGuard],
+      },
+      {
         path: 'training',
         loadComponent: () =>
           import('./pages/training/training.page').then((m) => m.TrainingPage),

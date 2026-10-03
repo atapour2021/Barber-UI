@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonSpinner, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline, cutOutline, mailOutline, personOutline, appsOutline, sparklesOutline } from 'ionicons/icons';
+import { peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline, cutOutline, mailOutline, personOutline, appsOutline, sparklesOutline, notificationsOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
@@ -157,6 +157,11 @@ import { fa } from '../../core/i18n/fa';
           <a class="cta-orange" routerLink="/tabs/ai-advisor" style="background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%); margin-top:2px">
             <ion-icon name="sparkles-outline"></ion-icon>
             {{ fa.aiAdvisor.title }}
+            <ion-icon name="arrow-back-outline" class="cta-arrow"></ion-icon>
+          </a>
+          <a class="cta-orange" routerLink="/tabs/smart-reminder" style="background: linear-gradient(135deg, #0ea5e9 0%, var(--accent) 100%); margin-top:2px">
+            <ion-icon name="notifications-outline"></ion-icon>
+            {{ fa.smartReminder.title }}
             <ion-icon name="arrow-back-outline" class="cta-arrow"></ion-icon>
           </a>
           <div class="grid-3 quick-row">
@@ -412,7 +417,7 @@ export class HomePage implements OnInit {
     return 'https://i.pravatar.cc/100?u=' + (a?.barberId ?? 'reza');
   });
   constructor() {
-    addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline, cutOutline, mailOutline, personOutline, appsOutline, sparklesOutline });
+    addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline, cutOutline, mailOutline, personOutline, appsOutline, sparklesOutline, notificationsOutline });
   }
   private toFa(s: string | number) {
     const en = String(s);

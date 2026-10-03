@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, peopleOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline, sparklesOutline } from 'ionicons/icons';
+import { closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, peopleOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline, sparklesOutline, notificationsOutline } from 'ionicons/icons';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ThemeToggleComponent } from '../theme-toggle.component';
 
@@ -70,6 +70,7 @@ export class AppSidebarComponent {
   viewChange = output<'admin' | 'barber' | 'customer'>();
   logoutClicked = output<void>();
   private menu = [
+    { route: '/tabs/smart-reminder', icon: 'notifications-outline', label: 'یادآور هوشمند', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/tabs/customer-profile', icon: 'people-outline', label: 'پروفایل هوشمند مشتری', roles: ['barber', 'admin'] as const },
     { route: '/tabs/smart-booking', icon: 'sparkles-outline', label: 'رزرو هوشمند', roles: ['admin', 'barber', 'customer'] as const },
     { route: '/tabs/ai-advisor', icon: 'sparkles-outline', label: 'مشاور هوشمند استایل', roles: ['admin', 'barber', 'customer'] as const },
@@ -81,6 +82,6 @@ export class AppSidebarComponent {
   ];
   visibleItems = computed(() => this.menu.filter(m => (m.roles as readonly string[]).includes(this.activeView())));
   constructor() {
-    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline, sparklesOutline });
+    addIcons({ closeOutline, chevronBackOutline, shieldCheckmarkOutline, cutOutline, personOutline, locationOutline, playOutline, ribbonOutline, logOutOutline, walletOutline, sparklesOutline, notificationsOutline });
   }
 }
