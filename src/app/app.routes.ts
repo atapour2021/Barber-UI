@@ -124,6 +124,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'business-insights',
+        loadComponent: () =>
+          import('./pages/business-insights/business-insights.page').then((m) => m.BusinessInsightsPage),
+        canActivate: [adminGuard],
+      },
+      {
         path: 'training',
         loadComponent: () =>
           import('./pages/training/training.page').then((m) => m.TrainingPage),

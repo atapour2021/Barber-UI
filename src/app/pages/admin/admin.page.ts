@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonCard, IonCardContent, IonList, IonLabel, IonButton, IonSpinner, IonSegment, IonSegmentButton, IonBadge, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline, pencilOutline, createOutline, closeOutline, checkmarkOutline } from 'ionicons/icons';
+import { refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline, pencilOutline, createOutline, closeOutline, checkmarkOutline, analyticsOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Appointment, Barber, Service, User } from '../../core/models';
@@ -39,7 +39,7 @@ import { unwrapPaginated } from '../../core/api/utils';
               <ion-card class="stat-card"><ion-card-content><b style="color:var(--text-primary)">{{ dash()!.totalBarbershops }}</b><p class="muted">{{ t.totalShops }}</p></ion-card-content></ion-card>
             </div>
           }
-          <app-ui-button size="small" fill="outline" icon="refresh-outline" (pressed)="loadDash()">{{ t.refresh }}</app-ui-button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><app-ui-button size="small" fill="outline" icon="refresh-outline" (pressed)="loadDash()">{{ t.refresh }}</app-ui-button><a routerLink="/business-insights" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--accent-contrast);border-radius:999px;padding:8px 14px;font-size:11px;font-weight:800;text-decoration:none"><ion-icon name="analytics-outline"></ion-icon> بینش کسب‌وکار</a></div>
         }
 
         @if (tab === 'users') {
@@ -305,7 +305,7 @@ export class AdminPage implements OnInit {
   bq: Record<string, string> = { search: '', status: '', isActive: '' };
   newKey = '';
   newVal = '';
-  constructor() { addIcons({ refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline, pencilOutline, createOutline, closeOutline, checkmarkOutline }); }
+  constructor() { addIcons({ refreshOutline, trashOutline, addOutline, searchOutline, powerOutline, keyOutline, checkmarkCircleOutline, closeCircleOutline, pencilOutline, createOutline, closeOutline, checkmarkOutline, analyticsOutline }); }
   ngOnInit() { this.loadDash(); this.loadUsers(); this.loadBarbers(); this.loadSettings(); }
   onTab(e: CustomEvent) { this.tab = (e.detail.value ?? 'dash').toString(); if (this.tab==='appointments' && !this.appts().length) this.loadAppts(); if (this.tab==='barbers' && !this.barbers().length) this.loadBarbers(); if (this.tab==='users' && !this.users().length) this.loadUsers(); }
   loadDash() { this.dashLoading.set(true); this.api.admin.dashboard().subscribe({ next: (v) => { this.dash.set(v as never); this.dashLoading.set(false); }, error: () => this.dashLoading.set(false) }); }

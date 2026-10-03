@@ -68,6 +68,25 @@ export interface SmartReminderResponse {
   stats: { totalAppointments: number; completed: number; cancelled: number; noShow: number; pending: number; confirmed: number; lastVisitAt: string | null; firstVisitAt: string | null; avgDaysBetween: number | null; favoriteServiceNames: string[]; favoriteBarberName: string | null; preferredDayOfWeek: string | null; totalServices: number; daysSinceLastVisit: number | null };
   recentAppointments: Array<{ date: string; serviceName: string; barberName: string; status: string }>;
 }
+export interface BusinessInsightsResponse {
+  summary: string; summaryFa: string; insights: string[]; insightsFa: string[];
+  trends: Array<{ label: string; labelFa: string; direction: 'up' | 'down' | 'stable'; changePercent: number | null; period: string; detailFa?: string }>;
+  anomalies: Array<{ title: string; titleFa: string; detail: string; detailFa: string; severity: 'low' | 'medium' | 'high'; metric?: string }>;
+  recommendations: Array<{ title: string; titleFa: string; reason: string; reasonFa: string; priority: 'low' | 'medium' | 'high'; actionFa: string; expectedImpactFa?: string }>;
+  meta: { provider: string; model: string };
+  aggregates: {
+    period: { from: string | null; to: string | null; days: number };
+    totals: { totalAppointments: number; pending: number; confirmed: number; completed: number; cancelled: number; noShow: number };
+    revenue: { total: number; avgPerCompleted: number; byDay: Record<string, number> };
+    topServices: Array<{ name: string; count: number; revenue: number }>;
+    topBarbers: Array<{ name: string; count: number; revenue: number; completionRate: number }>;
+    customers: { totalCustomers: number; activeCustomersInPeriod: number; newCustomersInPeriod: number; repeatRate: number | null };
+    rates: { cancellationRate: number; noShowRate: number; completionRate: number };
+    dailyBreakdown: Array<{ date: string; count: number; revenue: number }>;
+    trends: { weekOverWeekCountChange: number | null; weekOverWeekRevenueChange: number | null };
+  };
+  periodLabelFa: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AiApi {
@@ -96,5 +115,8 @@ export class AiApi {
   }
   sendSmartReminderCustomer(customerId: string) {
     return this.http.post<{ reminder: SmartReminderResponse; notification: unknown }>(`${this.b}/ai/smart-reminder/customer/${customerId}/send`, {});
+  }
+  businessInsights(params?: Record<string, unknown>) {
+    return this.http.get<BusinessInsightsResponse>(`${this.b}/ai/business-insights`, { params: params as never });
   }
 }

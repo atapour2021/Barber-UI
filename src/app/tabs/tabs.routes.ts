@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
-import { authGuard } from '../core/guards/auth.guard';
+import { adminGuard, authGuard } from '../core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -120,6 +120,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('../pages/smart-reminder/smart-reminder.page').then((m) => m.SmartReminderPage),
         canActivate: [authGuard],
+      },
+      {
+        path: 'business-insights',
+        loadComponent: () =>
+          import('../pages/business-insights/business-insights.page').then((m) => m.BusinessInsightsPage),
+        canActivate: [adminGuard],
       },
       {
         path: 'training',

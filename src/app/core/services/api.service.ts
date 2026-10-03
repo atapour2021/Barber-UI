@@ -168,6 +168,7 @@ export class ApiService {
     smartReminderCustomer: (id: string) => this.aiApi.smartReminderCustomer(id),
     sendSmartReminderMe: () => this.aiApi.sendSmartReminderMe(),
     sendSmartReminderCustomer: (id: string) => this.aiApi.sendSmartReminderCustomer(id),
+    businessInsights: (p?: Record<string, unknown>) => this.aiApi.businessInsights(p),
   };
   chatbot = {
     ask: (m: string, r?: string, h?: Array<{ role: string; text: string }>) => this.chatbotApi.ask(m, r, h as never),
