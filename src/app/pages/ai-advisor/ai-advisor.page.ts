@@ -16,18 +16,17 @@ import {
   ribbonOutline,
   eyeOutline,
   imageOutline,
+  bagOutline,
 } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { UiButtonComponent } from '../../shared/ui/ui';
 import { fa } from '../../core/i18n/fa';
 import { extractMessage } from '../../core/utils/error';
-import { AiAdvisorResponse } from '../../core/api/ai.api';
+import { AiAdvisorResponse, AiServiceRecommendation } from '../../core/api/ai.api';
 import {
   HairstylePreviewService,
-  dataUrlToSvgString,
   downloadDataUrlAsSvg,
-  downloadSvgString,
 } from './hairstyle-preview.service';
 
 @Component({
@@ -112,7 +111,7 @@ import {
             <div class="section-head"><h3>{{ t.recommendations }}</h3><small class="muted">{{ t.compareHint }}</small></div>
             <div class="rec-grid">
               @for (rec of r.recommendations; track rec.id) {
-                <div class="rec-card">
+                <div class="rec-card" [class.selected-rec]="selectedRec()?.id === rec.id">
                   <div class="rec-head">
                     <span class="rec-icon"><ion-icon [name]="iconFor(rec)"></ion-icon></span>
                     <span class="rec-text">
@@ -158,6 +157,7 @@ import {
                   </div>
 
                   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                    <app-ui-button size="small" [fill]="selectedRec()?.id === rec.id ? 'solid' : 'outline'" (pressed)="selectHairstyle(rec)"><ion-icon name="bag-outline" style="margin-inline-end:6px"></ion-icon>{{ t.serviceRecommendations }}</app-ui-button>
                     <a class="pill-link" routerLink="/tabs/booking">{{ t.bookWithStyle }}</a>
                     <a class="pill-link ghost" routerLink="/tabs/services">{{ t.viewServices }}</a>
                     <button type="button" class="pill-link ghost" (click)="downloadPreviewSvg(rec.id)">{{ t.downloadSvg }}</button>
@@ -165,6 +165,32 @@ import {
                 </div>
               }
             </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head"><h3><ion-icon name="bag-outline" style="margin-inline-end:6px"></ion-icon>{{ t.serviceRecommendations }}</h3><small class="muted">{{ t.serviceRecommendationsHint }}</small></div>
+            @if (!selectedRec()) {
+              <p class="muted" style="text-align:center;padding:12px;background:var(--card-bg);border:1px dashed var(--card-border);border-radius:12px">{{ t.selectStyleToSeeServices }}</p>
+            } @else if (svcLoading()) {
+              <div class="dark-card" style="text-align:center;padding:16px"><ion-spinner></ion-spinner><p class="muted" style="margin:8px 0 0">{{ t.loadingServices }}</p></div>
+            } @else if (svcError()) {
+              <div class="alert-error" style="text-align:center">{{ svcError() }} <div style="margin-top:8px"><app-ui-button size="small" fill="outline" (pressed)="selectHairstyle(selectedRec()!)">{{ t.retry }}</app-ui-button></div></div>
+            } @else if (svcRecs()?.length) {
+              <div class="svc-rec-grid">
+                @for (it of svcRecs()!; track it.serviceId) {
+                  <a class="svc-rec-card" [routerLink]="['/tabs/booking']" [queryParams]="{ serviceId: it.serviceId }">
+                    <span class="svc-rec-badge"><ion-icon name="sparkles-outline"></ion-icon> {{ t.recommendedBadge }} · {{ percent(it.confidence) }}%</span>
+                    <span class="svc-rec-head">
+                      <span class="svc-rec-icon"><ion-icon [name]="iconForService(it.service)"></ion-icon></span>
+                      <span class="svc-rec-text"><b>{{ it.service.name }}</b><small><ion-icon name="time-outline"></ion-icon> {{ it.service.duration }} {{ fa.servicesList.minute }} · {{ it.service.price | number }} {{ fa.servicesList.currency }}</small></span>
+                    </span>
+                    <span class="svc-rec-reason">{{ it.reasonFa || it.reason }}</span>
+                  </a>
+                }
+              </div>
+            } @else {
+              <p class="muted" style="text-align:center">{{ t.noMatched }}</p>
+            }
           </div>
 
           <div class="section">
@@ -213,6 +239,7 @@ import {
     .analysis-card h3 ion-icon { color: var(--ok-green); }
     .rec-grid { display:flex; flex-direction:column; gap:10px; }
     .rec-card { background: var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:14px; }
+    .rec-card.selected-rec { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
     .rec-head { display:flex; align-items:center; gap:10px; }
     .rec-icon { width:38px; height:38px; border-radius:10px; background: rgba(245,158,11,0.14); border:1px solid rgba(245,158,11,0.18); color:var(--accent); display:inline-flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
     .rec-text { flex:1; display:flex; flex-direction:column; gap:2px; text-align:right; min-width:0; }
@@ -237,6 +264,15 @@ import {
     .svc-mini-text b { font-size:12px; font-weight:800; color:var(--text-primary); }
     .svc-mini-text small { font-size:11px; color:var(--text-secondary); display:inline-flex; align-items:center; gap:4px; }
     .svc-mini-price { font-size:11px; font-weight:800; color:var(--text-primary); direction:ltr; white-space:nowrap; }
+    .svc-rec-grid { display:flex; flex-direction:column; gap:10px; }
+    .svc-rec-card { background: var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; text-decoration:none; position:relative; }
+    .svc-rec-badge { align-self:flex-start; font-size:10px; font-weight:700; padding:4px 8px; border-radius:999px; background: rgba(245,158,11,0.14); border:1px solid rgba(245,158,11,0.18); color:var(--accent); display:inline-flex; align-items:center; gap:4px; }
+    .svc-rec-head { display:flex; align-items:center; gap:10px; }
+    .svc-rec-icon { width:38px; height:38px; border-radius:10px; background: rgba(245,158,11,0.14); border:1px solid rgba(245,158,11,0.18); color:var(--accent); display:inline-flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .svc-rec-text { flex:1; display:flex; flex-direction:column; gap:2px; text-align:right; min-width:0; }
+    .svc-rec-text b { font-size:13px; font-weight:800; color:var(--text-primary); }
+    .svc-rec-text small { font-size:11px; color:var(--text-secondary); display:inline-flex; align-items:center; gap:4px; }
+    .svc-rec-reason { font-size:11px; color:var(--text-secondary); line-height:1.6; text-align:right; background: var(--ion-color-step-50); border:1px solid var(--ion-color-step-150); border-radius:10px; padding:8px 10px; }
   `],
 })
 export class AiAdvisorPage {
@@ -255,9 +291,13 @@ export class AiAdvisorPage {
   previewMap = signal<Record<string, string>>({});
   previewLoading = signal<Record<string, boolean>>({});
   previewError = signal<Record<string, string>>({});
+  selectedRec = signal<AiAdvisorResponse['recommendations'][number] | null>(null);
+  svcRecs = signal<AiServiceRecommendation[] | null>(null);
+  svcLoading = signal(false);
+  svcError = signal('');
 
   constructor() {
-    addIcons({ cameraOutline, imagesOutline, sparklesOutline, refreshOutline, closeOutline, checkmarkCircleOutline, alertCircleOutline, cutOutline, timeOutline, ribbonOutline, eyeOutline, imageOutline });
+    addIcons({ cameraOutline, imagesOutline, sparklesOutline, refreshOutline, closeOutline, checkmarkCircleOutline, alertCircleOutline, cutOutline, timeOutline, ribbonOutline, eyeOutline, imageOutline, bagOutline });
   }
 
   onFilePicked(e: Event) {
@@ -279,6 +319,7 @@ export class AiAdvisorPage {
     this.errorMsg.set('');
     this.result.set(null);
     this.resetPreviews();
+    this.resetSvc();
     this.file.set(f);
     const url = URL.createObjectURL(f);
     const prev = this.previewUrl();
@@ -302,12 +343,20 @@ export class AiAdvisorPage {
     this.errorMsg.set('');
     this.result.set(null);
     this.resetPreviews();
+    this.resetSvc();
   }
 
   private resetPreviews() {
     this.previewMap.set({});
     this.previewLoading.set({});
     this.previewError.set({});
+  }
+
+  private resetSvc() {
+    this.selectedRec.set(null);
+    this.svcRecs.set(null);
+    this.svcLoading.set(false);
+    this.svcError.set('');
   }
 
   analyze() {
@@ -321,6 +370,7 @@ export class AiAdvisorPage {
     this.errorMsg.set('');
     this.result.set(null);
     this.resetPreviews();
+    this.resetSvc();
     this.generatedPreview.set(null);
     this.displayUrl.set(this.previewUrl());
     const fd = new FormData();
@@ -336,6 +386,23 @@ export class AiAdvisorPage {
         if (status === 401) this.errorMsg.set(this.t.errorNotLoggedIn);
         else this.errorMsg.set(extractMessage(err, this.t.errorFailed));
         this.loading.set(false);
+      },
+    });
+  }
+
+  selectHairstyle(rec: AiAdvisorResponse['recommendations'][number]) {
+    this.selectedRec.set(rec);
+    this.svcRecs.set(null);
+    this.svcError.set('');
+    this.svcLoading.set(true);
+    this.api.ai.serviceRecommendations({ hairstyleId: rec.id, hairstyle: rec as unknown as Record<string, unknown> }).subscribe({
+      next: (v) => {
+        this.svcRecs.set((v as { recommendations: AiServiceRecommendation[] }).recommendations ?? []);
+        this.svcLoading.set(false);
+      },
+      error: (err) => {
+        this.svcError.set(extractMessage(err, this.t.errorFailed));
+        this.svcLoading.set(false);
       },
     });
   }
@@ -457,5 +524,13 @@ export class AiAdvisorPage {
     if (k.includes('fade') || k.includes('buzz')) return 'cut-outline';
     if (k.includes('curly') || k.includes('wave')) return 'sparkles-outline';
     return 'ribbon-outline';
+  }
+
+  iconForService(s: { icon?: string | null; name?: string } | null | undefined): string {
+    const k = `${s?.icon ?? ''} ${s?.name ?? ''}`.toLowerCase();
+    if (k.includes('spark')) return 'sparkles-outline';
+    if (k.includes('ribbon') || k.includes('داماد')) return 'ribbon-outline';
+    if (k.includes('person') || k.includes('پوست')) return 'cut-outline';
+    return 'bag-outline';
   }
 }

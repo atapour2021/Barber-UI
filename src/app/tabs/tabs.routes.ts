@@ -110,6 +110,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'customer-profile',
+        loadComponent: () =>
+          import('../pages/customer-profile/customer-profile.page').then((m) => m.CustomerProfilePage),
+        canActivate: [authGuard],
+      },
+      {
         path: 'training',
         loadComponent: () =>
           import('../pages/training/training.page').then((m) => m.TrainingPage),
