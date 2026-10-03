@@ -164,7 +164,7 @@ export class ApiService {
     preview: (fd: FormData) => this.aiApi.preview(fd),
   };
   chatbot = {
-    ask: (m: string, r: string) => this.chatbotApi.ask(m, r),
+    ask: (m: string, r?: string, h?: Array<{ role: string; text: string }>) => this.chatbotApi.ask(m, r, h as never),
     faqs: (r: string) => this.chatbotApi.faqs(r),
   };
 }

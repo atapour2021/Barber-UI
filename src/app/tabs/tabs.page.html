@@ -18,6 +18,9 @@
       </span>
     </a>
     <div class="topbar-actions">
+      <button class="topbar-icon" type="button" aria-label="chat" (click)="openChat()">
+        <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+      </button>
       <a class="topbar-icon topbar-bell" routerLink="/tabs/notifications" aria-label="notifications">
         <ion-icon name="notifications-outline"></ion-icon>
         @if (unread > 0) { <em class="bell-dot"></em> }

@@ -3,12 +3,13 @@ import { Location } from '@angular/common';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline, sparklesOutline } from 'ionicons/icons';
+import { home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline, sparklesOutline, chatbubbleEllipsesOutline } from 'ionicons/icons';
 import { fa } from '../core/i18n/fa';
 import { AuthService } from '../core/services/auth.service';
 import { ThemeService } from '../core/services/theme.service';
 import { ApiService } from '../core/services/api.service';
 import { ViewRoleService } from '../core/services/view-role.service';
+import { ChatbotUiService } from '../core/services/chatbot-ui.service';
 import { AppSidebarComponent } from '../shared/components/app-sidebar/app-sidebar';
 
 @Component({
@@ -30,8 +31,10 @@ export class TabsPage {
   private viewRole = inject(ViewRoleService);
   activeView = this.viewRole.activeView;
   private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/tabs/training','/tabs/wallet']);
+  private chatUi = inject(ChatbotUiService);
+  openChat() { this.chatUi.set(true); }
   constructor() {
-    addIcons({ home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline, sparklesOutline });
+    addIcons({ home, homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, person, notificationsOutline, menuOutline, appsOutline, schoolOutline, chevronForwardOutline, sparklesOutline, chatbubbleEllipsesOutline });
     this.api.notifications.unread().subscribe({
       next: (v) => {
         const n = typeof v === 'number' ? v : ((v as { count: number }).count ?? 0);

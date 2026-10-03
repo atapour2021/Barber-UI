@@ -12,11 +12,13 @@ import {
   notificationsOutline,
   menuOutline,
   chevronForwardOutline,
+  chatbubbleEllipsesOutline,
 } from 'ionicons/icons';
 import { fa } from '../../core/i18n/fa';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
+import { ChatbotUiService } from '../../core/services/chatbot-ui.service';
 import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sidebar';
 @Component({
   selector: 'app-app-layout',
@@ -51,6 +53,9 @@ import { AppSidebarComponent } from '../../shared/components/app-sidebar/app-sid
             <span class="brand-text"><b>نیوباربر</b><small>{{ activeView() === 'barber' ? 'پنل آرایشگر' : activeView() === 'admin' ? 'پنل مدیریت' : 'پنل مشتری' }}</small></span>
           </a>
           <div class="topbar-actions">
+            <button class="topbar-icon" type="button" aria-label="chat" (click)="openChat()">
+              <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+            </button>
             <a class="topbar-icon topbar-bell" routerLink="/tabs/notifications" aria-label="notifications">
               <ion-icon name="notifications-outline"></ion-icon>
               @if (unread > 0) { <em class="bell-dot"></em> }
@@ -107,8 +112,10 @@ export class AppLayoutComponent {
   activeView = this.viewRole.activeView;
   private noBack = new Set(['/tabs/home','/tabs/services','/tabs/booking','/tabs/appointment','/tabs/profile','/tabs/wallet','/barbershops','/barbers','/services','/appointments','/notifications','/profile','/admin','/training','/wallet']);
 
+  private chatUi = inject(ChatbotUiService);
+  openChat() { this.chatUi.set(true); }
   constructor() {
-    addIcons({ homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, notificationsOutline, chevronForwardOutline, menuOutline });
+    addIcons({ homeOutline, cutOutline, calendarOutline, timeOutline, personOutline, notificationsOutline, chevronForwardOutline, menuOutline, chatbubbleEllipsesOutline });
     this.api.notifications.unread().subscribe({
       next: (v) => {
         const n = typeof v === 'number' ? v : ((v as { count: number }).count ?? 0);
