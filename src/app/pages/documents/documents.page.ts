@@ -8,6 +8,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Certificate } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { todayTehranYMD } from '../../core/utils/persian-date';
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
 import { UiInputComponent, UiDatepickerComponent, UiButtonComponent } from '../../shared/ui/ui';
 import { unwrapPaginated } from '../../core/api/utils';
@@ -92,7 +93,7 @@ export class DocumentsPage implements OnInit {
   submitting = signal(false);
   showForm = signal(false);
   formError = signal('');
-  form: Record<string, string> = { name: '', issuer: '', issueDate: new Date().toISOString().slice(0, 10), expiryDate: '' };
+  form: Record<string, string> = { name: '', issuer: '', issueDate: todayTehranYMD(), expiryDate: '' };
   remote = signal<DocItem[] | null>(null);
   items = computed(() => this.remote() ?? DEMO);
   constructor() { addIcons({ trophyOutline, schoolOutline, shieldCheckmarkOutline, closeOutline }); }
@@ -123,7 +124,7 @@ export class DocumentsPage implements OnInit {
       const payload: Record<string, unknown> = { name: this.form['name'].trim(), issuer: this.form['issuer'].trim(), issueDate: this.form['issueDate'], barberId };
       if (this.form['expiryDate']) payload['expiryDate'] = this.form['expiryDate'];
       this.api.certificates.create(payload).subscribe({
-        next: () => { this.submitting.set(false); this.showForm.set(false); this.form = { name: '', issuer: '', issueDate: new Date().toISOString().slice(0, 10), expiryDate: '' }; this.toast.success(this.t.created); this.load(); },
+        next: () => { this.submitting.set(false); this.showForm.set(false); this.form = { name: '', issuer: '', issueDate: todayTehranYMD(), expiryDate: '' }; this.toast.success(this.t.created); this.load(); },
         error: (e) => { this.submitting.set(false); const msg = (e?.error as { message?: string })?.message ?? fa.errors.generic; this.formError.set(msg); this.toast.error(msg); },
       });
     };

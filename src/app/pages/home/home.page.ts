@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
 import { Appointment, Barber, DashboardData } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { todayTehranYMD, jalaliFa, jalaliFaWithWeekday, tehranTime } from '../../core/utils/persian-date';
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -190,7 +191,7 @@ import { fa } from '../../core/i18n/fa';
                 <div class="next-main">
                   <div class="next-time">
                     <small>{{ t.today }}</small>
-                    <b>{{ appt.startTime }}</b>
+                    <b>{{ appt.startTime ? tehranTime(appt.startTime) : appt.startTime }}</b>
                   </div>
                   <div class="next-info">
                     <img [src]="nextApptAvatar()" (error)="onImgError($event)" alt="" />
@@ -353,7 +354,7 @@ export class HomePage implements OnInit {
     if (u?.username) return u.username;
     return this.isBarber() ? 'رضا' : 'امیر';
   });
-  private todayStr = new Date().toISOString().slice(0, 10);
+  private todayStr = todayTehranYMD();
   todayCount = computed(() => {
     const arr = this.appointments();
     if (!arr.length) return 6;
@@ -399,7 +400,7 @@ export class HomePage implements OnInit {
       id: a.id,
       name: a.user?.name ? `${a.user.name} ${a.user.family ?? ''}`.trim() : (a.barber?.fullName ?? a.barberId ?? 'مشتری'),
       service: a.service?.name ?? 'خدمت',
-      time: this.toFa(a.startTime ?? '--:--'),
+      time: this.toFa(tehranTime(a.startTime) ?? '--:--'),
     }));
   });
   nextApptBarberName = computed(() => {
@@ -419,6 +420,8 @@ export class HomePage implements OnInit {
   constructor() {
     addIcons({ peopleOutline, timeOutline, schoolOutline, calendarOutline, locationOutline, star, arrowBackOutline, chevronBackOutline, bookOutline, ribbonOutline, cutOutline, mailOutline, personOutline, appsOutline, sparklesOutline, notificationsOutline });
   }
+  jalaliFa(v:string){ try{ return jalaliFa(v); }catch{ return v; } }
+  tehranTime(v:string){ try{ return tehranTime(v); }catch{ return v?.slice(11,16) ?? v; } }
   private toFa(s: string | number) {
     const en = String(s);
     const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];

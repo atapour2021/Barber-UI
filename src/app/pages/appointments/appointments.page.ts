@@ -4,6 +4,7 @@ import { IonContent, IonSpinner } from '@ionic/angular';
 import { ApiService } from '../../core/services/api.service';
 import { Barber, Service } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { tehranTime, jalaliFa, jalaliParts, jalaliMonthName, tehranYMD, todayTehranYMD, TEHRAN_TZ, TEHRAN_OFFSET } from '../../core/utils/persian-date';
 
 interface DayOpt { iso: string; title: string; sub: string; }
 interface TimeSlot { time: string; fa: string; disabled?: boolean; }
@@ -224,22 +225,23 @@ export class AppointmentsPage implements OnInit {
 
   buildDays() {
     const list: DayOpt[] = [];
-    const now = new Date();
+    const base = new Date(tehranYMD(new Date()) + 'T12:00:00' + TEHRAN_OFFSET);
     for (let i = 0; i < 4; i++) {
-      const d = new Date(now);
-      d.setDate(now.getDate() + i);
-      const iso = d.toISOString().slice(0, 10);
+      const d = new Date(base);
+      d.setDate(base.getDate() + i);
+      const iso = tehranYMD(d);
       let wd = '';
       let dayNum = '';
       let month = '';
       try {
-        wd = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' }).format(d);
-        dayNum = new Intl.DateTimeFormat('fa-IR', { day: 'numeric' }).format(d);
-        month = new Intl.DateTimeFormat('fa-IR', { month: 'long' }).format(d);
+        wd = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long', timeZone: TEHRAN_TZ }).format(d);
+        dayNum = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { day: 'numeric', timeZone: TEHRAN_TZ }).format(d);
+        month = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { month: 'long', timeZone: TEHRAN_TZ }).format(d);
       } catch {
-        wd = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'][d.getDay()] ?? '';
-        dayNum = String(d.getDate());
-        month = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'][d.getMonth()] ?? '';
+        const jp = jalaliParts(d);
+        wd = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'][new Date(tehranYMD(d) + 'T12:00:00' + TEHRAN_OFFSET).getDay()] ?? '';
+        dayNum = String(jp.jd);
+        month = jalaliMonthName(jp.jm);
       }
       const title = i === 0 ? `امروز ${dayNum}` : `${wd} ${dayNum}`;
       list.push({ iso, title, sub: month });
@@ -295,7 +297,7 @@ export class AppointmentsPage implements OnInit {
           const arr = Array.isArray(raw) ? raw : [];
           if (arr.length) {
             const mapped: TimeSlot[] = (arr as { time?: string; startTime: string; status?: string }[]).map(s => {
-              const t = (s as { time?: string }).time ?? s.startTime.slice(11, 16);
+              const t = (s as { time?: string }).time ?? tehranTime(s.startTime);
               const st = (s.status ?? '').toLowerCase();
               return { time: t, fa: this.toFa(t), disabled: st ? st !== 'available' && st !== 'free' : false };
             });

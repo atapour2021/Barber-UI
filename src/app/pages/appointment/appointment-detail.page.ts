@@ -8,6 +8,7 @@ import { ViewRoleService } from '../../core/services/view-role.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Appointment, Barber } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFa, tehranTime } from '../../core/utils/persian-date';
 
 @Component({
   selector: 'app-appointment-detail',
@@ -161,8 +162,8 @@ export class AppointmentDetailPage implements OnInit {
   avatar = computed(() => (this.appt()?.barber as Barber | undefined)?.profileImage ?? 'https://i.pravatar.cc/150?u=fallback');
   duration = computed(() => this.appt()?.service?.duration ?? 0);
   priceFa = computed(() => { try { return new Intl.NumberFormat('fa-IR').format(this.appt()?.service?.price ?? 0); } catch { return String(this.appt()?.service?.price ?? 0); } });
-  dateFa = computed(() => { const d = this.appt()?.date?.slice(0,10) ?? ''; if (!d) return '—'; try { return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(new Date(d + 'T12:00:00')); } catch { return d; } });
-  timeRange = computed(() => { const a = this.appt(); if (!a) return '—'; const s = a.startTime.includes('T') ? a.startTime.slice(11,16) : a.startTime; const e = a.endTime.includes('T') ? a.endTime.slice(11,16) : a.endTime; return `${s} - ${e}`; });
+  dateFa = computed(() => { const d = this.appt()?.date?.slice(0,10) ?? ''; if (!d) return '—'; try { return jalaliFa(d); } catch { return d; } });
+  timeRange = computed(() => { const a = this.appt(); if (!a) return '—'; return `${tehranTime(a.startTime)} - ${tehranTime(a.endTime)}`; });
   statusLabel = computed(() => {
     const s = this.appt()?.status;
     const m: Record<string,string> = { pending: this.ta.pending, confirmed: this.ta.confirmed, cancelled: this.ta.cancelled, completed: this.ta.completed, no_show:'عدم حضور' };

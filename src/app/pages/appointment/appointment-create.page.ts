@@ -6,11 +6,13 @@ import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Barber, Service } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { todayTehranYMD, tehranTime } from '../../core/utils/persian-date';
+import { UiDatepickerComponent } from '../../shared/ui/ui';
 
 @Component({
   selector: 'app-appointment-create',
   standalone: true,
-  imports: [FormsModule, IonContent, IonSpinner],
+  imports: [FormsModule, IonContent, IonSpinner, UiDatepickerComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap create-wrap" dir="rtl">
@@ -36,7 +38,7 @@ import { fa } from '../../core/i18n/fa';
             </select>
 
             <label class="lbl">{{ ta.date }}</label>
-            <input type="date" [(ngModel)]="date" (ngModelChange)="loadSlots()" class="sel" [min]="todayIso" />
+            <app-ui-datepicker [(ngModel)]="date" (ngModelChange)="loadSlots()" [min]="todayIso" />
 
             <label class="lbl" style="margin-top:4px">{{ ta.startTime }}</label>
             @if (loadingSlots()) {
@@ -55,7 +57,7 @@ import { fa } from '../../core/i18n/fa';
             }
             @if (selectedSlot()) {
               <div style="display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:11px">
-                <span class="muted">انتخاب:</span><b style="color:var(--text-primary)" dir="ltr">{{ selectedSlot()!.startTime.slice(11,16) }} - {{ selectedSlot()!.endTime.slice(11,16) }}</b>
+                <span class="muted">انتخاب:</span><b style="color:var(--text-primary)" dir="ltr">{{ tehranTime(selectedSlot()!.startTime) }} - {{ tehranTime(selectedSlot()!.endTime) }}</b>
               </div>
             }
           </div>
@@ -111,8 +113,8 @@ export class AppointmentCreatePage implements OnInit {
 
   barberId = '';
   serviceId = '';
-  date = new Date().toISOString().slice(0, 10);
-  todayIso = new Date().toISOString().slice(0, 10);
+  date = todayTehranYMD();
+  todayIso = todayTehranYMD();
   slots = signal<{ startTime: string; endTime: string; status: string }[]>([]);
   slotReason = signal('');
   selectedSlot = signal<{ startTime: string; endTime: string; status: string } | null>(null);
@@ -190,13 +192,14 @@ export class AppointmentCreatePage implements OnInit {
     return st === 'booked' || st === 'reserved';
   }
   timeLabel(s: { startTime: string; endTime: string }) {
-    return `${s.startTime.slice(11, 16)} - ${s.endTime.slice(11, 16)}`;
+    return `${tehranTime(s.startTime)} - ${tehranTime(s.endTime)}`;
   }
   pick(s: { startTime: string; endTime: string; status: string }) {
     if (this.isBooked(s)) return;
     this.selectedSlot.set(s);
   }
 
+  tehranTime(v: string){ try { return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', hour:'2-digit', minute:'2-digit', hour12:false}).format(new Date(v)); } catch { return v?.slice(11,16) ?? v; } }
   create() {
     if (this.creating() || !this.canCreate()) return;
     const sl = this.selectedSlot()!;

@@ -8,13 +8,15 @@ import { analyticsOutline, alertCircleOutline, sparklesOutline, refreshOutline, 
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { fa } from '../../core/i18n/fa';
+import { todayTehranYMD, tehranYMD, jalaliFa } from '../../core/utils/persian-date';
+import { UiDatepickerComponent } from '../../shared/ui/ui';
 import { extractMessage } from '../../core/utils/error';
 import { BusinessInsightsResponse } from '../../core/api/ai.api';
 
 @Component({
   selector: 'app-business-insights',
   standalone: true,
-  imports: [DecimalPipe, FormsModule, RouterLink, IonContent, IonIcon, IonSpinner],
+  imports: [DecimalPipe, FormsModule, RouterLink, IonContent, IonIcon, IonSpinner, UiDatepickerComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap bi-wrap" dir="rtl">
@@ -30,8 +32,8 @@ import { BusinessInsightsResponse } from '../../core/api/ai.api';
             <button type="button" class="chip" [class.on]="days===90" (click)="pickDays(90)">{{ t.quick90 }}</button>
           </div>
           <div class="row">
-            <label class="f"><span>{{ t.from }}</span><input type="date" [(ngModel)]="from" /></label>
-            <label class="f"><span>{{ t.to }}</span><input type="date" [(ngModel)]="to" /></label>
+            <label class="f"><span>{{ t.from }}</span><app-ui-datepicker [(ngModel)]="from" /></label>
+            <label class="f"><span>{{ t.to }}</span><app-ui-datepicker [(ngModel)]="to" /></label>
             <label class="f" style="min-width:92px;flex:0"><span>{{ t.days }}</span><input type="number" [(ngModel)]="days" min="7" max="365" placeholder="30" /></label>
           </div>
           <button type="button" class="cta" (click)="load()" [disabled]="loading()">@if(loading()){<ion-spinner name="crescent" style="--color:#0b101e;width:18px;height:18px"></ion-spinner>} @else { <ion-icon name="sparkles-outline" style="margin-inline-end:6px"></ion-icon> {{ t.analyze }} }</button>
@@ -70,7 +72,7 @@ import { BusinessInsightsResponse } from '../../core/api/ai.api';
               <div style="overflow-x:auto">
                 <table class="tbl">
                   <thead><tr><th>تاریخ</th><th>{{ t.count }}</th><th>{{ t.revenue }}</th></tr></thead>
-                  <tbody>@for(r of d.aggregates.dailyBreakdown; track r.date){<tr><td dir="ltr" style="text-align:left">{{ r.date }}</td><td>{{ r.count }}</td><td>{{ r.revenue | number:'1.0-0' }}</td></tr>}</tbody>
+                  <tbody>@for(r of d.aggregates.dailyBreakdown; track r.date){<tr><td dir="ltr" style="text-align:left">{{ jalaliFa(r.date) }}</td><td>{{ r.count }}</td><td>{{ r.revenue | number:'1.0-0' }}</td></tr>}</tbody>
                 </table>
               </div>
             </div>
@@ -172,7 +174,8 @@ export class BusinessInsightsPage implements OnInit {
   errorMsg = signal('');
   data = signal<BusinessInsightsResponse | null>(null);
   ngOnInit() { this.load(); }
-  pickDays(d: number) { this.days = d; const now = new Date(); const toStr = now.toISOString().slice(0, 10); const fromD = new Date(now.getTime() - (d - 1) * 86400000); this.from = fromD.toISOString().slice(0, 10); this.to = toStr; this.load(); }
+  pickDays(d: number) { this.days = d; const now = new Date(); const toStr = todayTehranYMD(); const fromD = new Date(now.getTime() - (d - 1) * 86400000); this.from = tehranYMD(fromD); this.to = toStr; this.load(); }
+  jalaliFa(v:string){ try{ return jalaliFa(v); }catch{ return v; } }
   load() {
     this.loading.set(true); this.errorMsg.set('');
     const q: Record<string, unknown> = {};

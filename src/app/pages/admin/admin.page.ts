@@ -7,8 +7,9 @@ import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Appointment, Barber, Service, User } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFa, tehranTime, tehranSlotUtc, todayTehranYMD } from '../../core/utils/persian-date';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
-import { UiInputComponent, UiButtonComponent } from '../../shared/ui/ui';
+import { UiInputComponent, UiButtonComponent, UiDatepickerComponent } from '../../shared/ui/ui';
 import { extractMessage } from '../../core/utils/error';
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
 import { unwrapPaginated } from '../../core/api/utils';
@@ -16,7 +17,7 @@ import { unwrapPaginated } from '../../core/api/utils';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, IonContent, IonCard, IonCardContent, IonList, IonLabel, IonButton, IonSpinner, IonSegment, IonSegmentButton, IonBadge, IonIcon, EmptyStateComponent, UiInputComponent, UiButtonComponent, InfiniteScrollDirective],
+  imports: [FormsModule, IonContent, IonCard, IonCardContent, IonList, IonLabel, IonButton, IonSpinner, IonSegment, IonSegmentButton, IonBadge, IonIcon, EmptyStateComponent, UiInputComponent, UiButtonComponent, UiDatepickerComponent, InfiniteScrollDirective],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap" dir="rtl">
@@ -166,7 +167,7 @@ import { unwrapPaginated } from '../../core/api/utils';
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <input [(ngModel)]="newAppt.barberId" placeholder="barberId" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
               <input [(ngModel)]="newAppt.serviceId" placeholder="serviceId" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
-              <input [(ngModel)]="newAppt.date" placeholder="2026-09-30" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+              <app-ui-datepicker [(ngModel)]="newAppt.date" placeholder="1404/01/01" />
               <input [(ngModel)]="newAppt.startTime" placeholder="09:00 (HH:mm)" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
               <input [(ngModel)]="newAppt.endTime" placeholder="09:30 (HH:mm)" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
               <input [(ngModel)]="newAppt.notes" placeholder="یادداشت" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
@@ -181,7 +182,7 @@ import { unwrapPaginated } from '../../core/api/utils';
               <ion-card style="margin-bottom:8px">
                 <ion-card-content style="display:flex;flex-direction:column;gap:10px">
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-                    <ion-label style="min-width:0"><h3 style="font-weight:800;color:var(--text-primary);font-size:12px">{{ a.date.slice(0,10) }} {{ a.startTime.slice(11,16) || a.startTime }} - {{ a.endTime.slice(11,16) || a.endTime }}</h3><p class="muted" style="font-size:11px">{{ a.barber?.fullName ?? a.barberId.slice(0,8) }} · {{ a.service?.name ?? a.serviceId.slice(0,8) }} · {{ a.user?.username ?? a.userId.slice(0,8) }}</p>@if(a.notes){<p class="muted" style="font-size:11px;white-space:pre-wrap">📝 {{ a.notes }}</p>}</ion-label>
+                    <ion-label style="min-width:0"><h3 style="font-weight:800;color:var(--text-primary);font-size:12px">{{ jalaliFa(a.date) }} {{ tehranTime(a.startTime) }} - {{ tehranTime(a.endTime) }}</h3><p class="muted" style="font-size:11px">{{ a.barber?.fullName ?? a.barberId.slice(0,8) }} · {{ a.service?.name ?? a.serviceId.slice(0,8) }} · {{ a.user?.username ?? a.userId.slice(0,8) }}</p>@if(a.notes){<p class="muted" style="font-size:11px;white-space:pre-wrap">📝 {{ a.notes }}</p>}</ion-label>
                     <ion-badge style="font-size:10px;flex-shrink:0">{{ a.status }}</ion-badge>
                   </div>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -206,10 +207,10 @@ import { unwrapPaginated } from '../../core/api/utils';
                         <select [(ngModel)]="editForm.serviceId" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-family:inherit;font-size:12px">
                           @for (s of editServicesFiltered(); track s.id) { <option [value]="s.id">{{ s.name }} — {{ s.duration }}m</option> }
                         </select>
-                        <input type="date" [(ngModel)]="editForm.date" (ngModelChange)="loadEditSlots()" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-size:12px" />
+                        <app-ui-datepicker [(ngModel)]="editForm.date" (ngModelChange)="loadEditSlots()" />
                         <select [(ngModel)]="editForm.slotKey" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px;color:var(--text-primary);font-family:inherit;font-size:12px">
                           <option value="">{{ editSlotLabel() || '— ساعت —' }}</option>
-                          @for (sl of editSlots(); track sl.startTime) { <option [value]="sl.startTime + '|' + sl.endTime">{{ sl.startTime.slice(11,16) }} - {{ sl.endTime.slice(11,16) }} @if(sl.status!=='available' && sl.status!=='free'){({{ sl.status }})}</option> }
+                          @for (sl of editSlots(); track sl.startTime) { <option [value]="sl.startTime + '|' + sl.endTime">{{ tehranTime(sl.startTime) }} - {{ tehranTime(sl.endTime) }} @if(sl.status!=='available' && sl.status!=='free'){({{ sl.status }})}</option> }
                         </select>
                       </div>
                       @if (editSlotsLoading()) { <div style="text-align:center"><ion-spinner></ion-spinner></div> }
@@ -535,7 +536,7 @@ export class AdminPage implements OnInit {
   }
   startEditAppt(a: Appointment) {
     this.editId.set(a.id);
-    const d = a.date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+    const d = a.date?.slice(0, 10) ?? todayTehranYMD();
     this.editForm = {
       barberId: a.barberId,
       serviceId: a.serviceId,
@@ -579,12 +580,12 @@ export class AdminPage implements OnInit {
     });
   }
   createAppt() {
-    const d = this.newAppt.date?.slice(0,10);
+    const d = this.newAppt.date?.slice(0,10) ?? todayTehranYMD();
     const s = this.newAppt.startTime?.trim();
     const e = this.newAppt.endTime?.trim();
     if (!this.newAppt.barberId || !this.newAppt.serviceId || !d || !s || !e) { this.toast.warning('فیلدهای الزامی را پر کنید'); return; }
-    const startTime = s.includes('T') ? s : `${d}T${s.length===5?s+':00':s}.000Z`;
-    const endTime = e.includes('T') ? e : `${d}T${e.length===5?e+':00':e}.000Z`;
+    const startTime = s.includes('T') ? s : tehranSlotUtc(d, s.length===5?s:s.slice(0,5));
+    const endTime = e.includes('T') ? e : tehranSlotUtc(d, e.length===5?e:e.slice(0,5));
     this.creating.set(true);
     this.api.appointments.create({ barberId: this.newAppt.barberId, serviceId: this.newAppt.serviceId, date: d, startTime, endTime, notes: this.newAppt.notes || undefined }).subscribe({
       next: () => { this.toast.success(fa.appointments.createSuccess); this.creating.set(false); this.newAppt={barberId:'',serviceId:'',date:'',startTime:'',endTime:'',notes:''}; this.loadAppts(); },
@@ -599,5 +600,7 @@ export class AdminPage implements OnInit {
       error: (e) => this.toast.error(extractMessage(e, fa.common.failed)),
     });
   }
+  jalaliFa(v: string){ try{ return jalaliFa(v); }catch{ return v?.slice(0,10)??v; } }
+  tehranTime(v: string){ try { return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', hour:'2-digit', minute:'2-digit', hour12:false}).format(new Date(v)); } catch { return v?.slice(11,16) ?? v; } }
   delSetting(k: string) { this.api.admin.deleteSetting(k).subscribe({ next: () => { this.toast.success(fa.admin.deleteSuccess); this.loadSettings(); }, error: (e) => this.toast.error(extractMessage(e, fa.common.failed)) }); }
 }

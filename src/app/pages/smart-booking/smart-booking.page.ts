@@ -6,6 +6,8 @@ import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Barber, Service } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFa, todayTehranYMD, tehranYMD } from '../../core/utils/persian-date';
+import { UiDatepickerComponent } from '../../shared/ui/ui';
 import { extractMessage } from '../../core/utils/error';
 
 interface Suggestion {
@@ -24,7 +26,7 @@ interface Suggestion {
 @Component({
   selector: 'app-smart-booking',
   standalone: true,
-  imports: [FormsModule, RouterLink, IonContent, IonSpinner],
+  imports: [FormsModule, RouterLink, IonContent, IonSpinner, UiDatepickerComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="page-wrap smart-wrap" dir="rtl">
@@ -44,8 +46,8 @@ interface Suggestion {
             @for (b of barbers(); track b.id) { <option [value]="b.id">{{ b.fullName }}</option> }
           </select>
           <div class="row2">
-            <div><label class="lbl">{{ t.from }}</label><input type="date" [(ngModel)]="dateFrom" class="sel" [min]="todayIso" /></div>
-            <div><label class="lbl">{{ t.to }}</label><input type="date" [(ngModel)]="dateTo" class="sel" [min]="dateFrom || todayIso" /></div>
+            <div><label class="lbl">{{ t.from }}</label><app-ui-datepicker [(ngModel)]="dateFrom" [min]="todayIso" /></div>
+            <div><label class="lbl">{{ t.to }}</label><app-ui-datepicker [(ngModel)]="dateTo" [min]="dateFrom || todayIso" /></div>
           </div>
           <label class="lbl">{{ t.preferredTime }}</label>
           <select [(ngModel)]="preferredTime" class="sel">
@@ -113,9 +115,9 @@ export class SmartBookingPage implements OnInit {
   errorMsg = signal('');
   serviceId = '';
   barberId = '';
-  todayIso = new Date().toISOString().slice(0, 10);
-  dateFrom = new Date().toISOString().slice(0, 10);
-  dateTo = new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10);
+  todayIso = todayTehranYMD();
+  dateFrom = todayTehranYMD();
+  dateTo = tehranYMD(new Date(Date.now() + 6 * 86400000));
   preferredTime = '';
   ngOnInit() {
     this.api.barbers.list().subscribe({ next: (v) => this.barbers.set(Array.isArray(v) ? v as Barber[] : ((v as { data: Barber[] }).data ?? [])), error: () => {} });
@@ -136,7 +138,7 @@ export class SmartBookingPage implements OnInit {
     });
   }
   dateFa(iso: string) {
-    try { return new Intl.DateTimeFormat('fa-IR').format(new Date(iso + 'T12:00:00')); } catch { return iso; }
+    try { return jalaliFa(iso); } catch { return iso; }
   }
   priceFa(n: number) {
     try { return new Intl.NumberFormat('fa-IR').format(n); } catch { return String(n); }

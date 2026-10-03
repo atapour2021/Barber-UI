@@ -8,6 +8,7 @@ import { ViewRoleService } from '../../core/services/view-role.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Appointment, Barber } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFaWithWeekday, tehranTime, todayTehranYMD, tehranYMD } from '../../core/utils/persian-date';
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
 import { unwrapPaginated } from '../../core/api/utils';
 
@@ -219,21 +220,18 @@ export class AppointmentPage implements OnInit {
     if (s==='completed') return '#3b82f6';
     return '#64748b';
   }
-  timeOf(a: Appointment) {
-    const v = a.startTime;
-    if (v.includes('T')) return v.slice(11,16);
-    return v;
-  }
+  timeOf(a: Appointment) { return tehranTime(a.startTime); }
   barberName(a: Appointment) { return a.barber?.fullName ?? '—'; }
   serviceName(a: Appointment) { return a.service?.name ?? ''; }
   avatar(a: Appointment) { return (a.barber as Barber | undefined)?.profileImage ?? `https://i.pravatar.cc/100?u=${a.barberId}`; }
   onImgError(e: Event) { (e.target as HTMLImageElement).src = 'https://i.pravatar.cc/100?u=fallback'; }
   dateLabel(iso: string) {
-    const today = new Date().toISOString().slice(0, 10);
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-    if (iso.slice(0,10) === today) return this.t.today;
-    if (iso.slice(0,10) === tomorrow) return this.t.tomorrow;
-    try { return new Intl.DateTimeFormat('fa-IR').format(new Date(iso.slice(0,10) + 'T12:00:00')); } catch { return iso.slice(0,10); }
+    const ymd = iso.slice(0,10);
+    const today = todayTehranYMD();
+    const tomorrow = tehranYMD(new Date(Date.now() + 86400000));
+    if (ymd === today) return this.t.today;
+    if (ymd === tomorrow) return this.t.tomorrow;
+    try { return jalaliFaWithWeekday(ymd); } catch { return ymd; }
   }
 
   confirm(a: Appointment) { this.updateStatus(a, 'confirmed'); }

@@ -13,6 +13,7 @@ import { checkmarkDoneOutline, mailUnreadOutline } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { NotificationItem } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFaWithTime } from '../../core/utils/persian-date';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { UiButtonComponent } from '../../shared/ui/ui';
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
@@ -50,7 +51,7 @@ import { unwrapPaginated } from '../../core/api/utils';
                   @if (!n.isRead) { <ion-badge style="--background:var(--accent);--color:var(--accent-contrast);font-size:10px">{{ t.newBadge }}</ion-badge> }
                 </div>
                 <p class="muted" style="margin:6px 0 4px">{{ n.body }}</p>
-                <p style="font-size:10px;color:var(--text-muted);margin:0">{{ n.type }} · {{ n.createdAt }}</p>
+                <p style="font-size:10px;color:var(--text-muted);margin:0">{{ n.type }} · {{ jalaliFaWithTime(n.createdAt) }}</p>
               </ion-card-content>
             </ion-card>
           }
@@ -94,5 +95,6 @@ export class NotificationsPage implements OnInit {
     this.api.notifications.unread().subscribe({ next: (v) => { const n = typeof v === 'number' ? v : ((v as { count: number }).count ?? 0); this.unread.set(n); } });
   }
   readAll() { this.api.notifications.readAll().subscribe({ next: () => { this.load(true); this.unread.set(0); } }); }
+  jalaliFaWithTime(v:string){ try{ return jalaliFaWithTime(v); }catch{ return v; } }
   readOne(id: string) { this.api.notifications.readOne(id).subscribe({ next: () => this.load(true) }); }
 }

@@ -10,6 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ViewRoleService } from '../../core/services/view-role.service';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFa, jalaliFaWithTime } from '../../core/utils/persian-date';
 import { extractMessage } from '../../core/utils/error';
 import { SmartReminderResponse } from '../../core/api/ai.api';
 
@@ -56,7 +57,7 @@ import { SmartReminderResponse } from '../../core/api/ai.api';
           <div class="dark-card hero-card">
             <div class="hero-top">
               <span class="pill-accent"><ion-icon name="calendar-outline"></ion-icon> {{ t.predictedDate }}</span>
-              <b class="pred-date" dir="ltr">{{ d.predictedDate ?? '—' }}</b>
+              <b class="pred-date" dir="ltr">{{ d.predictedDate ? jalaliFa(d.predictedDate) : '—' }}</b>
               @if(d.predictedDaysFromNow != null){<small class="muted">{{ d.predictedDaysFromNow }} {{ t.days }} · {{ d.predictedDaysFromNow <= 1 ? t.soon : '' }}</small>}
             </div>
             <div class="grid2">
@@ -89,7 +90,7 @@ import { SmartReminderResponse } from '../../core/api/ai.api';
             <div class="dark-card stat"><b>{{ d.stats.cancelled }}</b><small>لغو</small></div>
           </div>
           <div class="dark-card">
-            <div class="k">{{ t.lastVisit }}</div><div class="v">{{ d.stats.lastVisitAt ? d.stats.lastVisitAt.slice(0,10) : '—' }}</div>
+            <div class="k">{{ t.lastVisit }}</div><div class="v">{{ d.stats.lastVisitAt ? jalaliFa(d.stats.lastVisitAt) : '—' }}</div>
             <div class="k" style="margin-top:8px">{{ t.favoriteService }}</div><div class="v">{{ d.stats.favoriteServiceNames.join('، ') || '—' }}</div>
             <div class="k" style="margin-top:8px">{{ t.preferredDay }}</div><div class="v">{{ d.stats.preferredDayOfWeek || '—' }}</div>
           </div>
@@ -103,7 +104,7 @@ import { SmartReminderResponse } from '../../core/api/ai.api';
             } @else {<p class="muted" style="text-align:center">—</p>}
           </div>
 
-          <div class="dark-card"><h3 style="margin:0 0 8px;font-size:13px"><ion-icon name="time-outline"></ion-icon> {{ fa.customerProfile.recent }}</h3>@if(d.recentAppointments.length){<div class="recent-list">@for(a of d.recentAppointments; track a.date + a.serviceName){<div class="recent-row"><span>{{a.date}}</span><span>{{a.serviceName || '—'}}</span><span>{{a.barberName || '—'}}</span><span class="pill">{{a.status}}</span></div>}</div>} @else {<p class="muted" style="margin:0">{{ fa.customerProfile.empty }}</p>}</div>
+          <div class="dark-card"><h3 style="margin:0 0 8px;font-size:13px"><ion-icon name="time-outline"></ion-icon> {{ fa.customerProfile.recent }}</h3>@if(d.recentAppointments.length){<div class="recent-list">@for(a of d.recentAppointments; track a.date + a.serviceName){<div class="recent-row"><span>{{jalaliFa(a.date)}}</span><span>{{a.serviceName || '—'}}</span><span>{{a.barberName || '—'}}</span><span class="pill">{{a.status}}</span></div>}</div>} @else {<p class="muted" style="margin:0">{{ fa.customerProfile.empty }}</p>}</div>
         } @else if(!loadingMe() && !loadingCust() && !errorMsg()){
           <div class="empty-state"><ion-icon name="people-outline" style="font-size:32px;color:var(--text-muted)"></ion-icon><p class="muted">{{ t.myReminder }}</p></div>
         }
@@ -216,6 +217,7 @@ export class SmartReminderPage implements OnInit {
       error: (e) => { this.sending.set(false); this.toast.error(extractMessage(e, this.t.sendFailed)); },
     });
   }
+  jalaliFa(v:string){ try{ return jalaliFa(v); }catch{ return v; } }
   sendCustomer() {
     const id = this.customerId.trim() || (this.data()?.customer.id ?? '');
     if (!id) { this.toast.warning(this.t.barberHint); return; }

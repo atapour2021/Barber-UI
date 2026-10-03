@@ -6,6 +6,7 @@ import { star } from 'ionicons/icons';
 import { ApiService } from '../../core/services/api.service';
 import { Barber } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFa, tehranYMD, TEHRAN_TZ } from '../../core/utils/persian-date';
 
 type BarberVM = Barber & { _rating?: string; _count?: number; _verifiedLabel?: string };
 
@@ -153,8 +154,7 @@ export class BarberDetailPage implements OnInit {
     const wh = b.workingHours as Record<string, { start: string; end: string }> | null | undefined;
     if (wh) {
       const now = new Date();
-      const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      const k = dayKeys[now.getDay()];
+      const k = new Intl.DateTimeFormat('en-US', { timeZone: TEHRAN_TZ, weekday: 'long' }).format(now).toLowerCase();
       const faKeys: Record<string, string> = { saturday: 'شنبه', sunday: 'یکشنبه', monday: 'دوشنبه', tuesday: 'سه‌شنبه', wednesday: 'چهارشنبه', thursday: 'پنج‌شنبه', friday: 'جمعه' };
       const hit = wh[k] ?? wh[faKeys[k]] ?? wh[Object.keys(wh)[0]];
       if (hit?.start && hit?.end) return `${this.toFaTime(hit.start)} تا ${this.toFaTime(hit.end)}`;
@@ -175,7 +175,7 @@ export class BarberDetailPage implements OnInit {
   computeTodayLabel(): string {
     try {
       const d = new Date();
-      const fmt = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const fmt = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { timeZone: TEHRAN_TZ } as any) || new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' });
       return fmt.format(d);
     } catch { return 'شنبه، ۲۹ شهریور'; }
   }

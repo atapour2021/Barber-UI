@@ -10,6 +10,7 @@ import { Appointment, Barber, Service } from '../../core/models';
 import { fa } from '../../core/i18n/fa';
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
 import { unwrapPaginated } from '../../core/api/utils';
+import { jalaliFaWithWeekday, tehranTime as tehranTimeUtil, todayTehranYMD, tehranYMD, TEHRAN_TZ, TEHRAN_OFFSET, tehranSlotUtc } from '../../core/utils/persian-date';
 
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
 type DayKey = 'saturday' | 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday';
@@ -301,7 +302,7 @@ export class BookingPage implements OnInit {
   note = '';
   reserveBarber = signal<Barber | null>(null);
   reserveService = signal<Service | null>(null);
-  reserveDateIso = signal(new Date().toISOString().slice(0, 10));
+  reserveDateIso = signal(todayTehranYMD());
   reserveTimeStart = signal('14:30');
   reserveDateLabel = signal('شنبه، ۲۹ شهریور');
   payWithWallet = false;
@@ -378,21 +379,19 @@ export class BookingPage implements OnInit {
     if (s==='completed') return '#3b82f6';
     return '#64748b';
   }
-  timeOf(a: Appointment) {
-    const v = a.startTime;
-    if (v.includes('T')) return v.slice(11,16);
-    return v;
-  }
+  timeOf(a: Appointment) { return this.tehranTime(a.startTime); }
   barberName(a: Appointment) { return a.barber?.fullName ?? '—'; }
   serviceName(a: Appointment) { return a.service?.name ?? ''; }
   avatar(a: Appointment) { return (a.barber as Barber | undefined)?.profileImage ?? `https://i.pravatar.cc/100?u=${a.barberId}`; }
+  tehranTime(v: string){ try { return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', hour:'2-digit', minute:'2-digit', hour12:false}).format(new Date(v)); } catch { return v?.slice(11,16) ?? v; } }
   onImgError(e: Event) { (e.target as HTMLImageElement).src = 'https://i.pravatar.cc/100?u=fallback'; }
   dateLabel(iso: string) {
-    const today = new Date().toISOString().slice(0, 10);
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-    if (iso.slice(0,10) === today) return this.tt.today;
-    if (iso.slice(0,10) === tomorrow) return this.tt.tomorrow;
-    try { return new Intl.DateTimeFormat('fa-IR').format(new Date(iso.slice(0,10) + 'T12:00:00')); } catch { return iso.slice(0,10); }
+    const ymd = iso.slice(0,10);
+    const today = todayTehranYMD();
+    const tom = tehranYMD(new Date(Date.now() + 86400000));
+    if (ymd === today) return this.tt.today;
+    if (ymd === tom) return this.tt.tomorrow;
+    try { return jalaliFaWithWeekday(ymd); } catch { return ymd; }
   }
 
   confirm(a: Appointment) { this.updateStatus(a, 'confirmed'); }
@@ -520,7 +519,7 @@ export class BookingPage implements OnInit {
           const m: Record<string,string> = { holiday: fa.toast.barberOnHoliday, not_working_day: fa.toast.notWorkingDay, no_working_hours: fa.toast.noWorkingHours };
           this.slotUnavailableReason.set(m[r.reason] ?? r.reason);
         } else if (r.slots?.length) {
-          const hit = r.slots.find(s => s.startTime.slice(11,16) === t);
+            const hit = r.slots.find(s => this.tehranTime(s.startTime) === t);
           if (hit && String(hit.status).toLowerCase() === 'booked') this.slotUnavailableReason.set(fa.toast.slotBooked);
         }
         this.slotChecking.set(false);
@@ -531,7 +530,7 @@ export class BookingPage implements OnInit {
   private fetchFirstServiceReserve() { this.api.services.list().subscribe({ next: (v) => { const arr = Array.isArray(v) ? v : ((v as { data: Service[] }).data ?? []); if (arr.length && !this.reserveService()) this.reserveService.set(arr[0] as Service); } }); }
   private fetchFirstBarberReserve() { this.api.barbers.list().subscribe({ next: (v) => { const arr = Array.isArray(v) ? v : ((v as { data: Barber[] }).data ?? []); if (arr.length && !this.reserveBarber()) this.reserveBarber.set(arr[0] as Barber); } }); }
   formatPrice(n: number) { try { return new Intl.NumberFormat('fa-IR').format(n); } catch { return String(n); } }
-  toFaDateLabel(iso: string) { try { const d = new Date(iso + 'T12:00:00'); return new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(d); } catch { return iso; } }
+  toFaDateLabel(iso: string) { try { return jalaliFaWithWeekday(iso.slice(0,10)); } catch { return iso; } }
   calcEnd(start: string, mins: number) { const [h, m] = start.split(':').map(Number); const total = h * 60 + m + mins; const hh = String(Math.floor(total / 60) % 24).padStart(2, '0'); const mm = String(total % 60).padStart(2, '0'); return `${hh}:${mm}`; }
   confirmReserve() {
     if (this.confirming()) return;
@@ -542,7 +541,7 @@ export class BookingPage implements OnInit {
     if (this.slotUnavailableReason()) { this.reserveError.set(this.slotUnavailableReason()); this.toast.warning(this.slotUnavailableReason()); return; }
     if (this.payWithWallet && this.walletBalance() !== null && this.reservePrice() > this.walletBalance()!) { this.reserveError.set(fa.wallet.insufficient); this.toast.warning(fa.wallet.insufficient); return; }
     const date = this.reserveDateIso(); const t = this.reserveTimeStart(); const end = this.calcEnd(t, this.reserveDuration());
-    const startTime = `${date}T${t}:00.000Z`; const endTime = `${date}T${end}:00.000Z`;
+    const startTime = tehranSlotUtc(date, t); const endTime = tehranSlotUtc(date, end);
     this.confirming.set(true);
     const doPay = () => {
       if (!this.payWithWallet) return Promise.resolve();

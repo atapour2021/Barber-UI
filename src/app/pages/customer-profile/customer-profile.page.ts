@@ -8,6 +8,7 @@ import { peopleOutline, personCircleOutline, sparklesOutline, refreshOutline, al
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFa } from '../../core/utils/persian-date';
 import { extractMessage } from '../../core/utils/error';
 import { CustomerProfileResponse } from '../../core/api/ai.api';
 
@@ -82,7 +83,7 @@ import { CustomerProfileResponse } from '../../core/api/ai.api';
           <div class="dark-card">
             <h3 style="margin:0 0 8px;font-size:13px"><ion-icon name="calendar-outline"></ion-icon> {{ t.recent }}</h3>
             @if(d.recentAppointments.length){
-              <div class="recent-list">@for(a of d.recentAppointments; track a.date + a.serviceName){<div class="recent-row"><span>{{a.date}}</span><span>{{a.serviceName || '—'}}</span><span>{{a.barberName || '—'}}</span><span class="pill">{{a.status}}</span></div>}</div>
+              <div class="recent-list">@for(a of d.recentAppointments; track a.date + a.serviceName){<div class="recent-row"><span>{{jalaliFa(a.date)}}</span><span>{{a.serviceName || '—'}}</span><span>{{a.barberName || '—'}}</span><span class="pill">{{a.status}}</span></div>}</div>
             } @else {<p class="muted" style="margin:0">{{ t.empty }}</p>}
           </div>
 
@@ -143,6 +144,7 @@ export class CustomerProfilePage implements OnInit {
   errorMsg = signal('');
   data = signal<CustomerProfileResponse | null>(null);
   quick = signal<Array<{ id: string; label: string }>>([]);
+  jalaliFa(v: string){ try{ return jalaliFa(v); }catch{ return v; } }
   ngOnInit() {
     const q = this.route.snapshot.queryParamMap.get('customerId') || this.route.snapshot.paramMap.get('customerId') || '';
     if (q) { this.customerId = q; this.load(); }

@@ -8,6 +8,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { fa } from '../../core/i18n/fa';
+import { jalaliFaWithTime } from '../../core/utils/persian-date';
 import { extractMessage } from '../../core/utils/error';
 import { unwrapPaginated } from '../../core/api/utils';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
@@ -117,7 +118,7 @@ import { UiSelectComponent, UiOption } from '../../shared/ui/ui';
                   </span>
                   <div style="min-width:0">
                     <b style="font-size:12px;color:var(--text-primary)">{{ labelFor(tx.type) }} <small class="muted">· {{ tx.amount > 0 ? '+' : '' }}{{ tx.amount }}</small></b>
-                    <p class="muted" style="margin:2px 0 0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ tx.description ?? '-' }} · {{ tx.createdAt.slice(0,16).replace('T',' ') }}</p>
+                    <p class="muted" style="margin:2px 0 0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ tx.description ?? '-' }} · {{ jalaliFaWithTime(tx.createdAt) }}</p>
                   </div>
                 </div>
                 <small class="muted" style="font-size:11px;flex-shrink:0">{{ tx.balanceAfter }} {{ tWallet.currency }}</small>
@@ -245,6 +246,7 @@ export class WalletPage implements OnInit {
     if (this.adminSearch.trim()) p['search'] = this.adminSearch.trim();
     this.api.wallet.adminWallets(p).subscribe({ next: (v) => { const pg = unwrapPaginated<any>(v); this.adminWallets.set(pg.data); }, error: () => {} });
   }
+  jalaliFaWithTime(v:string){ try{ return jalaliFaWithTime(v); }catch{ return v; } }
   labelFor(t: string) {
     const m: Record<string,string> = { topup: fa.wallet.typeTopup, payment: fa.wallet.typePayment, payout: fa.wallet.typePayout, refund: fa.wallet.typeRefund, adjustment: fa.wallet.typeAdjustment, credit: fa.wallet.typeTopup, debit: fa.wallet.typePayment };
     return m[t] ?? t;
