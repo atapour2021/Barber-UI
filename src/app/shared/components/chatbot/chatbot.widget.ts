@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonIcon, IonSpinner } from '@ionic/angular';
@@ -6,6 +6,7 @@ import { addIcons } from 'ionicons';
 import { chatbubbleEllipsesOutline, closeOutline, sendOutline } from 'ionicons/icons';
 import type { ChatLink } from '../../../core/api/chatbot.api';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ViewRoleService } from '../../../core/services/view-role.service';
 import { ChatbotUiService } from '../../../core/services/chatbot-ui.service';
 
@@ -70,6 +71,7 @@ interface Msg { from: 'user' | 'bot'; text: string; links?: ChatLink[]; suggesti
 })
 export class ChatbotWidget {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
   private views = inject(ViewRoleService);
   ui = inject(ChatbotUiService);
   open = this.ui.open;
@@ -79,7 +81,17 @@ export class ChatbotWidget {
   faqs = signal<string[]>([]);
   role = computed(() => this.views.activeView());
   roleLabel = computed(() => this.role() === 'barber' ? 'پنل آرایشگر' : this.role() === 'admin' ? 'پنل مدیریت' : 'پنل مشتری');
-  constructor() { addIcons({ chatbubbleEllipsesOutline, closeOutline, sendOutline }); }
+  constructor() {
+    addIcons({ chatbubbleEllipsesOutline, closeOutline, sendOutline });
+    effect(() => {
+      if (this.auth.user()) return;
+      this.messages.set([]);
+      this.faqs.set([]);
+      this.loading.set(false);
+      this.draft = '';
+      this.ui.set(false);
+    });
+  }
   toggle() {
     this.ui.toggle();
     if (this.open() && !this.faqs().length) this.api.chatbot.faqs(this.role()).subscribe({ next: (v) => this.faqs.set(v.items ?? []), error: () => {} });
